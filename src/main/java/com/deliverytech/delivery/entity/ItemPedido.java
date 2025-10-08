@@ -1,8 +1,11 @@
 package com.deliverytech.delivery.entity;
 
-import jakarta.persistence.*; import lombok.Data;
+import jakarta.persistence.*; 
+import lombok.Data;
 
 import java.math.BigDecimal;
+
+
 
 @Entity @Data
 @Table(name = "itens_pedido")
@@ -13,19 +16,22 @@ private int quantidade;
 private BigDecimal precoUnitario; private BigDecimal subtotal;
 
 @ManyToOne
+  // evita loop infinito com Pedido
 @JoinColumn(name = "pedido_id") private Pedido pedido;
 
 @ManyToOne
+  // evita loop infinito com Produto
 @JoinColumn(name = "produto_id") private Produto produto;
 
 public void calcularSubtotal() {
-    if (precoUnitario != null) {
+    if (precoUnitario != null && quantidade > 0) {
         this.subtotal = precoUnitario.multiply(BigDecimal.valueOf(quantidade));
     } else {
         this.subtotal = BigDecimal.ZERO;
     }
 }
 
-
-
 }
+
+
+

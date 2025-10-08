@@ -1,5 +1,6 @@
 package com.deliverytech.delivery.entity;
 
+
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -19,13 +20,15 @@ public class Cliente {
     private String telefone;
     private String endereco;
     private boolean ativo;
+
     @Column(name = "data_cadastro")
-private LocalDateTime dataCadastro = LocalDateTime.now();
+    private LocalDateTime dataCadastro = LocalDateTime.now();
 
     public void inativar() {
-    this.ativo = false;
-}
+        this.ativo = false;
+    }
 
     @OneToMany(mappedBy = "cliente")
+   
     private List<Pedido> pedidos;
 }

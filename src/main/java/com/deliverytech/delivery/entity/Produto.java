@@ -1,10 +1,10 @@
-
 package com.deliverytech.delivery.entity;
+
 import jakarta.persistence.*;
 import lombok.Data;
 import java.math.BigDecimal;
 import java.util.List;  
-
+import java.util.ArrayList;
 
 @Entity
 @Data
@@ -24,7 +24,6 @@ public class Produto {
     @JoinColumn(name = "restaurante_id")
     private Restaurante restaurante;
 
-    // Relacionamento com ItemPedido
     @OneToMany(mappedBy = "produto")
-    private List<ItemPedido> itemPedido;
+    private List<ItemPedido> itensPedido = new ArrayList<>();
 }

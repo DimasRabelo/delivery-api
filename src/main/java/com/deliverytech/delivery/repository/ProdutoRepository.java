@@ -39,7 +39,7 @@ public interface ProdutoRepository extends JpaRepository<Produto, Long> {
 
     // Query customizada - produtos mais vendidos
     // Certifique-se de que Produto tem um mapeamento @OneToMany para ItemPedido
-    @Query("SELECT p FROM Produto p JOIN p.itemPedido ip GROUP BY p ORDER BY COUNT(ip) DESC")
+    @Query("SELECT p FROM Produto p JOIN p.itensPedido ip GROUP BY p ORDER BY COUNT(ip) DESC")
     List<Produto> findProdutosMaisVendidos();
 
     // Buscar produtos disponíveis por restaurante e categoria

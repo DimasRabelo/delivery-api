@@ -2,7 +2,8 @@
 INSERT INTO cliente (nome, email, telefone, endereco, data_cadastro, ativo) VALUES
 ('João Silva', 'joao@email.com', '(11) 99999-1111', 'Rua A, 123 - São Paulo/SP', NOW(), true),
 ('Maria Santos', 'maria@email.com', '(11) 99999-2222', 'Rua B, 456 - São Paulo/SP', NOW(), true),
-('Pedro Oliveira', 'pedro@email.com', '(11) 99999-3333', 'Rua C, 789 - São Paulo/SP', NOW(), true);
+('Pedro Oliveira', 'pedro@email.com', '(11) 99999-3333', 'Rua C, 789 - São Paulo/SP', NOW(), true),
+('Dimas Rabelo', 'dimas@email.com', '(11) 99999-4444', 'Rua D, 101 - São Paulo/SP', NOW(), true);
 
 -- Inserir restaurantes
 INSERT INTO restaurante (nome, categoria, endereco, telefone, taxa_entrega, avaliacao, ativo) VALUES
@@ -33,7 +34,8 @@ INSERT INTO produto (nome, descricao, preco, categoria, disponivel, restaurante_
 INSERT INTO pedido (numero_pedido, data_pedido, status, valor_total, observacoes, cliente_id, restaurante_id) VALUES
 ('PED1234567890', NOW(), 'PENDENTE', 64.80, 'Sem cebola na pizza', 1, 1),
 ('PED1234567891', NOW(), 'CONFIRMADO', 41.80, '', 2, 2),
-('PED1234567892', NOW(), 'ENTREGUE', 78.80, 'Wasabi à parte', 3, 3);
+('PED1234567892', NOW(), 'ENTREGUE', 78.80, 'Wasabi à parte', 3, 3),
+('PED1234567893', NOW(), 'PENDENTE', 74.80, 'Sem Molho na Pizza', 4, 1);
 
 -- Inserir itens dos pedidos
 -- Pedido 1 (João - Pizzaria Bella)
@@ -50,3 +52,9 @@ INSERT INTO itens_pedido (quantidade, preco_unitario, subtotal, pedido_id, produ
 INSERT INTO itens_pedido (quantidade, preco_unitario, subtotal, pedido_id, produto_id) VALUES
 (1, 45.90, 45.90, 3, 7),
 (1, 32.90, 32.90, 3, 8);
+
+-- Pedido 4 (Dimas - Pizzaria Bella)
+INSERT INTO itens_pedido (quantidade, preco_unitario, subtotal, pedido_id, produto_id)
+VALUES
+(1, 35.90, 35.90, 4, 1),  -- Pizza Margherita
+(1, 38.90, 38.90, 4, 2);  -- Pizza Calabresa

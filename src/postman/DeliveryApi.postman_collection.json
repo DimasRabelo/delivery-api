@@ -1,0 +1,217 @@
+{
+	"info": {
+		"_postman_id": "373116d1-5716-4dd3-889c-53659386498d",
+		"name": "DeliveryApi",
+		"description": "### Welcome to Postman! This is your first collection. \n\nCollections are your starting point for building and testing APIs. You can use this one to:\n\n• Group related requests\n• Test your API in real-world scenarios\n• Document and share your requests\n\nUpdate the name and overview whenever you’re ready to make it yours.\n\n[Learn more about Postman Collections.](https://learning.postman.com/docs/collections/collections-overview/)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "48728016",
+		"_collection_link": "https://dimasrabelo-1043334.postman.co/workspace/Dimas-Aparecido-Rabelo-de-Souza~c9b7d2ea-87f8-43af-8363-ff0b28cd3ae7/collection/48728016-373116d1-5716-4dd3-889c-53659386498d?action=share&source=collection_link&creator=48728016"
+	},
+	"item": [
+		{
+			"name": "http://localhost:8080/clientes/1",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/clientes/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"clientes",
+						"1"
+					]
+				},
+				"description": "buscando Clinete pelo \"id\""
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8080/clientes",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"nome\": \"Dimas Souza\",\n  \"email\": \"dimas@email.com\",\n  \"telefone\": \"(11) 99999-2222\",\n  \"endereco\": \"Rua z, 456 - São Paulo/SP\"\n \n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/clientes",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"clientes"
+					]
+				},
+				"description": "Cadastrando cliente via Post"
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8080/pedidos?clienteId=1&restauranteId=1",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "\n  \n  ",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/pedidos?clienteId=1&restauranteId=1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"pedidos"
+					],
+					"query": [
+						{
+							"key": "clienteId",
+							"value": "1"
+						},
+						{
+							"key": "restauranteId",
+							"value": "1"
+						}
+					]
+				},
+				"description": "Criando pedido Via Post"
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8080/pedidos/1/itens?produtoId=1&quantidade=2",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/pedidos/1/itens?produtoId=1&quantidade=2",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"pedidos",
+						"1",
+						"itens"
+					],
+					"query": [
+						{
+							"key": "produtoId",
+							"value": "1"
+						},
+						{
+							"key": "quantidade",
+							"value": "2"
+						}
+					]
+				},
+				"description": "Adicionando Item via Post"
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8080/pedidos/1/confirmar",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/pedidos/1/confirmar",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"pedidos",
+						"1",
+						"confirmar"
+					]
+				},
+				"description": "Confirmando o Pedido"
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8080/pedidos/cliente/1",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/pedidos/cliente/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"pedidos",
+						"cliente",
+						"1"
+					]
+				},
+				"description": "Listando Pedido Por cliente"
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8080/pedidos/1/status?status=PREPARANDO",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/pedidos/1/status?status=PREPARANDO",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"pedidos",
+						"1",
+						"status"
+					],
+					"query": [
+						{
+							"key": "status",
+							"value": "PREPARANDO"
+						}
+					]
+				},
+				"description": "Alterando Status Para Preparando"
+			},
+			"response": []
+		}
+	]
+}

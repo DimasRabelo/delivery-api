@@ -4,7 +4,9 @@ package com.deliverytech.delivery.entity;
 
 
 
-import com.deliverytech.delivery.enums.StatusPedido; 
+import com.deliverytech.delivery.enums.StatusPedido;
+
+
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -32,6 +34,7 @@ public class Pedido {
 
     @ManyToOne
     @JoinColumn(name = "cliente_id")
+    
     private Cliente cliente;
 
     @ManyToOne
@@ -56,17 +59,24 @@ private String numeroPedido;
         recalcularSubtotal();           // atualiza subtotal automaticamente
     }
 
-    public void recalcularSubtotal() {
-        this.subtotal = itens.stream()
-                             .map(ItemPedido::getSubtotal)
-                             .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
+   public void recalcularSubtotal() {
+    this.itens.forEach(ItemPedido::calcularSubtotal);
+    this.subtotal = itens.stream()
+                         .map(ItemPedido::getSubtotal)
+                         .reduce(BigDecimal.ZERO, BigDecimal::add);
+}
 
-    public void confirmar() {
-        this.status = StatusPedido.CONFIRMADO;
-        this.valorTotal = subtotal.add(taxaEntrega != null ? taxaEntrega : BigDecimal.ZERO);
-        this.dataPedido = LocalDateTime.now();
-    }
+    public BigDecimal calcularValorTotal() {
+    return itens.stream()
+                .map(ItemPedido::getSubtotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .add(taxaEntrega != null ? taxaEntrega : BigDecimal.ZERO);
+}
+public void confirmar() {
+    this.status = StatusPedido.CONFIRMADO;
+    this.dataPedido = LocalDateTime.now();
+    this.valorTotal = calcularValorTotal(); // subtotal + taxaEntrega
+}
 
     @Column(columnDefinition = "TEXT")
 private String observacoes;
