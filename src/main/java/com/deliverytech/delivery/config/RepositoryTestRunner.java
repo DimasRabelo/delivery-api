@@ -9,13 +9,15 @@ import com.deliverytech.delivery.repository.RestauranteRepository;
 import com.deliverytech.delivery.repository.ProdutoRepository;
 import com.deliverytech.delivery.repository.PedidoRepository;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.stereotype.Component;
+//import org.springframework.stereotype.Component;
 
 //import java.math.BigDecimal;
 //import java.time.LocalDateTime;
 import java.util.List;
 
-@Component
+// ATENÇÃO: Classe de teste dos repositories.
+// O "@Component" foi comentado para não interferir nos dados da aplicação
+// durante a execução do DataLoader ou em produção.
 public class RepositoryTestRunner implements CommandLineRunner {
 
     private final ClienteRepository clienteRepository;
