@@ -41,47 +41,7 @@ Sistema de delivery desenvolvido com **Spring Boot** e **Java 21 LTS** para gere
 
 ## 🧩 Estrutura de Pastas
 
-delivery-api/
-├── src/
-│   ├── main/
-│   │   ├── java/com/deliverytech/delivery/
-│   │   │   ├── config/
-│   │   │   │   └── RepositoryTestRunner.java
-│   │   │   ├── controller/
-│   │   │   │   ├── ClienteController.java
-│   │   │   │   ├── PedidoController.java
-│   │   │   │   ├── ProdutoController.java
-│   │   │   │   └── RestauranteController.java
-│   │   │   ├── entity/
-│   │   │   │   ├── Cliente.java
-│   │   │   │   ├── ItemPedido.java
-│   │   │   │   ├── Pedido.java
-│   │   │   │   ├── Restaurante.java
-│   │   │   │   ├── Produto.java
-│   │   │   │   └── enums/
-│   │   │   │       └── StatusPedido.java
-│   │   │   ├── repository/
-│   │   │   │   ├── ClienteRepository.java
-│   │   │   │   ├── PedidoRepository.java
-│   │   │   │   ├── ProdutoRepository.java
-│   │   │   │   └── RestauranteRepository.java
-│   │   │   ├── service/
-│   │   │   │   ├── ClienteService.java
-│   │   │   │   ├── PedidoService.java
-│   │   │   │   ├── ProdutoService.java
-│   │   │   │   └── RestauranteService.java
-│   │   │   └── DeliveryApiApplication.java
-│   │   └── resources/
-│   │       ├── static/
-│   │       ├── templates/
-│   │       ├── application.properties
-│   │       └── data.sql
-│   └── test/
-│       └── (testes unitários e integração)
-├── postman/
-│   └── DeliveryApi.postman_collection.json
-└── README.md
-
+![Estrutura do Projeto](https://raw.githubusercontent.com/DimasRabelo/delivery-api/main/estrutura.png)
 
 ## 🧪 Testes com Postman
 
