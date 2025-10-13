@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -28,7 +29,6 @@ public class Cliente {
         this.ativo = false;
     }
 
-    @OneToMany(mappedBy = "cliente")
-   
-    private List<Pedido> pedidos;
+   @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true)
+private List<Pedido> pedidos = new ArrayList<>();
 }

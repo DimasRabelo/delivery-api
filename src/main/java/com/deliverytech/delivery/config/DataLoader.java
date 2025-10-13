@@ -5,16 +5,20 @@ import com.deliverytech.delivery.enums.StatusPedido;
 import com.deliverytech.delivery.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Component;
+//import org.springframework.context.annotation.Profile;
+//import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
+/* Classe para carregar dados iniciais de teste no banco de dados.
+ 
 @Component
-@Profile("!test")
+
+ */
+//@Profile("!test")
 public class DataLoader implements CommandLineRunner {
 
     @Autowired

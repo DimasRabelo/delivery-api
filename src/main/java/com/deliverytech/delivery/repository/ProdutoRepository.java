@@ -62,4 +62,16 @@ public interface ProdutoRepository extends JpaRepository<Produto, Long> {
     // Buscar produto pelo nome exato
     Optional<Produto> findByNome(String nome);    
 
+// // Top 5 produtos mais vendidos (query nativa)
+// @Query(value = "SELECT p.nome, COALESCE(SUM(ip.quantidade), 0) as quantidade_vendida " +
+//                "FROM produto p " +
+//                "LEFT JOIN itens_pedido ip ON p.id = ip.produto_id " +
+//                "GROUP BY p.id, p.nome " +
+//                "ORDER BY quantidade_vendida DESC " +
+//                "LIMIT 5", nativeQuery = true)
+// List<Object[]> produtosMaisVendidos();
+
+
+
+    
 }

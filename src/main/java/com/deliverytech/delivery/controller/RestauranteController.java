@@ -1,5 +1,6 @@
 package com.deliverytech.delivery.controller;
 
+import com.deliverytech.delivery.dto.RelatorioVendas;
 import com.deliverytech.delivery.entity.Restaurante;
 import com.deliverytech.delivery.service.RestauranteService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,5 +67,11 @@ public class RestauranteController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    // Relatório de vendas por restaurante
+    @GetMapping("/relatorio-vendas")
+    public List<RelatorioVendas> relatorioVendas() {
+        return restauranteService.gerarRelatorioVendas();
     }
 }

@@ -3,6 +3,7 @@ package com.deliverytech.delivery.repository;
 
 
 
+import com.deliverytech.delivery.dto.RelatorioVendas;
 import com.deliverytech.delivery.entity.Restaurante;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -43,14 +44,26 @@ public interface RestauranteRepository extends JpaRepository<Restaurante, Long> 
     // Top 5 restaurantes por nome (ordem alfabética)
     List<Restaurante> findTop5ByOrderByNomeAsc();
 
-    @Query("SELECT DISTINCT r FROM Restaurante r JOIN r.produtos p WHERE r.ativo = true")
+    // Buscar restaurantes que possuem produtos cadastrados (apenas ativos)
+   @Query("SELECT DISTINCT r FROM Restaurante r JOIN r.produtos p WHERE r.ativo = true")
     List<Restaurante> findRestaurantesComProdutos();
 
+    // Buscar por faixa de taxa de entrega (apenas ativos)
     @Query("SELECT r FROM Restaurante r WHERE r.taxaEntrega BETWEEN :min AND :max AND r.ativo = true")
     List<Restaurante> findByTaxaEntregaBetween(@Param("min") BigDecimal min, @Param("max") BigDecimal max);
 
+    // Buscar categorias distintas de restaurantes ativos
     @Query("SELECT DISTINCT r.categoria FROM Restaurante r WHERE r.ativo = true ORDER BY r.categoria")
     List<String> findCategoriasDisponiveis();
+
+    // Relatório de vendas por restaurante
+     @Query("SELECT r.nome as nomeRestaurante, " +
+           "SUM(p.valorTotal) as totalVendas, " +
+           "COUNT(p.id) as quantidadePedidos " +
+           "FROM Restaurante r " +
+           "LEFT JOIN Pedido p ON r.id = p.restaurante.id " +
+           "GROUP BY r.id, r.nome")
+    List<RelatorioVendas> relatorioVendasPorRestaurante();
 
    
 }

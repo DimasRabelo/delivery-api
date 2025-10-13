@@ -32,10 +32,23 @@ public interface ClienteRepository extends JpaRepository<Cliente, Long> {
     List<Cliente> findClientesComPedidos();
 
     // Query nativa - buscar clientes ativos por cidade (campo endereco)
-    @Query(value = "SELECT * FROM clientes WHERE endereco LIKE %:cidade% AND ativo = true", nativeQuery = true)
+    @Query(value = "SELECT * FROM cliente WHERE endereco LIKE %:cidade% AND ativo = true", nativeQuery = true)
     List<Cliente> findByCidade(@Param("cidade") String cidade);
 
     // Contar clientes ativos
     @Query("SELECT COUNT(c) FROM Cliente c WHERE c.ativo = true")
     Long countClientesAtivos();
+
+//   @Query(value = "SELECT c.nome, COALESCE(SUM(ip.quantidade), 0) as total_produtos " +
+//                "FROM cliente c " +
+//                "LEFT JOIN pedido p ON c.id = p.cliente_id " +
+//                "LEFT JOIN itens_pedido ip ON p.id = ip.pedido_id " +
+//                "GROUP BY c.id, c.nome " +
+//                "ORDER BY total_produtos DESC " +
+//                "LIMIT 10", nativeQuery = true)
+// List<Object[]> rankingClientesPorPedidos();
+
+
+
+
 }
