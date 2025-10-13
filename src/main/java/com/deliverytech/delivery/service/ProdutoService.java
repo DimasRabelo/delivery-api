@@ -65,7 +65,7 @@ return produtoRepository.findByRestauranteIdAndDisponivelTrue(restauranteId);
 */
 @Transactional(readOnly = true)
 public List<Produto> buscarPorCategoria(String categoria) {
-return produtoRepository.findByCategoriaAndDisponivelTrue(categoria);
+return produtoRepository.findByCategoria(categoria);
 }
 
 

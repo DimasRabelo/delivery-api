@@ -12,30 +12,30 @@ import java.util.Optional;
 @Repository
 public interface ClienteRepository extends JpaRepository<Cliente, Long> {
 
-    // Buscar cliente por email (método derivado)
+    // Buscar cliente por email
     Optional<Cliente> findByEmail(String email);
 
     // Verificar se email já existe
     boolean existsByEmail(String email);
 
-    // Buscar clientes ativos
+    // Buscar apenas clientes ativos
     List<Cliente> findByAtivoTrue();
 
-    // Buscar clientes por nome (contendo, ignorando maiúsculas/minúsculas)
+    // Buscar clientes por nome (parcial, ignorando case)
     List<Cliente> findByNomeContainingIgnoreCase(String nome);
 
     // Buscar clientes por telefone
     Optional<Cliente> findByTelefone(String telefone);
 
-    // // Query customizada - clientes ativos que possuem pedidos
+    // Query customizada - clientes ativos que possuem pedidos
     @Query("SELECT DISTINCT c FROM Cliente c JOIN c.pedidos p WHERE c.ativo = true")
     List<Cliente> findClientesComPedidos();
 
-    // // Query nativa - buscar clientes ativos por cidade (campo endereco)
+    // Query nativa - buscar clientes ativos por cidade (campo endereco)
     @Query(value = "SELECT * FROM clientes WHERE endereco LIKE %:cidade% AND ativo = true", nativeQuery = true)
     List<Cliente> findByCidade(@Param("cidade") String cidade);
 
-    // // Contar clientes ativos
+    // Contar clientes ativos
     @Query("SELECT COUNT(c) FROM Cliente c WHERE c.ativo = true")
     Long countClientesAtivos();
 }

@@ -7,31 +7,47 @@ import java.math.BigDecimal;
 
 
 
-@Entity @Data
+@Entity
+@Data
 @Table(name = "itens_pedido")
-public class ItemPedido { @Id
-@GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
+public class ItemPedido {
 
-private int quantidade;
-private BigDecimal precoUnitario; private BigDecimal subtotal;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-@ManyToOne
-  // evita loop infinito com Pedido
-@JoinColumn(name = "pedido_id") private Pedido pedido;
+    private int quantidade;
+    private BigDecimal precoUnitario;
+    private BigDecimal subtotal;
 
-@ManyToOne
-  // evita loop infinito com Produto
-@JoinColumn(name = "produto_id") private Produto produto;
+    @ManyToOne
+    @JoinColumn(name = "pedido_id")
+    private Pedido pedido;
 
-public void calcularSubtotal() {
-    if (precoUnitario != null && quantidade > 0) {
-        this.subtotal = precoUnitario.multiply(BigDecimal.valueOf(quantidade));
-    } else {
-        this.subtotal = BigDecimal.ZERO;
+    @ManyToOne
+    @JoinColumn(name = "produto_id")
+    private Produto produto;
+
+    // Construtor sem argumentos (necessário para JPA e DataLoader)
+    public ItemPedido() {}
+
+    // Construtor conveniente
+    public ItemPedido(Produto produto, int quantidade) {
+        this.produto = produto;
+        this.quantidade = quantidade;
+        if (produto != null && produto.getPreco() != null) {
+            this.precoUnitario = produto.getPreco();
+        } else {
+            this.precoUnitario = BigDecimal.ZERO;
+        }
+        calcularSubtotal();
+    }
+
+    public void calcularSubtotal() {
+        if (precoUnitario != null && quantidade > 0) {
+            this.subtotal = precoUnitario.multiply(BigDecimal.valueOf(quantidade));
+        } else {
+            this.subtotal = BigDecimal.ZERO;
+        }
     }
 }
-
-}
-
-
-

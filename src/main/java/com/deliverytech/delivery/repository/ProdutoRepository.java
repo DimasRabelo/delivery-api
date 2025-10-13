@@ -15,29 +15,33 @@ import java.util.Optional;
 @Repository
 public interface ProdutoRepository extends JpaRepository<Produto, Long> {
 
-    // Buscar produtos disponíveis por restaurante
+   // Apenas produtos disponíveis
+    List<Produto> findByDisponivelTrue();
+
+    // Buscar produtos por restaurante (usando entidade)
     List<Produto> findByRestauranteAndDisponivelTrue(Restaurante restaurante);
 
-    // Buscar produtos disponíveis por restaurante ID
+    // Buscar produtos por restaurante ID
     List<Produto> findByRestauranteIdAndDisponivelTrue(Long restauranteId);
 
-    // Buscar produtos disponíveis por categoria
-    List<Produto> findByCategoriaAndDisponivelTrue(String categoria);
+    // Buscar por categoria (apenas disponíveis)
+    List<Produto> findByCategoria(String categoria);
 
-    // Buscar produtos disponíveis por nome (contendo, ignorando maiúsculas/minúsculas)
+    // Buscar por nome (parcial, ignorando case)
     List<Produto> findByNomeContainingIgnoreCaseAndDisponivelTrue(String nome);
 
-    // Buscar produtos disponíveis dentro de uma faixa de preço
+    // Buscar por faixa de preço
     List<Produto> findByPrecoBetweenAndDisponivelTrue(BigDecimal precoMin, BigDecimal precoMax);
 
-    // Buscar produtos disponíveis mais baratos que um valor
+    // Buscar produtos até determinado preço
     List<Produto> findByPrecoLessThanEqualAndDisponivelTrue(BigDecimal preco);
 
-    // Ordenar produtos disponíveis por preço (ascendente e descendente)
+    // Ordenar por preço (ascendente e descendente)
     List<Produto> findByDisponivelTrueOrderByPrecoAsc();
     List<Produto> findByDisponivelTrueOrderByPrecoDesc();
-
+    
     // Query customizada - produtos mais vendidos
+
     // Certifique-se de que Produto tem um mapeamento @OneToMany para ItemPedido
     @Query("SELECT p FROM Produto p JOIN p.itensPedido ip GROUP BY p ORDER BY COUNT(ip) DESC")
     List<Produto> findProdutosMaisVendidos();

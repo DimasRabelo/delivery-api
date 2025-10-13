@@ -54,29 +54,30 @@ private String numeroPedido;
     // ======================
 
     public void adicionarItem(ItemPedido item) {
-        item.setPedido(this);           // mantém referência bidirecional
-        this.itens.add(item);           // adiciona à lista
-        recalcularSubtotal();           // atualiza subtotal automaticamente
-    }
+    item.setPedido(this);            // mantém referência bidirecional
+    this.itens.add(item);            // adiciona à lista
+    recalcularSubtotal();            // atualiza subtotal
+    this.valorTotal = calcularValorTotal(); // atualiza valor total automaticamente
+}
 
-   public void recalcularSubtotal() {
+public void recalcularSubtotal() {
     this.itens.forEach(ItemPedido::calcularSubtotal);
     this.subtotal = itens.stream()
                          .map(ItemPedido::getSubtotal)
                          .reduce(BigDecimal.ZERO, BigDecimal::add);
 }
 
-    public BigDecimal calcularValorTotal() {
-    return itens.stream()
-                .map(ItemPedido::getSubtotal)
-                .reduce(BigDecimal.ZERO, BigDecimal::add)
-                .add(taxaEntrega != null ? taxaEntrega : BigDecimal.ZERO);
+public BigDecimal calcularValorTotal() {
+    BigDecimal taxa = taxaEntrega != null ? taxaEntrega : BigDecimal.ZERO;
+    return (subtotal != null ? subtotal : BigDecimal.ZERO).add(taxa);
 }
+
 public void confirmar() {
     this.status = StatusPedido.CONFIRMADO;
     this.dataPedido = LocalDateTime.now();
-    this.valorTotal = calcularValorTotal(); // subtotal + taxaEntrega
+    this.valorTotal = calcularValorTotal();
 }
+
 
     @Column(columnDefinition = "TEXT")
 private String observacoes;

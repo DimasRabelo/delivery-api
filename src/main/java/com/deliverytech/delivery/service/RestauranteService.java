@@ -57,7 +57,7 @@ return restauranteRepository.findByAtivoTrue();
 */
 @Transactional(readOnly = true)
 public List<Restaurante> buscarPorCategoria(String categoria) {
-return restauranteRepository.findByCategoriaAndAtivoTrue(categoria);
+return restauranteRepository.findByCategoria(categoria);
 }
 
 

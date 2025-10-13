@@ -14,20 +14,23 @@ import java.util.List;
 @Repository
 public interface PedidoRepository extends JpaRepository<Pedido, Long> {
 
-    // Buscar pedidos por cliente
+   // Buscar pedidos por cliente (entidade)
     List<Pedido> findByClienteOrderByDataPedidoDesc(Cliente cliente);
 
-    // Buscar pedidos por cliente ID
+    // Buscar pedidos por cliente ID (ordenados)
     List<Pedido> findByClienteIdOrderByDataPedidoDesc(Long clienteId);
 
-    // Buscar por status
+    // Buscar pedidos por status (ordenados)
     List<Pedido> findByStatusOrderByDataPedidoDesc(StatusPedido status);
 
     // Buscar por número do pedido
     Pedido findByNumeroPedido(String numeroPedido);
 
-    // Buscar pedidos por período
+    // Buscar pedidos por período (ordenados)
     List<Pedido> findByDataPedidoBetweenOrderByDataPedidoDesc(LocalDateTime inicio, LocalDateTime fim);
+
+    // Buscar os 10 pedidos mais recentes
+    List<Pedido> findTop10ByOrderByDataPedidoDesc();
 
     // Buscar pedidos do dia (corrigido para Hibernate 6)
     @Query("SELECT p FROM Pedido p WHERE p.dataPedido BETWEEN :inicio AND :fim ORDER BY p.dataPedido DESC")
@@ -48,4 +51,29 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long> {
     // Valor total de vendas por período
     @Query("SELECT SUM(p.valorTotal) FROM Pedido p WHERE p.dataPedido BETWEEN :inicio AND :fim AND p.status NOT IN ('CANCELADO')")
     BigDecimal calcularVendasPorPeriodo(@Param("inicio") LocalDateTime inicio, @Param("fim") LocalDateTime fim);
+
+// Total de vendas por restaurante
+@Query("SELECT p.restaurante.nome, SUM(p.valorTotal) " +
+       "FROM Pedido p " +
+       "GROUP BY p.restaurante.id, p.restaurante.nome " +
+       "ORDER BY SUM(p.valorTotal) DESC")
+List<Object[]> calcularTotalVendasPorRestaurante();
+
+// Pedidos acima de um valor
+@Query("SELECT p FROM Pedido p WHERE p.valorTotal > :valor ORDER BY p.valorTotal DESC")
+List<Pedido> buscarPedidosComValorAcimaDe(@Param("valor") BigDecimal valor);
+
+// Pedidos por período e status
+@Query("SELECT p FROM Pedido p " +
+       "WHERE p.dataPedido BETWEEN :inicio AND :fim " +
+       "AND p.status = :status " +
+       "ORDER BY p.dataPedido DESC")
+List<Pedido> relatorioPedidosPorPeriodoEStatus(
+        @Param("inicio") LocalDateTime inicio,
+        @Param("fim") LocalDateTime fim,
+        @Param("status") StatusPedido status);
+
+
+
+
 }

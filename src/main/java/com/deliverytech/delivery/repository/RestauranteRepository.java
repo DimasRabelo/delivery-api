@@ -19,24 +19,30 @@ import java.util.Optional;
 
 @Repository
 public interface RestauranteRepository extends JpaRepository<Restaurante, Long> {
-    // Buscar por nome
+    // Buscar por nome exato
     Optional<Restaurante> findByNome(String nome);
 
+    // Buscar apenas restaurantes ativos
     List<Restaurante> findByAtivoTrue();
 
-    // Buscar por categoria
-    List<Restaurante> findByCategoriaAndAtivoTrue(String categoria);
+    // Buscar por categoria (apenas ativos)
+    List<Restaurante> findByCategoria(String categoria);
 
-    // Buscar por nome contendo (case insensitive)
+    // Buscar por nome parcial (case insensitive, apenas ativos)
     List<Restaurante> findByNomeContainingIgnoreCaseAndAtivoTrue(String nome);
 
-    // Buscar por avaliação mínima
+    // Buscar por avaliação mínima (apenas ativos)
     List<Restaurante> findByAvaliacaoGreaterThanEqualAndAtivoTrue(BigDecimal avaliacao);
 
-    // Ordenar por avaliação (descendente)
+    // Ordenar restaurantes ativos por avaliação (descendente)
     List<Restaurante> findByAtivoTrueOrderByAvaliacaoDesc();
 
-    // Query customizada - restaurantes que possuem produtos disponíveis
+    // Buscar por taxa de entrega menor ou igual
+    List<Restaurante> findByTaxaEntregaLessThanEqual(BigDecimal taxa);
+
+    // Top 5 restaurantes por nome (ordem alfabética)
+    List<Restaurante> findTop5ByOrderByNomeAsc();
+
     @Query("SELECT DISTINCT r FROM Restaurante r JOIN r.produtos p WHERE r.ativo = true")
     List<Restaurante> findRestaurantesComProdutos();
 
@@ -45,4 +51,6 @@ public interface RestauranteRepository extends JpaRepository<Restaurante, Long> 
 
     @Query("SELECT DISTINCT r.categoria FROM Restaurante r WHERE r.ativo = true ORDER BY r.categoria")
     List<String> findCategoriasDisponiveis();
+
+   
 }
