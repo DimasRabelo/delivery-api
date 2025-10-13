@@ -140,6 +140,49 @@ O arquivo `data.sql` popula o banco com:
 
 ---
 
+🏗️ Atividades Desenvolvidas
+⚙️ Implementação dos Repositories
+
+ClienteRepository: findByEmail, findByAtivoTrue, findByNomeContainingIgnoreCase, existsByEmail
+
+RestauranteRepository: findByCategoria, findByAtivoTrue, findByTaxaEntregaLessThanEqual, findTop5ByOrderByNomeAsc
+
+ProdutoRepository: findByRestauranteId, findByDisponivelTrue, findByCategoria, findByPrecoLessThanEqual, consultas customizadas com @Query
+
+PedidoRepository: findByClienteId, findByStatus, findTop10ByOrderByDataPedidoDesc, findByDataPedidoBetween
+
+🧪 Testes de Persistência
+
+Classe DataLoader implementando CommandLineRunner
+
+Inserção de dados de teste: 3 clientes, 2 restaurantes, 5 produtos, 2 pedidos
+
+Validação de consultas derivadas e customizadas
+
+Exibição de resultados no console H2
+
+Confirmação de relacionamentos entre entidades
+
+🔍 Consultas Customizadas e Relatórios
+
+Total de vendas por restaurante
+
+Pedidos com valor acima de X
+
+Relatórios por período e status
+
+Produtos mais vendidos (query nativa opcional)
+
+🛠️ Configuração e Validação
+
+Banco H2 configurado em memória (create-drop)
+
+Console H2 habilitado
+
+Logs SQL ativos e queries formatadas
+
+Estrutura de tabelas e relacionamentos validados
+
 ## 👨‍💻 Desenvolvedor
 
 **Dimas Aparecido Rabelo**  
