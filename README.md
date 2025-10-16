@@ -1,153 +1,172 @@
-# 🍔 DeliveryTech API
+🍔 DeliveryTech API
 
-Sistema de delivery desenvolvido com **Spring Boot** e **Java 21 LTS** para gerenciar clientes, restaurantes, produtos e pedidos.
+Sistema de delivery desenvolvido com Spring Boot e Java 21 LTS para gerenciar clientes, restaurantes, produtos e pedidos.
+Agora com camada de serviços e controllers REST completos, regras de negócio robustas e transações consistentes.
 
----
+🚀 Tecnologias Utilizadas
 
-## 🚀 Tecnologias Utilizadas
-- Java 21 LTS  
-- Spring Boot 3.5.6  
-- Spring Web  
-- Spring Data JPA  
-- H2 Database (em memória)  
-- Maven  
+Java 21 LTS
 
----
+Spring Boot 3.5.6
 
-## ⚙️ Recursos Modernos (Java 21)
-- Records  
-- Text Blocks  
-- Pattern Matching  
-- Virtual Threads  
+Spring Web, Spring Data JPA
 
----
+H2 Database (em memória)
 
-## 🏃‍♂️ Como Executar o Projeto
+Maven
 
-### 🔹 Pré-requisitos
-- JDK 21 instalado  
-- Maven configurado (ou usar o wrapper `./mvnw`)
+Bean Validation
 
-### 🔹 Passos para rodar
-1. Clonar o repositório:
-   git clone https://github.com/DimasRabelo/delivery-api.git
-   cd delivery-api
-2. Executar a aplicação:
-   ./mvnw spring-boot:run
-3. Acessar no navegador:  
-   http://localhost:8080
+ModelMapper
 
----
-
-## 🧩 Estrutura das Pastas
-
-![Estrutura do projeto](src/main/arvore-projeto.png)
+🏗️ Arquitetura do Sistema
+[Cliente Mobile/Web]
+        ↓ HTTP REST
+[Controllers] ← Recebem requisições, validam entrada
+        ↓
+[Services] ← Regras de negócio, validações, transações
+        ↓
+[Repositories] ← Acesso aos dados
+        ↓
+[Banco de Dados]
 
 
+Controllers: Exposição de endpoints REST
 
-## 🧪 Testes com Postman
+Services: Lógica de negócio, validações, transações
 
-Na pasta `postman/` há uma collection chamada **DeliveryAPI.postman_collection.json**, contendo todos os endpoints configurados para teste.
+Repositories: Acesso e consultas ao banco
 
-**Como importar:**
-1. Abra o Postman  
-2. Clique em **Import**  
-3. Selecione o arquivo `DeliveryAPI.postman_collection.json`  
-4. Execute as requisições para testar os endpoints  
+Banco: H2 em memória para testes
 
-**Essa collection cobre:**
-- CRUD completo de Clientes, Restaurantes e Produtos  
-- Criação e consulta de Pedidos  
-- Testes de filtros, status e valores calculados  
+🧩 Estrutura das Pastas
+src/main/java
+ └─ com.deliverytech
+     ├─ controller       # REST Controllers
+     ├─ service          # Lógica de negócio
+     ├─ repository       # Camada de persistência
+     ├─ dto              # DTOs request/response
+     └─ entity           # Entidades JPA
 
----
+⚙️ Funcionalidades Implementadas
+🛠️ Camada de Services
 
-## 📋 Principais Endpoints
+ClienteService: cadastro, busca, atualização, toggle de status
 
-| Método | Endpoint | Descrição |
-|:-------|:----------|:-----------|
-| **POST** | `/clientes` | Cadastrar novo cliente |
-| **GET** | `/clientes` | Listar todos os clientes |
-| **GET** | `/clientes/{id}` | Consultar cliente por ID |
-| **PUT** | `/clientes/{id}` | Atualizar dados de cliente |
-| **DELETE** | `/clientes/{id}` | Inativar cliente |
-| **GET** | `/restaurantes` | Listar restaurantes |
-| **GET** | `/restaurantes/categoria/{categoria}` | Buscar por categoria |
-| **POST** | `/produtos` | Cadastrar produto |
-| **GET** | `/produtos/restaurante/{id}` | Listar produtos de um restaurante |
-| **POST** | `/pedidos?clienteId=1&restauranteId=1` | Criar pedido |
-| **GET** | `/pedidos/cliente/{id}` | Consultar pedidos por cliente |
+RestauranteService: cadastro, busca, filtro por categoria, taxa de entrega
 
----
+ProdutoService: cadastro, busca por restaurante/categoria, controle de disponibilidade
 
-## 🗄️ Banco de Dados H2
+PedidoService: criação de pedido com transação completa, cálculo de total, atualização de status, cancelamento
 
-A aplicação utiliza **H2 em memória**.  
-Acesse o console em:  
-http://localhost:8080/h2-console
+📦 DTOs e Validações
 
-**Configurações:**
-- JDBC URL: `jdbc:h2:mem:deliverydb`  
-- User Name: `sa`  
-- Password: *(em branco)*
+Request DTOs: ClienteDTO, RestauranteDTO, ProdutoDTO, PedidoDTO, ItemPedidoDTO
 
----
+Response DTOs: ClienteResponseDTO, RestauranteResponseDTO, ProdutoResponseDTO, PedidoResponseDTO, PedidoResumoDTO
 
-## 📦 Dados Iniciais (data.sql)
+Validações: @NotNull, @NotBlank, @Email, @Size, @DecimalMin, @Valid
 
-O arquivo `data.sql` popula o banco com:  
-- Clientes (João, Maria, Pedro, Dimas)  
-- Restaurantes (Pizzaria Bella, Burger House, Sushi Master)  
-- Produtos e pedidos de exemplo  
+🔄 Regras de Negócio
 
----
+Cliente ativo obrigatoriamente para pedidos
 
-🏗️ Atividades Desenvolvidas
-⚙️ Implementação dos Repositories
+Email único para clientes
 
-ClienteRepository: findByEmail, findByAtivoTrue, findByNomeContainingIgnoreCase, existsByEmail
+Produtos válidos pertencentes ao restaurante
 
-RestauranteRepository: findByCategoria, findByAtivoTrue, findByTaxaEntregaLessThanEqual, findTop5ByOrderByNomeAsc
+Status de pedido com transições válidas
 
-ProdutoRepository: findByRestauranteId, findByDisponivelTrue, findByCategoria, findByPrecoLessThanEqual, consultas customizadas com @Query
+Total do pedido calculado somando itens + taxa de entrega
 
-PedidoRepository: findByClienteId, findByStatus, findTop10ByOrderByDataPedidoDesc, findByDataPedidoBetween
+💥 Transações
 
-🧪 Testes de Persistência
+@Transactional nos métodos críticos (ex.: criarPedido)
 
-Classe DataLoader implementando CommandLineRunner
+Falha em qualquer etapa reverte toda a operação
 
-Inserção de dados de teste: 3 clientes, 2 restaurantes, 5 produtos, 2 pedidos
+📋 Endpoints REST
+🔹 Clientes
 
-Validação de consultas derivadas e customizadas
+POST /api/clientes → Cadastrar cliente
 
-Exibição de resultados no console H2
+GET /api/clientes → Listar clientes ativos
 
-Confirmação de relacionamentos entre entidades
+GET /api/clientes/{id} → Buscar cliente por ID
 
-🔍 Consultas Customizadas e Relatórios
+GET /api/clientes/email/{email} → Buscar cliente por email
 
-Total de vendas por restaurante
+PUT /api/clientes/{id} → Atualizar cliente
 
-Pedidos com valor acima de X
+PATCH /api/clientes/{id}/status → Ativar/Desativar cliente
 
-Relatórios por período e status
+🔹 Restaurantes
 
-Produtos mais vendidos (query nativa opcional)
+POST /api/restaurantes → Cadastrar restaurante
 
-🛠️ Configuração e Validação
+GET /api/restaurantes → Listar restaurantes ativos
 
-Banco H2 configurado em memória (create-drop)
+GET /api/restaurantes/{id} → Buscar restaurante por ID
 
-Console H2 habilitado
+GET /api/restaurantes/categoria/{categoria} → Filtrar por categoria
 
-Logs SQL ativos e queries formatadas
+PUT /api/restaurantes/{id} → Atualizar restaurante
 
-Estrutura de tabelas e relacionamentos validados
+GET /api/restaurantes/{id}/taxa-entrega/{cep} → Calcular taxa de entrega
 
-## 👨‍💻 Desenvolvedor
+🔹 Produtos
 
-**Dimas Aparecido Rabelo**  
-🎓 Curso: Arquitetura de Sistemas  
-💻 Tecnologias: Java 21 | Spring Boot | H2 | Maven  
-📍 Projeto desenvolvido para o módulo de **Persistência de Dados**
+POST /api/produtos → Cadastrar produto
+
+GET /api/produtos/{id} → Buscar produto por ID
+
+GET /api/restaurantes/{restauranteId}/produtos → Produtos do restaurante
+
+PUT /api/produtos/{id} → Atualizar produto
+
+PATCH /api/produtos/{id}/disponibilidade → Alterar disponibilidade
+
+GET /api/produtos/categoria/{categoria} → Filtrar por categoria
+
+🔹 Pedidos
+
+POST /api/pedidos → Criar pedido (transação completa)
+
+POST /api/pedidos/calcular → Calcular total sem salvar
+
+GET /api/pedidos/{id} → Consultar pedido completo
+
+GET /api/clientes/{clienteId}/pedidos → Histórico do cliente
+
+PATCH /api/pedidos/{id}/status → Atualizar status do pedido
+
+DELETE /api/pedidos/{id} → Cancelar pedido
+
+🧪 Testes e Validação
+
+Testes unitários para Services
+
+Testes de integração para Controllers
+
+Collection Postman/Insomnia: postman/DeliveryAPI.postman_collection.json
+
+🏃‍♂️ Como Executar
+git clone https://github.com/DimasRabelo/delivery-api.git
+cd delivery-api
+./mvnw spring-boot:run
+
+
+Console H2: http://localhost:8080/h2-console
+
+JDBC URL: jdbc:h2:mem:deliverydb
+
+User: sa
+
+Password: (em branco)
+
+👨‍💻 Desenvolvedor
+
+Dimas Aparecido Rabelo
+🎓 Curso: Arquitetura de Sistemas
+💻 Tecnologias: Java 21 | Spring Boot | H2 | Maven
+📍 Projeto desenvolvido para módulo de Camada de Serviços e REST API
