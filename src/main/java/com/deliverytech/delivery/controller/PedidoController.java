@@ -39,11 +39,11 @@ public class PedidoController {
     }
 
     // Listar pedidos por cliente
-    @GetMapping("/cliente/{clienteId}")
-    public ResponseEntity<List<PedidoResponseDTO>> buscarPorCliente(@PathVariable Long clienteId) {
-        List<PedidoResponseDTO> pedidos = pedidoService.buscarPedidosPorCliente(clienteId);
-        return ResponseEntity.ok(pedidos);
-    }
+   @GetMapping("/clientes/{clienteId}/pedidos")
+public ResponseEntity<List<PedidoResponseDTO>> buscarPorCliente(@PathVariable Long clienteId) {
+    List<PedidoResponseDTO> pedidos = pedidoService.buscarPedidosPorCliente(clienteId);
+    return ResponseEntity.ok(pedidos);
+}
 
     // Atualizar status do pedido
     @PatchMapping("/{id}/status")

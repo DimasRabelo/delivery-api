@@ -2,6 +2,7 @@ package com.deliverytech.delivery.dto;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class PedidoDTO {
@@ -18,7 +19,7 @@ public class PedidoDTO {
 
     @NotEmpty(message = "Pedido deve ter pelo menos um item")
     @Valid
-    private List<ItemPedidoDTO> itens;
+    private List<ItemPedidoDTO> itens = new ArrayList<>();
 
     // Getters e Setters
     public Long getClienteId() { return clienteId; }
