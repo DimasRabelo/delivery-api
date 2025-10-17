@@ -85,62 +85,228 @@ Total do pedido calculado somando itens + taxa de entrega
 
 Falha em qualquer etapa reverte toda a operação
 
-📋 Endpoints REST
+📋 Endpoints REST (Testes Locais)
+
+Todos os endpoints devem ser testados em: http://localhost:8080/
+
+Você pode testar todos os endpoints usando a coleção Postman:
+DeliveryTech Postman Collection
+
 🔹 Clientes
 
-POST /api/clientes → Cadastrar cliente
+Criar Cliente
 
-GET /api/clientes → Listar clientes ativos
+POST /api/clientes
+Content-Type: application/json
 
-GET /api/clientes/{id} → Buscar cliente por ID
+{
+  "nome": "Lucas Pereira",
+  "email": "lucas@email.com",
+  "telefone": "(11) 99999-7777",
+  "endereco": "Rua F, 404 - São Paulo/SP"
+}
 
-GET /api/clientes/email/{email} → Buscar cliente por email
 
-PUT /api/clientes/{id} → Atualizar cliente
+Listar Clientes Ativos
 
-PATCH /api/clientes/{id}/status → Ativar/Desativar cliente
+GET /api/clientes
+
+
+Buscar Cliente por ID
+
+GET /api/clientes/4
+
+
+Buscar Cliente por Email
+
+GET /api/clientes/email/pedro@email.com
+
+
+Atualizar Cliente
+
+PUT /api/clientes/1
+Content-Type: application/json
+
+{
+  "id": 1,
+  "nome": "João Silva",
+  "email": "joao@email.com",
+  "telefone": "(11) 99999-1111",
+  "endereco": "Rua Antonio Pinto Ferreira Filho, 123 - São Paulo/SP",
+  "ativo": true
+}
+
+
+Ativar/Desativar Cliente
+
+PATCH /api/clientes/1/status
+Content-Type: application/json
+
+{
+  "ativo": false
+}
 
 🔹 Restaurantes
 
-POST /api/restaurantes → Cadastrar restaurante
+Cadastrar Restaurante
 
-GET /api/restaurantes → Listar restaurantes ativos
+POST /api/restaurantes
+Content-Type: application/json
 
-GET /api/restaurantes/{id} → Buscar restaurante por ID
+{
+  "nome": "Churrascaria Bom Sabor",
+  "categoria": "Churrasco",
+  "endereco": "Av. Brasil, 123",
+  "telefone": "(11) 4444-5555",
+  "taxaEntrega": 6.5,
+  "avaliacao": 4.3,
+  "ativo": true
+}
 
-GET /api/restaurantes/categoria/{categoria} → Filtrar por categoria
 
-PUT /api/restaurantes/{id} → Atualizar restaurante
+Listar Restaurantes Ativos
 
-GET /api/restaurantes/{id}/taxa-entrega/{cep} → Calcular taxa de entrega
+GET /api/restaurantes
+
+
+Buscar Restaurante por ID
+
+GET /api/restaurantes/3
+
+
+Filtrar por Categoria
+
+GET /api/restaurantes/categoria/Hamburgueria
+
+
+Atualizar Restaurante
+
+PUT /api/restaurantes/2
+Content-Type: application/json
+
+{
+  "nome": "Churrascaria Bom Sabor",
+  "categoria": "Churrasco",
+  "endereco": "Av. Brasil, 800",
+  "telefone": "(11) 4444-5555",
+  "taxaEntrega": 6.5,
+  "avaliacao": 4.3
+}
+
+
+Calcular Taxa de Entrega
+
+GET /api/restaurantes/4/taxa-entrega/01001-000
+
+
+Ativar/Desativar Restaurante
+
+PATCH /api/restaurantes/4/status
+Content-Type: application/json
+
+{
+  "ativo": true
+}
 
 🔹 Produtos
 
-POST /api/produtos → Cadastrar produto
+Cadastrar Produto
 
-GET /api/produtos/{id} → Buscar produto por ID
+POST /api/produtos
+Content-Type: application/json
 
-GET /api/restaurantes/{restauranteId}/produtos → Produtos do restaurante
+{
+  "nome": "Pizza Quatro Queijos",
+  "descricao": "Molho de tomate, mussarela, parmesão, provolone e gorgonzola",
+  "categoria": "Pizza",
+  "preco": 42.90,
+  "disponivel": true,
+  "restauranteId": 1
+}
 
-PUT /api/produtos/{id} → Atualizar produto
 
-PATCH /api/produtos/{id}/disponibilidade → Alterar disponibilidade
+Listar Produtos de um Restaurante
 
-GET /api/produtos/categoria/{categoria} → Filtrar por categoria
+GET /api/produtos/restaurante/2
+
+
+Buscar Produto por ID
+
+GET /api/produtos/3
+
+
+Filtrar Produto por Categoria
+
+GET /api/produtos/categoria/Pizza
+
+
+Alterar Disponibilidade
+
+PATCH /api/produtos/1/disponibilidade?disponivel=false
+
+
+Atualizar Produto
+
+PUT /api/produtos/1
+Content-Type: application/json
+
+{
+  "nome": "Pizza Margherita Atualizada",
+  "descricao": "Molho de tomate, mussarela, manjericão e orégano",
+  "preco": 42.00,
+  "categoria": "Pizza",
+  "disponivel": true,
+  "restauranteId": 1
+}
 
 🔹 Pedidos
 
-POST /api/pedidos → Criar pedido (transação completa)
+Criar Pedido
 
-POST /api/pedidos/calcular → Calcular total sem salvar
+POST /api/pedidos
+Content-Type: application/json
 
-GET /api/pedidos/{id} → Consultar pedido completo
+{
+  "clienteId": 1,
+  "restauranteId": 1,
+  "itens": [
+    { "produtoId": 2, "quantidade": 1 },
+    { "produtoId": 3, "quantidade": 1 }
+  ],
+  "observacoes": "Sem cebola",
+  "enderecoEntrega": "Rua Exemplo, 123"
+}
 
-GET /api/clientes/{clienteId}/pedidos → Histórico do cliente
 
-PATCH /api/pedidos/{id}/status → Atualizar status do pedido
+Calcular Total dos Itens
 
-DELETE /api/pedidos/{id} → Cancelar pedido
+POST /api/pedidos/calcular
+Content-Type: application/json
+
+[
+  { "produtoId": 2, "quantidade": 2 },
+  { "produtoId": 3, "quantidade": 1 }
+]
+
+
+Atualizar Status do Pedido
+
+PATCH /api/pedidos/2/status
+Content-Type: application/json
+
+{
+  "status": "PREPARANDO"
+}
+
+
+Listar Histórico de Pedidos de um Cliente
+
+GET /api/pedidos/clientes/3/pedidos
+
+
+Cancelar Pedido
+
+DELETE /api/pedidos/1
 
 🧪 Testes e Validação
 
@@ -159,9 +325,7 @@ cd delivery-api
 Console H2: http://localhost:8080/h2-console
 
 JDBC URL: jdbc:h2:mem:deliverydb
-
 User: sa
-
 Password: (em branco)
 
 👨‍💻 Desenvolvedor
