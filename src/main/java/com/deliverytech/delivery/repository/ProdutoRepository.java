@@ -11,11 +11,10 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
-
 @Repository
 public interface ProdutoRepository extends JpaRepository<Produto, Long> {
 
-   // Apenas produtos disponíveis
+    // Apenas produtos disponíveis
     List<Produto> findByDisponivelTrue();
 
     // Buscar produtos por restaurante (usando entidade)
@@ -41,8 +40,6 @@ public interface ProdutoRepository extends JpaRepository<Produto, Long> {
     List<Produto> findByDisponivelTrueOrderByPrecoDesc();
     
     // Query customizada - produtos mais vendidos
-
-    // Certifique-se de que Produto tem um mapeamento @OneToMany para ItemPedido
     @Query("SELECT p FROM Produto p JOIN p.itensPedido ip GROUP BY p ORDER BY COUNT(ip) DESC")
     List<Produto> findProdutosMaisVendidos();
 
@@ -56,22 +53,21 @@ public interface ProdutoRepository extends JpaRepository<Produto, Long> {
     @Query("SELECT COUNT(p) FROM Produto p WHERE p.restaurante.id = :restauranteId AND p.disponivel = true")
     Long countByRestauranteId(@Param("restauranteId") Long restauranteId);
 
-     // ADICIONADO: buscar produtos pelo nome do restaurante
+    // Buscar produtos pelo nome do restaurante
     List<Produto> findByRestauranteNome(String nomeRestaurante);
 
     // Buscar produto pelo nome exato
     Optional<Produto> findByNome(String nome);    
 
-// // Top 5 produtos mais vendidos (query nativa)
-// @Query(value = "SELECT p.nome, COALESCE(SUM(ip.quantidade), 0) as quantidade_vendida " +
-//                "FROM produto p " +
-//                "LEFT JOIN itens_pedido ip ON p.id = ip.produto_id " +
-//                "GROUP BY p.id, p.nome " +
-//                "ORDER BY quantidade_vendida DESC " +
-//                "LIMIT 5", nativeQuery = true)
-// List<Object[]> produtosMaisVendidos();
+    // ADICIONADO: verifica se já existe produto com o mesmo nome no mesmo restaurante
+    boolean existsByNomeAndRestauranteId(String nome, Long restauranteId);
 
-
-
-    
+    // // Top 5 produtos mais vendidos (query nativa)
+    // @Query(value = "SELECT p.nome, COALESCE(SUM(ip.quantidade), 0) as quantidade_vendida " +
+    //                "FROM produto p " +
+    //                "LEFT JOIN itens_pedido ip ON p.id = ip.produto_id " +
+    //                "GROUP BY p.id, p.nome " +
+    //                "ORDER BY quantidade_vendida DESC " +
+    //                "LIMIT 5", nativeQuery = true)
+    // List<Object[]> produtosMaisVendidos();
 }

@@ -2,6 +2,9 @@ package com.deliverytech.delivery.service;
 
 import com.deliverytech.delivery.dto.RestauranteDTO;
 import com.deliverytech.delivery.dto.RestauranteResponseDTO;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -17,7 +20,11 @@ public interface RestauranteService {
 
     RestauranteResponseDTO atualizarRestaurante(Long id, RestauranteDTO dto);
 
-    void ativarDesativarRestaurante(Long id);
+    RestauranteResponseDTO alterarStatusRestaurante(Long id);
 
     BigDecimal calcularTaxaEntrega(Long restauranteId, String cep);
+
+    List<RestauranteResponseDTO> buscarRestaurantesProximos(String cep, Integer raio);
+
+    Page<RestauranteResponseDTO> listarRestaurantes(String categoria, Boolean ativo, Pageable pageable);
 }

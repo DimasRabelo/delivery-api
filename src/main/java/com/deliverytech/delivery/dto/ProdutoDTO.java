@@ -19,45 +19,21 @@ public class ProdutoDTO {
     @NotNull(message = "ID do restaurante é obrigatório")
     private Long restauranteId;
 
-    private boolean disponivel = true;
+    private Boolean disponivel; // Nullable
 
     private String categoria;
 
     // Getters e Setters
-    public String getNome() {
-        return nome;
-    }
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
-    public String getDescricao() {
-        return descricao;
-    }
-    public void setDescricao(String descricao) {
-        this.descricao = descricao;
-    }
-    public BigDecimal getPreco() {
-        return preco;
-    }
-    public void setPreco(BigDecimal preco) {
-        this.preco = preco;
-    }
-    public Long getRestauranteId() {
-        return restauranteId;
-    }
-    public void setRestauranteId(Long restauranteId) {
-        this.restauranteId = restauranteId;
-    }
-    public boolean getDisponivel() {
-        return disponivel;
-    }
-    public void setDisponivel(boolean disponivel) {
-        this.disponivel = disponivel;
-    }
-    public String getCategoria() {
-        return categoria;
-    }
-    public void setCategoria(String categoria) {
-        this.categoria = categoria;
-    }
+    public String getNome() { return nome; }
+    public void setNome(String nome) { this.nome = nome; }
+    public String getDescricao() { return descricao; }
+    public void setDescricao(String descricao) { this.descricao = descricao; }
+    public BigDecimal getPreco() { return preco; }
+    public void setPreco(BigDecimal preco) { this.preco = preco; }
+    public Long getRestauranteId() { return restauranteId; }
+    public void setRestauranteId(Long restauranteId) { this.restauranteId = restauranteId; }
+    public Boolean getDisponivel() { return disponivel; }
+    public void setDisponivel(Boolean disponivel) { this.disponivel = disponivel; }
+    public String getCategoria() { return categoria; }
+    public void setCategoria(String categoria) { this.categoria = categoria; }
 }

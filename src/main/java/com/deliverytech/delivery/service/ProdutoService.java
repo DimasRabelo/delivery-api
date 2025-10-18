@@ -11,11 +11,16 @@ public interface ProdutoService {
 
     ProdutoResponseDTO buscarProdutoPorId(Long id);
 
+    List<ProdutoResponseDTO> buscarProdutosPorNome(String nome);
+
+
     List<ProdutoResponseDTO> buscarProdutosPorRestaurante(Long restauranteId);
 
     ProdutoResponseDTO atualizarProduto(Long id, ProdutoDTO dto);
 
-    void alterarDisponibilidade(Long id, boolean disponivel);
+    ProdutoResponseDTO alterarDisponibilidade(Long id);
 
     List<ProdutoResponseDTO> buscarProdutosPorCategoria(String categoria);
+
+    void removerProduto(Long id);
 }

@@ -9,209 +9,880 @@
 	},
 	"item": [
 		{
-			"name": "http://localhost:8080/clientes/1",
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
-			"request": {
-				"method": "GET",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "http://localhost:8080/clientes/1",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8080",
-					"path": [
-						"clientes",
-						"1"
-					]
-				},
-				"description": "buscando Clinete pelo \"id\""
-			},
-			"response": []
-		},
-		{
-			"name": "http://localhost:8080/clientes",
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n  \"nome\": \"Dimas Souza\",\n  \"email\": \"dimas@email.com\",\n  \"telefone\": \"(11) 99999-2222\",\n  \"endereco\": \"Rua z, 456 - São Paulo/SP\"\n \n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "http://localhost:8080/clientes",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8080",
-					"path": [
-						"clientes"
-					]
-				},
-				"description": "Cadastrando cliente via Post"
-			},
-			"response": []
-		},
-		{
-			"name": "http://localhost:8080/pedidos?clienteId=1&restauranteId=1",
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "\n  \n  ",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "http://localhost:8080/pedidos?clienteId=1&restauranteId=1",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8080",
-					"path": [
-						"pedidos"
-					],
-					"query": [
-						{
-							"key": "clienteId",
-							"value": "1"
+			"name": "Clientes",
+			"item": [
+				{
+					"name": "http://localhost:8080/api/clientes",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nome\": \"Lucas Pereira\",\n  \"email\": \"lucas@email.com\",\n  \"telefone\": \"(11) 99999-7777\",\n  \"endereco\": \"Rua F, 404 - São Paulo/SP\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
-						{
-							"key": "restauranteId",
-							"value": "1"
-						}
-					]
-				},
-				"description": "Criando pedido Via Post"
-			},
-			"response": []
-		},
-		{
-			"name": "http://localhost:8080/pedidos/1/itens?produtoId=1&quantidade=2",
-			"request": {
-				"method": "POST",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:8080/pedidos/1/itens?produtoId=1&quantidade=2",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8080",
-					"path": [
-						"pedidos",
-						"1",
-						"itens"
-					],
-					"query": [
-						{
-							"key": "produtoId",
-							"value": "1"
+						"url": {
+							"raw": "http://localhost:8080/api/clientes",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"clientes"
+							]
 						},
-						{
-							"key": "quantidade",
-							"value": "2"
-						}
-					]
+						"description": "Criando novo cliente"
+					},
+					"response": []
 				},
-				"description": "Adicionando Item via Post"
-			},
-			"response": []
+				{
+					"name": "http://localhost:8080/api/clientes",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/clientes",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"clientes"
+							]
+						},
+						"description": "Listar todos os clientes ativos."
+					},
+					"response": []
+				},
+				{
+					"name": "http://localhost:8080/api/clientes/4",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/clientes/4",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"clientes",
+								"4"
+							]
+						},
+						"description": "Buscando cliente por ID"
+					},
+					"response": []
+				},
+				{
+					"name": "http://localhost:8080/api/clientes",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "\n  {\n  \"nome\": \"Churrascaria Bom Sabor\",\n  \"categoria\": \"Churrasco\",\n  \"endereco\": \"Av. Brasil, 123\",\n  \"telefone\": \"(11) 4444-5555\",\n  \"taxaEntrega\": 6.5,\n  \"avaliacao\": 4.3,\n  \"ativo\": true\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/restaurantes",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"restaurantes"
+							]
+						},
+						"description": "Cadastrando o Restaurante"
+					},
+					"response": []
+				},
+				{
+					"name": "http://localhost:8080/api/clientes/5",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": 1,\n    \"nome\": \"João Silva\",\n    \"email\": \"joao@email.com\",\n    \"telefone\": \"(11) 99999-1111\",\n    \"endereco\": \"Rua Antonio Pinto Ferreira Filho, 123 - São Paulo/SP\",\n    \"ativo\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/clientes/5\n",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"clientes",
+								"5\n"
+							]
+						},
+						"description": "Usei o Deletar cliente, que obteve o comportamento de \"false\"."
+					},
+					"response": []
+				},
+				{
+					"name": "http://localhost:8080/api/clientes/1\n",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": 1,\n    \"nome\": \"João Silva\",\n    \"email\": \"joao@email.com\",\n    \"telefone\": \"(11) 99999-1111\",\n    \"endereco\": \"Rua Antonio Pinto Ferreira Filho, 123 - São Paulo/SP\",\n    \"ativo\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/clientes/1\n",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"clientes",
+								"1\n"
+							]
+						},
+						"description": "Atualizei o endereço que antes era rua: B"
+					},
+					"response": []
+				},
+				{
+					"name": "http://localhost:8080/api/clientes/email/pedro@email.com",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/clientes/email/pedro@email.com",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"clientes",
+								"email",
+								"pedro@email.com"
+							]
+						},
+						"description": "Buscando Cliente Por email"
+					},
+					"response": []
+				}
+			]
 		},
 		{
-			"name": "http://localhost:8080/pedidos/1/confirmar",
-			"request": {
-				"method": "PUT",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:8080/pedidos/1/confirmar",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8080",
-					"path": [
-						"pedidos",
-						"1",
-						"confirmar"
-					]
+			"name": "Restaurantes",
+			"item": [
+				{
+					"name": "http://localhost:8080/api/restaurantes",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nome\": \"Churrascaria Bom Sabor\",\n  \"categoria\": \"Churrasco\",\n  \"endereco\": \"Av. Brasil, 123\",\n  \"telefone\": \"(11) 4444-5555\",\n  \"taxaEntrega\": 6.5,\n  \"avaliacao\": 4.3\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/restaurantes",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"restaurantes"
+							]
+						},
+						"description": "Cadastrando Restaurante"
+					},
+					"response": []
 				},
-				"description": "Confirmando o Pedido"
-			},
-			"response": []
+				{
+					"name": "http://localhost:8080/api/restaurantes",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nome\": \"Churrascaria Bom Sabor\",\n  \"categoria\": \"Churrasco\",\n  \"endereco\": \"Av. Brasil, 123\",\n  \"telefone\": \"(11) 4444-5555\",\n  \"taxaEntrega\": 6.5,\n  \"avaliacao\": 4.3\n}\n"
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/restaurantes",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"restaurantes"
+							]
+						},
+						"description": "Listandi todos Restaurantes Ativos"
+					},
+					"response": []
+				},
+				{
+					"name": "http://localhost:8080/api/restaurantes/3",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nome\": \"Churrascaria Bom Sabor\",\n  \"categoria\": \"Churrasco\",\n  \"endereco\": \"Av. Brasil, 123\",\n  \"telefone\": \"(11) 4444-5555\",\n  \"taxaEntrega\": 6.5,\n  \"avaliacao\": 4.3\n}\n"
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/restaurantes/3",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"restaurantes",
+								"3"
+							]
+						},
+						"description": "Listando Restaurante pelo ID"
+					},
+					"response": []
+				},
+				{
+					"name": "http://localhost:8080/api/restaurantes/categoria/Hamburgueria",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nome\": \"Churrascaria Bom Sabor\",\n  \"categoria\": \"Churrasco\",\n  \"endereco\": \"Av. Brasil, 123\",\n  \"telefone\": \"(11) 4444-5555\",\n  \"taxaEntrega\": 6.5,\n  \"avaliacao\": 4.3\n}\n"
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/restaurantes/categoria/Hamburgueria",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"restaurantes",
+								"categoria",
+								"Hamburgueria"
+							]
+						},
+						"description": "Buscando Restaurante Pela Categoria"
+					},
+					"response": []
+				},
+				{
+					"name": "http://localhost:8080/api/restaurantes/2",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nome\": \"Churrascaria Bom Sabor\",\n  \"categoria\": \"Churrasco\",\n  \"endereco\": \"Av. Brasil, 800\",\n  \"telefone\": \"(11) 4444-5555\",\n  \"taxaEntrega\": 6.5,\n  \"avaliacao\": 4.3\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/restaurantes/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"restaurantes",
+								"2"
+							]
+						},
+						"description": "Atualizei o número do endereço que estava, 123 para 800"
+					},
+					"response": []
+				},
+				{
+					"name": "http://localhost:8080/api/restaurantes/4/status",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nome\": \"Churrascaria Bom Sabor\",\n  \"categoria\": \"Churrasco\",\n  \"endereco\": \"Av. Brasil, 123\",\n  \"telefone\": \"(11) 4444-5555\",\n  \"taxaEntrega\": 6.5,\n  \"avaliacao\": 4.3,\n  \"ativo\": false\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/restaurantes/4/status",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"restaurantes",
+								"4",
+								"status"
+							]
+						},
+						"description": "Atializando o Status de \"false\" para \"true\"."
+					},
+					"response": []
+				},
+				{
+					"name": "http://localhost:8080/api/restaurantes/4/taxa-entrega/01001-000",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nome\": \"Churrascaria Bom Sabor\",\n  \"categoria\": \"Churrasco\",\n  \"endereco\": \"Av. Brasil, 123\",\n  \"telefone\": \"(11) 4444-5555\",\n  \"taxaEntrega\": 6.5,\n  \"avaliacao\": 4.3,\n  \"ativo\": false\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/restaurantes/4/taxa-entrega/01001-000",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"restaurantes",
+								"4",
+								"taxa-entrega",
+								"01001-000"
+							]
+						},
+						"description": "Testando o Cep"
+					},
+					"response": []
+				}
+			]
 		},
 		{
-			"name": "http://localhost:8080/pedidos/cliente/1",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:8080/pedidos/cliente/1",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8080",
-					"path": [
-						"pedidos",
-						"cliente",
-						"1"
-					]
+			"name": "Produtos",
+			"item": [
+				{
+					"name": "http://localhost:8080/api/produtos",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nome\": \"Pizza Quatro Queijos\",\n  \"descricao\": \"Molho de tomate, mussarela, parmesão, provolone e gorgonzola\",\n  \"categoria\": \"Pizza\",\n  \"preco\": 42.90,\n  \"disponivel\": true,\n  \"restauranteId\": 1\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/produtos",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"produtos"
+							]
+						},
+						"description": "Criando novo produto"
+					},
+					"response": []
 				},
-				"description": "Listando Pedido Por cliente"
-			},
-			"response": []
+				{
+					"name": "http://localhost:8080/api/produtos/restaurante/2",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/produtos/restaurante/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"produtos",
+								"restaurante",
+								"2"
+							]
+						},
+						"description": "Listar produtos de um restaurante."
+					},
+					"response": []
+				},
+				{
+					"name": "http://localhost:8080/api/produtos/3",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/produtos/3",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"produtos",
+								"3"
+							]
+						},
+						"description": "Verificação de um produto existente"
+					},
+					"response": []
+				},
+				{
+					"name": "New Request",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "http://localhost:8080/api/produtos/categoria/Pizza",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/produtos/categoria/Pizza",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"produtos",
+								"categoria",
+								"Pizza"
+							]
+						},
+						"description": "Buscando o produto por categoria"
+					},
+					"response": []
+				},
+				{
+					"name": "http://localhost:8080/api/produtos/1",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nome\": \"Pizza Margherita Atualizada\",\n    \"descricao\": \"Molho de tomate, mussarela, manjericão e orégano\",\n    \"preco\": 42.00,\n    \"categoria\": \"Pizza\",\n    \"disponivel\": true,\n    \"restauranteId\": 1\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/produtos/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"produtos",
+								"1"
+							]
+						},
+						"description": "Atualizei o Campo preço que era R$:37.90 para R$: 42.00"
+					},
+					"response": []
+				},
+				{
+					"name": "http://localhost:8080/api/produtos/1/disponibilidade?disponivel=false",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/produtos/1/disponibilidade?disponivel=false",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"produtos",
+								"1",
+								"disponibilidade"
+							],
+							"query": [
+								{
+									"key": "disponivel",
+									"value": "false"
+								}
+							]
+						},
+						"description": "Alterei a Disponilidade para \"False\"."
+					},
+					"response": []
+				}
+			]
 		},
 		{
-			"name": "http://localhost:8080/pedidos/1/status?status=PREPARANDO",
-			"request": {
-				"method": "PUT",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:8080/pedidos/1/status?status=PREPARANDO",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8080",
-					"path": [
-						"pedidos",
-						"1",
-						"status"
-					],
-					"query": [
-						{
-							"key": "status",
-							"value": "PREPARANDO"
-						}
-					]
+			"name": "Pedidos",
+			"item": [
+				{
+					"name": "New Request",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
 				},
-				"description": "Alterando Status Para Preparando"
-			},
-			"response": []
+				{
+					"name": "http://localhost:8080/api/pedidos",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"clienteId\": 1,\n  \"restauranteId\": 1,\n  \"itens\": [\n    { \"produtoId\": 2, \"quantidade\": 1 },  // Pizza Calabresa\n    { \"produtoId\": 3, \"quantidade\": 1 }   // Lasanha Bolonhesa\n  ],\n  \"observacoes\": \"Sem cebola\",\n  \"enderecoEntrega\": \"Rua Exemplo, 123\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/pedidos",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"pedidos"
+							]
+						},
+						"description": "Criando novo pedido "
+					},
+					"response": []
+				},
+				{
+					"name": "http://localhost:8080/api/pedidos",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"clienteId\": 1,\n  \"restauranteId\": 1,\n  \"itens\": [\n    { \"produtoId\": 2, \"quantidade\": 1 },  // Pizza Calabresa\n    { \"produtoId\": 3, \"quantidade\": 1 }   // Lasanha Bolonhesa\n  ],\n  \"observacoes\": \"Sem cebola\",\n  \"enderecoEntrega\": \"Rua Exemplo, 123\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/pedidos/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"pedidos",
+								"2"
+							]
+						},
+						"description": "Verificando Pedido Existente "
+					},
+					"response": []
+				},
+				{
+					"name": "http://localhost:8080/api/pedidos/clientes/3/pedidos",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"clienteId\": 1,\n  \"restauranteId\": 1,\n  \"itens\": [\n    { \"produtoId\": 2, \"quantidade\": 1 },  // Pizza Calabresa\n    { \"produtoId\": 3, \"quantidade\": 1 }   // Lasanha Bolonhesa\n  ],\n  \"observacoes\": \"Sem cebola\",\n  \"enderecoEntrega\": \"Rua Exemplo, 123\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/pedidos/clientes/3/pedidos",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"pedidos",
+								"clientes",
+								"3",
+								"pedidos"
+							]
+						},
+						"description": "Listando Pedido de um cliente"
+					},
+					"response": []
+				},
+				{
+					"name": "http://localhost:8080/api/pedidos/clientes/3/pedidos",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"PREPARANDO\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/pedidos/2/status",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"pedidos",
+								"2",
+								"status"
+							]
+						},
+						"description": "Alterei o Status do Pedido "
+					},
+					"response": []
+				},
+				{
+					"name": "http://localhost:8080/api/pedidos/1",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"PREPARANDO\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/pedidos/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"pedidos",
+								"1"
+							]
+						},
+						"description": "Usando o Delete ele alterou status do pedido para Cancelado"
+					},
+					"response": []
+				},
+				{
+					"name": "http://localhost:8080/api/pedidos/calcular",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n  { \"produtoId\": 2, \"quantidade\": 2 },  // Pizza Calabresa\n  { \"produtoId\": 3, \"quantidade\": 1 }   // Lasanha Bolonhesa\n]\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/pedidos/calcular",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"pedidos",
+								"calcular"
+							]
+						},
+						"description": "Calculando o Total dos itens pedidos"
+					},
+					"response": []
+				}
+			]
 		}
 	]
 }
