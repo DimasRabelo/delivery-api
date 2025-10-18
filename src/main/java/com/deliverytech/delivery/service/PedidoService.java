@@ -2,10 +2,18 @@
     
     import com.deliverytech.delivery.dto.PedidoDTO;
     import com.deliverytech.delivery.dto.PedidoResponseDTO;
-    import com.deliverytech.delivery.dto.ItemPedidoDTO;
-    import com.deliverytech.delivery.enums.StatusPedido;
-    import java.math.BigDecimal;
-    import java.util.List;
+import com.deliverytech.delivery.dto.CalculoPedidoDTO;
+import com.deliverytech.delivery.dto.CalculoPedidoResponseDTO;
+//import com.deliverytech.delivery.dto.ItemPedidoDTO;
+import com.deliverytech.delivery.enums.StatusPedido;
+    //import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+import org.springframework.data.domain.Page;
+    
+
+
+   
     
     public interface PedidoService {
     
@@ -15,9 +23,13 @@
     
     List<PedidoResponseDTO> buscarPedidosPorCliente(Long clienteId);
     
-    PedidoResponseDTO atualizarStatusPedido(Long id, StatusPedido status);
+   PedidoResponseDTO atualizarStatusPedido(Long id, StatusPedido status);
     
-    BigDecimal calcularTotalPedido(List<ItemPedidoDTO> itens);
-    
+   CalculoPedidoResponseDTO calcularTotalPedido(CalculoPedidoDTO dto);
+
     void cancelarPedido(Long id);
+
+     Page<PedidoResponseDTO> listarPedidos(StatusPedido status, LocalDate dataInicio, LocalDate dataFim, org.springframework.data.domain.Pageable pageable);
+
+      List<PedidoResponseDTO> buscarPedidosPorRestaurante(Long restauranteId, StatusPedido status);
 }

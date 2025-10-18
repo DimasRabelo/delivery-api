@@ -2,6 +2,8 @@ package com.deliverytech.delivery.service.impl;
 
 import com.deliverytech.delivery.dto.PedidoDTO;
 import com.deliverytech.delivery.dto.PedidoResponseDTO;
+import com.deliverytech.delivery.dto.CalculoPedidoDTO;
+import com.deliverytech.delivery.dto.CalculoPedidoResponseDTO;
 import com.deliverytech.delivery.dto.ItemPedidoDTO;
 import com.deliverytech.delivery.entity.*;
 import com.deliverytech.delivery.enums.StatusPedido;
@@ -11,9 +13,12 @@ import com.deliverytech.delivery.repository.*;
 import com.deliverytech.delivery.service.PedidoService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,21 +46,21 @@ public class PedidoServiceImpl implements PedidoService {
     @Override
     @Transactional
     public PedidoResponseDTO criarPedido(PedidoDTO dto) {
-        // 1. Validar cliente
+        // Validar cliente
         Cliente cliente = clienteRepository.findById(dto.getClienteId())
                 .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado"));
         if (!cliente.isAtivo()) {
             throw new BusinessException("Cliente inativo não pode fazer pedidos");
         }
 
-        // 2. Validar restaurante
+        // Validar restaurante
         Restaurante restaurante = restauranteRepository.findById(dto.getRestauranteId())
                 .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado"));
         if (!restaurante.getAtivo()) {
             throw new BusinessException("Restaurante não está disponível");
         }
 
-        // 3. Validar produtos e calcular subtotal
+        // Validar produtos e calcular subtotal
         List<ItemPedido> itensPedido = new ArrayList<>();
         BigDecimal subtotal = BigDecimal.ZERO;
 
@@ -81,11 +86,11 @@ public class PedidoServiceImpl implements PedidoService {
             subtotal = subtotal.add(item.getSubtotal());
         }
 
-        // 4. Calcular total do pedido
+        // Calcular total do pedido
         BigDecimal taxaEntrega = restaurante.getTaxaEntrega();
         BigDecimal valorTotal = subtotal.add(taxaEntrega);
 
-        // 5. Salvar pedido
+        // Salvar pedido
         Pedido pedido = new Pedido();
         pedido.setCliente(cliente);
         pedido.setRestaurante(restaurante);
@@ -98,13 +103,13 @@ public class PedidoServiceImpl implements PedidoService {
 
         Pedido pedidoSalvo = pedidoRepository.save(pedido);
 
-        // 6. Salvar itens do pedido
+        // Salvar itens do pedido
         for (ItemPedido item : itensPedido) {
             item.setPedido(pedidoSalvo);
         }
         pedidoSalvo.setItens(itensPedido);
 
-        // 7. Mapear para DTO e preencher campos derivados
+        // Mapear para DTO
         PedidoResponseDTO responseDTO = modelMapper.map(pedidoSalvo, PedidoResponseDTO.class);
         responseDTO.setClienteId(cliente.getId());
         responseDTO.setClienteNome(cliente.getNome());
@@ -197,17 +202,33 @@ public class PedidoServiceImpl implements PedidoService {
         return responseDTO;
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public BigDecimal calcularTotalPedido(List<ItemPedidoDTO> itens) {
-        BigDecimal total = BigDecimal.ZERO;
-        for (ItemPedidoDTO item : itens) {
-            Produto produto = produtoRepository.findById(item.getProdutoId())
-                    .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado"));
-            total = total.add(produto.getPreco().multiply(BigDecimal.valueOf(item.getQuantidade())));
-        }
-        return total;
+@Override
+@Transactional(readOnly = true)
+public CalculoPedidoResponseDTO calcularTotalPedido(CalculoPedidoDTO dto) {
+    BigDecimal subtotal = BigDecimal.ZERO;
+
+    // Somar o valor dos itens
+    for (ItemPedidoDTO item : dto.getItens()) {
+        Produto produto = produtoRepository.findById(item.getProdutoId())
+                .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado: " + item.getProdutoId()));
+        subtotal = subtotal.add(produto.getPreco().multiply(BigDecimal.valueOf(item.getQuantidade())));
     }
+
+    // Buscar taxa de entrega do restaurante
+    Restaurante restaurante = restauranteRepository.findById(dto.getRestauranteId())
+            .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado"));
+
+    BigDecimal taxaEntrega = restaurante.getTaxaEntrega();
+    BigDecimal total = subtotal.add(taxaEntrega);
+
+    // Montar DTO de resposta
+    CalculoPedidoResponseDTO response = new CalculoPedidoResponseDTO();
+    response.setSubtotal(subtotal);
+    response.setTaxaEntrega(taxaEntrega);
+    response.setTotal(total);
+
+    return response;
+}
 
     @Override
     public void cancelarPedido(Long id) {
@@ -239,5 +260,75 @@ public class PedidoServiceImpl implements PedidoService {
 
     private boolean podeSerCancelado(StatusPedido status) {
         return status == StatusPedido.PENDENTE || status == StatusPedido.CONFIRMADO;
+    }
+
+    // =================== LISTAR PEDIDOS COM FILTROS ===================
+    @Override
+    @Transactional(readOnly = true)
+    public Page<PedidoResponseDTO> listarPedidos(StatusPedido status, LocalDate dataInicio, LocalDate dataFim, Pageable pageable) {
+        Page<Pedido> pedidos;
+
+        LocalDateTime inicio = null;
+        LocalDateTime fim = null;
+
+        if (dataInicio != null && dataFim != null) {
+            inicio = dataInicio.atStartOfDay();
+            fim = dataFim.plusDays(1).atStartOfDay();
+        }
+
+        if (status != null && inicio != null && fim != null) {
+            pedidos = pedidoRepository.findByStatusAndDataPedidoBetween(status, inicio, fim, pageable);
+        } else if (status != null) {
+            pedidos = pedidoRepository.findByStatus(status, pageable);
+        } else if (inicio != null && fim != null) {
+            pedidos = pedidoRepository.findByDataPedidoBetween(inicio, fim, pageable);
+        } else {
+            pedidos = pedidoRepository.findAll(pageable);
+        }
+
+        return pedidos.map(pedido -> {
+            PedidoResponseDTO dto = modelMapper.map(pedido, PedidoResponseDTO.class);
+            dto.setClienteId(pedido.getCliente().getId());
+            dto.setClienteNome(pedido.getCliente().getNome());
+            dto.setRestauranteId(pedido.getRestaurante().getId());
+            dto.setRestauranteNome(pedido.getRestaurante().getNome());
+            dto.setTotal(pedido.getValorTotal());
+            dto.setItens(pedido.getItens().stream().map(item -> {
+                ItemPedidoDTO iDTO = new ItemPedidoDTO();
+                iDTO.setProdutoId(item.getProduto().getId());
+                iDTO.setQuantidade(item.getQuantidade());
+                return iDTO;
+            }).toList());
+            return dto;
+        });
+    }
+
+    // =================== PEDIDOS POR RESTAURANTE ===================
+    @Override
+    @Transactional(readOnly = true)
+    public List<PedidoResponseDTO> buscarPedidosPorRestaurante(Long restauranteId, StatusPedido status) {
+        List<Pedido> pedidos;
+
+        if (status != null) {
+            pedidos = pedidoRepository.findByRestauranteIdAndStatus(restauranteId, status, Pageable.unpaged()).getContent();
+        } else {
+            pedidos = pedidoRepository.findByRestauranteId(restauranteId, Pageable.unpaged()).getContent();
+        }
+
+        return pedidos.stream().map(pedido -> {
+            PedidoResponseDTO dto = modelMapper.map(pedido, PedidoResponseDTO.class);
+            dto.setClienteId(pedido.getCliente().getId());
+            dto.setClienteNome(pedido.getCliente().getNome());
+            dto.setRestauranteId(pedido.getRestaurante().getId());
+            dto.setRestauranteNome(pedido.getRestaurante().getNome());
+            dto.setTotal(pedido.getValorTotal());
+            dto.setItens(pedido.getItens().stream().map(item -> {
+                ItemPedidoDTO iDTO = new ItemPedidoDTO();
+                iDTO.setProdutoId(item.getProduto().getId());
+                iDTO.setQuantidade(item.getQuantidade());
+                return iDTO;
+            }).toList());
+            return dto;
+        }).toList();
     }
 }
