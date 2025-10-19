@@ -13,10 +13,12 @@ public class ClienteDTO {
     private String email;
 
     @NotBlank(message = "Telefone é obrigatório")
-    @Pattern(
-    regexp = "^(\\(\\d{2}\\)\\s?)?\\d{4,5}-?\\d{4}$",
+   @Pattern(
+    regexp = "^(\\(\\d{2}\\)\\s?\\d{4,5}-?\\d{4}|\\d{10,11})$",
     message = "Telefone inválido. Ex.: 11999999999 ou (11) 99999-9999"
 )
+
+
     
     private String telefone;
 
