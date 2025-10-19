@@ -203,25 +203,28 @@ public class PedidoServiceImpl implements PedidoService {
     }
 
 @Override
-@Transactional(readOnly = true)
 public CalculoPedidoResponseDTO calcularTotalPedido(CalculoPedidoDTO dto) {
+    // 1. Inicializa subtotal
     BigDecimal subtotal = BigDecimal.ZERO;
 
-    // Somar o valor dos itens
+    // 2. Calcula subtotal somando preço x quantidade de cada item
     for (ItemPedidoDTO item : dto.getItens()) {
         Produto produto = produtoRepository.findById(item.getProdutoId())
-                .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado: " + item.getProdutoId()));
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Produto não encontrado: " + item.getProdutoId()));
         subtotal = subtotal.add(produto.getPreco().multiply(BigDecimal.valueOf(item.getQuantidade())));
     }
 
-    // Buscar taxa de entrega do restaurante
+    // 3. Busca restaurante para obter a taxa de entrega
     Restaurante restaurante = restauranteRepository.findById(dto.getRestauranteId())
             .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado"));
 
     BigDecimal taxaEntrega = restaurante.getTaxaEntrega();
+
+    // 4. Calcula total do pedido
     BigDecimal total = subtotal.add(taxaEntrega);
 
-    // Montar DTO de resposta
+    // 5. Preenche DTO de resposta
     CalculoPedidoResponseDTO response = new CalculoPedidoResponseDTO();
     response.setSubtotal(subtotal);
     response.setTaxaEntrega(taxaEntrega);
@@ -229,7 +232,6 @@ public CalculoPedidoResponseDTO calcularTotalPedido(CalculoPedidoDTO dto) {
 
     return response;
 }
-
     @Override
     public void cancelarPedido(Long id) {
         Pedido pedido = pedidoRepository.findById(id)

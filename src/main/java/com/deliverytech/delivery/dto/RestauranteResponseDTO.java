@@ -12,7 +12,7 @@ public class RestauranteResponseDTO {
     private BigDecimal taxaEntrega;
     private Boolean ativo;
 
-    // GETTERS E SETTERS
+    // Getters e Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

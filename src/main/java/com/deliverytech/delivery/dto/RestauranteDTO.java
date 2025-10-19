@@ -39,6 +39,14 @@ public class RestauranteDTO {
     @NotNull(message = "Status ativo é obrigatório")
     private Boolean ativo;
 
+    @Schema(description = "Tempo de entrega em minutos", example = "45")
+    @NotNull(message = "Tempo de entrega é obrigatório")
+    private Integer tempoEntrega;
+
+    @Schema(description = "Horário de funcionamento do restaurante", example = "08:00-22:00")
+    @NotBlank(message = "Horário de funcionamento é obrigatório")
+    private String horarioFuncionamento;
+
     // GETTERS E SETTERS
     public String getNome() { return nome; }
     public void setNome(String nome) { this.nome = nome; }
@@ -60,4 +68,11 @@ public class RestauranteDTO {
 
     public Boolean getAtivo() { return ativo; }
     public void setAtivo(Boolean ativo) { this.ativo = ativo; }
+
+    public Integer getTempoEntrega() { return tempoEntrega; }
+    public void setTempoEntrega(Integer tempoEntrega) { this.tempoEntrega = tempoEntrega; }
+
+    public String getHorarioFuncionamento() { return horarioFuncionamento; }
+    public void setHorarioFuncionamento(String horarioFuncionamento) { this.horarioFuncionamento = horarioFuncionamento; }
+   
 }

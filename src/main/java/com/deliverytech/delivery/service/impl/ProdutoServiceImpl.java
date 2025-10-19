@@ -50,7 +50,7 @@ public class ProdutoServiceImpl implements ProdutoService {
         Produto salvo = produtoRepository.save(produto);
 
         ProdutoResponseDTO responseDTO = modelMapper.map(salvo, ProdutoResponseDTO.class);
-        responseDTO.setRestauranteId(salvo.getRestaurante().getId()); // Map manual
+        responseDTO.setRestauranteId(salvo.getRestaurante() != null ? salvo.getRestaurante().getId() : null);
         return responseDTO;
     }
 
@@ -64,33 +64,38 @@ public class ProdutoServiceImpl implements ProdutoService {
             throw new BusinessException("Produto não está disponível");
         }
 
-        ProdutoResponseDTO responseDTO = modelMapper.map(produto, ProdutoResponseDTO.class);
-        responseDTO.setRestauranteId(produto.getRestaurante().getId()); // Map manual
-        return responseDTO;
+        ProdutoResponseDTO dto = modelMapper.map(produto, ProdutoResponseDTO.class);
+        dto.setRestauranteId(produto.getRestaurante() != null ? produto.getRestaurante().getId() : null);
+        return dto;
     }
 
     @Override
-@Transactional(readOnly = true)
-public List<ProdutoResponseDTO> buscarProdutosPorNome(String nome) {
-   List<Produto> produtos = produtoRepository.findByNomeContainingIgnoreCaseAndDisponivelTrue(nome);
-
-    return produtos.stream()
-            .map(p -> {
-                ProdutoResponseDTO dto = modelMapper.map(p, ProdutoResponseDTO.class);
-                dto.setRestauranteId(p.getRestaurante().getId());
-                return dto;
-            })
-            .collect(Collectors.toList());
-}
-
-    @Override
     @Transactional(readOnly = true)
-    public List<ProdutoResponseDTO> buscarProdutosPorRestaurante(Long restauranteId) {
-        List<Produto> produtos = produtoRepository.findByRestauranteIdAndDisponivelTrue(restauranteId);
+    public List<ProdutoResponseDTO> buscarProdutosPorNome(String nome) {
+        List<Produto> produtos = produtoRepository.findByNomeContainingIgnoreCaseAndDisponivelTrue(nome);
         return produtos.stream()
                 .map(p -> {
                     ProdutoResponseDTO dto = modelMapper.map(p, ProdutoResponseDTO.class);
-                    dto.setRestauranteId(p.getRestaurante().getId()); // Map manual
+                    dto.setRestauranteId(p.getRestaurante() != null ? p.getRestaurante().getId() : null);
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProdutoResponseDTO> buscarProdutosPorRestaurante(Long restauranteId, Boolean disponivel) {
+        List<Produto> produtos;
+        if (disponivel != null) {
+            produtos = produtoRepository.findByRestauranteIdAndDisponivel(restauranteId, disponivel);
+        } else {
+            produtos = produtoRepository.findByRestauranteIdAndDisponivel(restauranteId, true);
+        }
+
+        return produtos.stream()
+                .map(p -> {
+                    ProdutoResponseDTO dto = modelMapper.map(p, ProdutoResponseDTO.class);
+                    dto.setRestauranteId(p.getRestaurante() != null ? p.getRestaurante().getId() : null);
                     return dto;
                 })
                 .collect(Collectors.toList());
@@ -108,17 +113,15 @@ public List<ProdutoResponseDTO> buscarProdutosPorNome(String nome) {
         produto.setDescricao(dto.getDescricao());
         produto.setPreco(dto.getPreco());
         produto.setCategoria(dto.getCategoria());
-
         if (dto.getDisponivel() != null) {
             produto.setDisponivel(dto.getDisponivel());
         }
-
         produto.setRestaurante(restaurante);
 
         Produto atualizado = produtoRepository.save(produto);
 
         ProdutoResponseDTO responseDTO = modelMapper.map(atualizado, ProdutoResponseDTO.class);
-        responseDTO.setRestauranteId(atualizado.getRestaurante().getId()); // Map manual
+        responseDTO.setRestauranteId(atualizado.getRestaurante() != null ? atualizado.getRestaurante().getId() : null);
         return responseDTO;
     }
 
@@ -127,34 +130,30 @@ public List<ProdutoResponseDTO> buscarProdutosPorNome(String nome) {
         Produto produto = produtoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado"));
 
-        // Alterna o valor atual da disponibilidade
         produto.setDisponivel(!produto.getDisponivel());
         produtoRepository.save(produto);
 
-        return new ProdutoResponseDTO(produto);
+        ProdutoResponseDTO dto = modelMapper.map(produto, ProdutoResponseDTO.class);
+        dto.setRestauranteId(produto.getRestaurante() != null ? produto.getRestaurante().getId() : null);
+        return dto;
     }
 
     @Override
-public void removerProduto(Long id) {
-    Produto produto = produtoRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado: " + id));
+    public void removerProduto(Long id) {
+        Produto produto = produtoRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado: " + id));
 
-    // Se houver regra de negócio para impedir exclusão
-    // if (pedidoRepository.existsByProdutosContaining(produto)) {
-    //     throw new BusinessException("Produto possui pedidos associados");
-    // }
-
-    produtoRepository.delete(produto);
-}
+        produtoRepository.delete(produto);
+    }
 
     @Override
     @Transactional(readOnly = true)
     public List<ProdutoResponseDTO> buscarProdutosPorCategoria(String categoria) {
-        List<Produto> produtos = produtoRepository.findByCategoria(categoria);
+        List<Produto> produtos = produtoRepository.findByCategoriaAndDisponivelTrue(categoria);
         return produtos.stream()
                 .map(p -> {
                     ProdutoResponseDTO dto = modelMapper.map(p, ProdutoResponseDTO.class);
-                    dto.setRestauranteId(p.getRestaurante().getId()); // Map manual
+                    dto.setRestauranteId(p.getRestaurante() != null ? p.getRestaurante().getId() : null);
                     return dto;
                 })
                 .collect(Collectors.toList());

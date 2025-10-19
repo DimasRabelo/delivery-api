@@ -11,9 +11,9 @@ public class PedidoResponseDTO {
     private Long restauranteId;
     private String restauranteNome;
     private String enderecoEntrega;
-    private String status; // ou StatusPedidoDTO se preferir
+    private String status; 
     private BigDecimal total;
-    private List<ItemPedidoDTO> itens;
+    private List<ItemPedidoDTO> itens; // Lista de itens já em DTO simples
 
     // Getters e Setters
     public Long getId() { return id; }

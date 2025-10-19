@@ -172,7 +172,7 @@ public class RestauranteController {
             @Parameter(description = "ID do restaurante") @PathVariable Long restauranteId,
             @Parameter(description = "Filtrar apenas disponíveis") @RequestParam(required = false) Boolean disponivel) {
 
-        List<ProdutoResponseDTO> produtos = produtoService.buscarProdutosPorRestaurante(restauranteId);
+        List<ProdutoResponseDTO> produtos = produtoService.buscarProdutosPorRestaurante(restauranteId, disponivel);
         ApiResponseWrapper<List<ProdutoResponseDTO>> response =
                 new ApiResponseWrapper<>(true, produtos, "Produtos encontrados");
         return ResponseEntity.ok(response);

@@ -16,6 +16,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.time.LocalDate;
 import java.util.List;
 
@@ -52,7 +53,7 @@ public class PedidoController {
     }
 
     // --------------------------------------------------------------------------
-    // 🔹 BUSCAR POR ID
+    // 🔹 BUSCAR PEDIDO POR ID
     // --------------------------------------------------------------------------
     @GetMapping("/{id}")
     @Operation(summary = "Buscar pedido por ID", description = "Recupera um pedido específico com todos os detalhes")
@@ -96,8 +97,8 @@ public class PedidoController {
 
     // --------------------------------------------------------------------------
     // 🔹 ATUALIZAR STATUS
-// --------------------------------------------------------------------------
-@PatchMapping("/{id}/status")
+    // --------------------------------------------------------------------------
+   @PatchMapping("/{id}/status")
 @Operation(summary = "Atualizar status do pedido", description = "Atualiza o status de um pedido")
 @ApiResponses({
     @ApiResponse(responseCode = "200", description = "Status atualizado com sucesso"),
@@ -108,25 +109,23 @@ public ResponseEntity<ApiResponseWrapper<PedidoResponseDTO>> atualizarStatus(
         @Parameter(description = "ID do pedido") @PathVariable Long id,
         @Valid @RequestBody StatusPedidoDTO statusDTO) {
 
+    // Converte a String recebida para o Enum StatusPedido
+    StatusPedido novoStatus;
     try {
-        // Converte a String recebida para o Enum
-        StatusPedido novoStatus = StatusPedido.valueOf(statusDTO.getStatus().toUpperCase());
-
-        PedidoResponseDTO pedido = pedidoService.atualizarStatusPedido(id, novoStatus);
-        ApiResponseWrapper<PedidoResponseDTO> response =
-                new ApiResponseWrapper<>(true, pedido, "Status atualizado com sucesso");
-
-        return ResponseEntity.ok(response);
-
+        novoStatus = StatusPedido.valueOf(statusDTO.getStatus().toUpperCase());
     } catch (IllegalArgumentException e) {
-        // Caso o valor do status seja inválido
         ApiResponseWrapper<PedidoResponseDTO> errorResponse =
                 new ApiResponseWrapper<>(false, null, "Status inválido: " + statusDTO.getStatus());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
+
+    // Chama o service já com StatusPedido válido
+    PedidoResponseDTO pedido = pedidoService.atualizarStatusPedido(id, novoStatus);
+    ApiResponseWrapper<PedidoResponseDTO> response =
+            new ApiResponseWrapper<>(true, pedido, "Status atualizado com sucesso");
+
+    return ResponseEntity.ok(response);
 }
-
-
     // --------------------------------------------------------------------------
     // 🔹 CANCELAR PEDIDO
     // --------------------------------------------------------------------------
@@ -198,9 +197,7 @@ public ResponseEntity<ApiResponseWrapper<PedidoResponseDTO>> atualizarStatus(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Itens para cálculo")
             CalculoPedidoDTO dto) {
 
-        // TODO: Implementar cálculo real com base no CEP e regras de promoção, futuramente
         CalculoPedidoResponseDTO calculo = pedidoService.calcularTotalPedido(dto);
-
         ApiResponseWrapper<CalculoPedidoResponseDTO> response =
                 new ApiResponseWrapper<>(true, calculo, "Total calculado com sucesso");
 
