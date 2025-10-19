@@ -1,10 +1,8 @@
 package com.deliverytech.delivery.repository;
 
-
-
-
-import com.deliverytech.delivery.dto.RelatorioVendas;
 import com.deliverytech.delivery.entity.Restaurante;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -15,11 +13,9 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
-
-
-
 @Repository
 public interface RestauranteRepository extends JpaRepository<Restaurante, Long> {
+
     // Buscar por nome exato
     Optional<Restaurante> findByNome(String nome);
 
@@ -45,7 +41,7 @@ public interface RestauranteRepository extends JpaRepository<Restaurante, Long> 
     List<Restaurante> findTop5ByOrderByNomeAsc();
 
     // Buscar restaurantes que possuem produtos cadastrados (apenas ativos)
-   @Query("SELECT DISTINCT r FROM Restaurante r JOIN r.produtos p WHERE r.ativo = true")
+    @Query("SELECT DISTINCT r FROM Restaurante r JOIN r.produtos p WHERE r.ativo = true")
     List<Restaurante> findRestaurantesComProdutos();
 
     // Buscar por faixa de taxa de entrega (apenas ativos)
@@ -56,14 +52,15 @@ public interface RestauranteRepository extends JpaRepository<Restaurante, Long> 
     @Query("SELECT DISTINCT r.categoria FROM Restaurante r WHERE r.ativo = true ORDER BY r.categoria")
     List<String> findCategoriasDisponiveis();
 
-    // Relatório de vendas por restaurante
-     @Query("SELECT r.nome as nomeRestaurante, " +
-           "SUM(p.valorTotal) as totalVendas, " +
-           "COUNT(p.id) as quantidadePedidos " +
-           "FROM Restaurante r " +
-           "LEFT JOIN Pedido p ON r.id = p.restaurante.id " +
-           "GROUP BY r.id, r.nome")
-    List<RelatorioVendas> relatorioVendasPorRestaurante();
+    // =================== NOVOS MÉTODOS PAGINADOS ===================
 
-   
+    // Filtrar por categoria e ativo
+    Page<Restaurante> findByCategoriaAndAtivo(String categoria, Boolean ativo, Pageable pageable);
+
+    // Filtrar só por categoria
+    Page<Restaurante> findByCategoria(String categoria, Pageable pageable);
+
+    // Filtrar só por ativo/inativo
+    Page<Restaurante> findByAtivo(Boolean ativo, Pageable pageable);
+
 }

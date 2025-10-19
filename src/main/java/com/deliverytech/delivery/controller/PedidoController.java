@@ -1,130 +1,206 @@
 package com.deliverytech.delivery.controller;
 
-
-import com.deliverytech.delivery.entity.Pedido; 
+import com.deliverytech.delivery.dto.*;
 import com.deliverytech.delivery.enums.StatusPedido;
 import com.deliverytech.delivery.service.PedidoService;
-import org.springframework.beans.factory.annotation.Autowired; 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.util.List;
 
-import java.util.List; import java.util.Optional;
+@RestController
+@RequestMapping("/api/pedidos")
+@CrossOrigin(origins = "*")
+@Tag(name = "Pedidos", description = "Operações relacionadas aos pedidos")
+public class PedidoController {
 
-@RestController @RequestMapping("/pedidos") @CrossOrigin(origins = "*") public class PedidoController {
+    @Autowired
+    private PedidoService pedidoService;
 
-@Autowired
-private PedidoService pedidoService;
+    // --------------------------------------------------------------------------
+    // 🔹 CRIAR PEDIDO
+    // --------------------------------------------------------------------------
+    @PostMapping
+    @Operation(summary = "Criar pedido", description = "Cria um novo pedido no sistema")
+    @ApiResponses({
+        @ApiResponse(responseCode = "201", description = "Pedido criado com sucesso"),
+        @ApiResponse(responseCode = "400", description = "Dados inválidos"),
+        @ApiResponse(responseCode = "404", description = "Cliente ou restaurante não encontrado"),
+        @ApiResponse(responseCode = "409", description = "Produto indisponível")
+    })
+    public ResponseEntity<ApiResponseWrapper<PedidoResponseDTO>> criarPedido(
+            @Valid @RequestBody
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Dados do pedido a ser criado")
+            PedidoDTO dto) {
 
+        PedidoResponseDTO pedido = pedidoService.criarPedido(dto);
+        ApiResponseWrapper<PedidoResponseDTO> response =
+                new ApiResponseWrapper<>(true, pedido, "Pedido criado com sucesso");
 
-/**
-* Criar novo pedido
-*/ @PostMapping
-public ResponseEntity<?> criarPedido(@RequestParam Long clienteId, @RequestParam Long restauranteId) {
-try {
-Pedido pedido = pedidoService.criarPedido(clienteId, restauranteId); return ResponseEntity.status(HttpStatus.CREATED).body(pedido);
-} catch (IllegalArgumentException e) {
-return ResponseEntity.badRequest().body("Erro: " + e.getMessage());
-} catch (Exception e) {
-return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-.body("Erro interno do servidor");
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    // --------------------------------------------------------------------------
+    // 🔹 BUSCAR PEDIDO POR ID
+    // --------------------------------------------------------------------------
+    @GetMapping("/{id}")
+    @Operation(summary = "Buscar pedido por ID", description = "Recupera um pedido específico com todos os detalhes")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Pedido encontrado"),
+        @ApiResponse(responseCode = "404", description = "Pedido não encontrado")
+    })
+    public ResponseEntity<ApiResponseWrapper<PedidoResponseDTO>> buscarPorId(
+            @Parameter(description = "ID do pedido") @PathVariable Long id) {
+
+        PedidoResponseDTO pedido = pedidoService.buscarPedidoPorId(id);
+        ApiResponseWrapper<PedidoResponseDTO> response =
+                new ApiResponseWrapper<>(true, pedido, "Pedido encontrado");
+
+        return ResponseEntity.ok(response);
+    }
+
+    // --------------------------------------------------------------------------
+    // 🔹 LISTAR PEDIDOS COM FILTROS
+    // --------------------------------------------------------------------------
+    @GetMapping
+    @Operation(summary = "Listar pedidos", description = "Lista pedidos com filtros opcionais e paginação")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Lista recuperada com sucesso")
+    })
+    public ResponseEntity<PagedResponseWrapper<PedidoResponseDTO>> listar(
+            @Parameter(description = "Status do pedido") @RequestParam(required = false) StatusPedido status,
+            @Parameter(description = "Data inicial")
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicio,
+            @Parameter(description = "Data final")
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim,
+            @Parameter(description = "Parâmetros de paginação") Pageable pageable) {
+
+        Page<PedidoResponseDTO> pedidos = pedidoService.listarPedidos(status, dataInicio, dataFim, pageable);
+        PagedResponseWrapper<PedidoResponseDTO> response = new PagedResponseWrapper<>(pedidos);
+
+        return ResponseEntity.ok(response);
+    }
+
+    // --------------------------------------------------------------------------
+    // 🔹 ATUALIZAR STATUS
+    // --------------------------------------------------------------------------
+   @PatchMapping("/{id}/status")
+@Operation(summary = "Atualizar status do pedido", description = "Atualiza o status de um pedido")
+@ApiResponses({
+    @ApiResponse(responseCode = "200", description = "Status atualizado com sucesso"),
+    @ApiResponse(responseCode = "404", description = "Pedido não encontrado"),
+    @ApiResponse(responseCode = "400", description = "Transição de status inválida")
+})
+public ResponseEntity<ApiResponseWrapper<PedidoResponseDTO>> atualizarStatus(
+        @Parameter(description = "ID do pedido") @PathVariable Long id,
+        @Valid @RequestBody StatusPedidoDTO statusDTO) {
+
+    // Converte a String recebida para o Enum StatusPedido
+    StatusPedido novoStatus;
+    try {
+        novoStatus = StatusPedido.valueOf(statusDTO.getStatus().toUpperCase());
+    } catch (IllegalArgumentException e) {
+        ApiResponseWrapper<PedidoResponseDTO> errorResponse =
+                new ApiResponseWrapper<>(false, null, "Status inválido: " + statusDTO.getStatus());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+    // Chama o service já com StatusPedido válido
+    PedidoResponseDTO pedido = pedidoService.atualizarStatusPedido(id, novoStatus);
+    ApiResponseWrapper<PedidoResponseDTO> response =
+            new ApiResponseWrapper<>(true, pedido, "Status atualizado com sucesso");
+
+    return ResponseEntity.ok(response);
 }
+    // --------------------------------------------------------------------------
+    // 🔹 CANCELAR PEDIDO
+    // --------------------------------------------------------------------------
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Cancelar pedido", description = "Cancela um pedido se possível")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Pedido cancelado com sucesso"),
+        @ApiResponse(responseCode = "404", description = "Pedido não encontrado"),
+        @ApiResponse(responseCode = "400", description = "Pedido não pode ser cancelado")
+    })
+    public ResponseEntity<Void> cancelarPedido(
+            @Parameter(description = "ID do pedido") @PathVariable Long id) {
+
+        pedidoService.cancelarPedido(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    // --------------------------------------------------------------------------
+    // 🔹 HISTÓRICO DO CLIENTE
+    // --------------------------------------------------------------------------
+    @GetMapping("/cliente/{clienteId}")
+    @Operation(summary = "Histórico do cliente", description = "Lista todos os pedidos de um cliente")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Histórico recuperado com sucesso"),
+        @ApiResponse(responseCode = "404", description = "Cliente não encontrado")
+    })
+    public ResponseEntity<ApiResponseWrapper<List<PedidoResponseDTO>>> buscarPorCliente(
+            @Parameter(description = "ID do cliente") @PathVariable Long clienteId) {
+
+        List<PedidoResponseDTO> pedidos = pedidoService.buscarPedidosPorCliente(clienteId);
+        ApiResponseWrapper<List<PedidoResponseDTO>> response =
+                new ApiResponseWrapper<>(true, pedidos, "Histórico recuperado com sucesso");
+
+        return ResponseEntity.ok(response);
+    }
+
+    // --------------------------------------------------------------------------
+    // 🔹 PEDIDOS POR RESTAURANTE
+    // --------------------------------------------------------------------------
+    @GetMapping("/restaurante/{restauranteId}")
+    @Operation(summary = "Pedidos do restaurante", description = "Lista todos os pedidos de um restaurante")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Pedidos recuperados com sucesso"),
+        @ApiResponse(responseCode = "404", description = "Restaurante não encontrado")
+    })
+    public ResponseEntity<ApiResponseWrapper<List<PedidoResponseDTO>>> buscarPorRestaurante(
+            @Parameter(description = "ID do restaurante") @PathVariable Long restauranteId,
+            @Parameter(description = "Status do pedido") @RequestParam(required = false) StatusPedido status) {
+
+        List<PedidoResponseDTO> pedidos = pedidoService.buscarPedidosPorRestaurante(restauranteId, status);
+        ApiResponseWrapper<List<PedidoResponseDTO>> response =
+                new ApiResponseWrapper<>(true, pedidos, "Pedidos recuperados com sucesso");
+
+        return ResponseEntity.ok(response);
+    }
+
+    // --------------------------------------------------------------------------
+    // 🔹 CALCULAR TOTAL DO PEDIDO
+    // --------------------------------------------------------------------------
+    @PostMapping("/calcular")
+    @Operation(summary = "Calcular total do pedido", description = "Calcula o total de um pedido sem salvá-lo")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Total calculado com sucesso"),
+        @ApiResponse(responseCode = "400", description = "Dados inválidos"),
+        @ApiResponse(responseCode = "404", description = "Produto não encontrado")
+    })
+    public ResponseEntity<ApiResponseWrapper<CalculoPedidoResponseDTO>> calcularTotal(
+            @Valid @RequestBody
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Itens para cálculo")
+            CalculoPedidoDTO dto) {
+
+        CalculoPedidoResponseDTO calculo = pedidoService.calcularTotalPedido(dto);
+        ApiResponseWrapper<CalculoPedidoResponseDTO> response =
+                new ApiResponseWrapper<>(true, calculo, "Total calculado com sucesso");
+
+        return ResponseEntity.ok(response);
+    }
 }
-
-
-/**
-* Adicionar item ao pedido
-*/ @PostMapping("/{pedidoId}/itens")
-public ResponseEntity<?> adicionarItem(@PathVariable Long pedidoId, @RequestParam Long produtoId, @RequestParam Integer quantidade) {
-try {
-Pedido pedido = pedidoService.adicionarItem(pedidoId, produtoId, quantidade); return ResponseEntity.ok(pedido);
-} catch (IllegalArgumentException e) {
-return ResponseEntity.badRequest().body("Erro: " + e.getMessage());
-} catch (Exception e) {
-return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-.body("Erro interno do servidor");
-}
-}
-
-
-/**
-* Confirmar pedido
-*/ @PutMapping("/{pedidoId}/confirmar")
-public ResponseEntity<?> confirmarPedido(@PathVariable Long pedidoId) { try {
-Pedido pedido = pedidoService.confirmarPedido(pedidoId); return ResponseEntity.ok(pedido);
-} catch (IllegalArgumentException e) {
-return ResponseEntity.badRequest().body("Erro: " + e.getMessage());
-} catch (Exception e) {
-return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-.body("Erro interno do servidor");
-}
-}
-
-
-/**
-* Buscar pedido por ID
-*/ @GetMapping("/{id}")
-public ResponseEntity<?> buscarPorId(@PathVariable Long id) { Optional<Pedido> pedido = pedidoService.buscarPorId(id);
-
-if (pedido.isPresent()) {
-return ResponseEntity.ok(pedido.get());
-} else {
-return ResponseEntity.notFound().build();
-}
-}
-
-
-/**
-* Listar pedidos por cliente
-*/ @GetMapping("/cliente/{clienteId}")
-public ResponseEntity<List<Pedido>> listarPorCliente(@PathVariable Long clienteId) { List<Pedido> pedidos = pedidoService.listarPorCliente(clienteId);
-return ResponseEntity.ok(pedidos);
-}
-
-
-/**
-* Buscar pedido por número
-*/ @GetMapping("/numero/{numeroPedido}")
-public ResponseEntity<?> buscarPorNumero(@PathVariable String numeroPedido) { Optional<Pedido> pedido = pedidoService.buscarPorNumero(numeroPedido);
-if (pedido.isPresent()) {
-return ResponseEntity.ok(pedido.get());
-} else {
-return ResponseEntity.notFound().build();
-}
-}
-
-
-/**
-* Atualizar status do pedido
-*/ @PutMapping("/{pedidoId}/status")
-public ResponseEntity<?> atualizarStatus(@PathVariable Long pedidoId,
-@RequestParam StatusPedido status) {
-try {
-Pedido pedido = pedidoService.atualizarStatus(pedidoId, status); return ResponseEntity.ok(pedido);
-} catch (IllegalArgumentException e) {
-return ResponseEntity.badRequest().body("Erro: " + e.getMessage());
-} catch (Exception e) {
-return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-.body("Erro interno do servidor");
-}
-}
-
-
-/**
-* Cancelar pedido
-*/ @PutMapping("/{pedidoId}/cancelar")
-public ResponseEntity<?> cancelarPedido(@PathVariable Long pedidoId,
-@RequestParam(required = false) String motivo) {
-try {
-Pedido pedido = pedidoService.cancelarPedido(pedidoId, motivo); return ResponseEntity.ok(pedido);
-} catch (IllegalArgumentException e) {
-return ResponseEntity.badRequest().body("Erro: " + e.getMessage());
-} catch (Exception e) {
-return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-.body("Erro interno do servidor");
-}
-}
-}
-
-
