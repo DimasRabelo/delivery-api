@@ -49,11 +49,11 @@ public class ClienteController {
     }
 
     // Ativar/Desativar cliente (soft delete)
-    @DeleteMapping("/{id}")
-    public ResponseEntity<ClienteResponseDTO> ativarDesativarCliente(@PathVariable Long id) {
-        ClienteResponseDTO cliente = clienteService.ativarDesativarCliente(id);
-        return ResponseEntity.ok(cliente);
-    }
+@DeleteMapping("/{id}")
+@ResponseStatus(HttpStatus.NO_CONTENT) // retorna 204
+public void ativarDesativarCliente(@PathVariable Long id) {
+    clienteService.ativarDesativarCliente(id);
+}
 
     // Listar todos os clientes ativos
     @GetMapping
