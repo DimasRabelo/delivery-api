@@ -45,10 +45,13 @@ public class PedidoController {
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Dados do pedido a ser criado")
             PedidoDTO dto) {
 
+        // Chama o serviço para criar o pedido
         PedidoResponseDTO pedido = pedidoService.criarPedido(dto);
+        // Envolve a resposta em um wrapper com mensagem de sucesso
         ApiResponseWrapper<PedidoResponseDTO> response =
                 new ApiResponseWrapper<>(true, pedido, "Pedido criado com sucesso");
 
+        // Retorna HTTP 201 (Created) com os dados do pedido
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -64,7 +67,9 @@ public class PedidoController {
     public ResponseEntity<ApiResponseWrapper<PedidoResponseDTO>> buscarPorId(
             @Parameter(description = "ID do pedido") @PathVariable Long id) {
 
+        // Chama o serviço para buscar pedido pelo ID
         PedidoResponseDTO pedido = pedidoService.buscarPedidoPorId(id);
+        // Envolve a resposta em wrapper com mensagem de sucesso
         ApiResponseWrapper<PedidoResponseDTO> response =
                 new ApiResponseWrapper<>(true, pedido, "Pedido encontrado");
 
@@ -89,43 +94,46 @@ public class PedidoController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim,
             @Parameter(description = "Parâmetros de paginação") Pageable pageable) {
 
+        // Chama o serviço para listar pedidos com filtros e paginação
         Page<PedidoResponseDTO> pedidos = pedidoService.listarPedidos(status, dataInicio, dataFim, pageable);
+        // Envolve a página de pedidos em wrapper paginado
         PagedResponseWrapper<PedidoResponseDTO> response = new PagedResponseWrapper<>(pedidos);
 
         return ResponseEntity.ok(response);
     }
 
     // --------------------------------------------------------------------------
-    // 🔹 ATUALIZAR STATUS
+    // 🔹 ATUALIZAR STATUS DO PEDIDO
     // --------------------------------------------------------------------------
    @PatchMapping("/{id}/status")
-@Operation(summary = "Atualizar status do pedido", description = "Atualiza o status de um pedido")
-@ApiResponses({
-    @ApiResponse(responseCode = "200", description = "Status atualizado com sucesso"),
-    @ApiResponse(responseCode = "404", description = "Pedido não encontrado"),
-    @ApiResponse(responseCode = "400", description = "Transição de status inválida")
-})
-public ResponseEntity<ApiResponseWrapper<PedidoResponseDTO>> atualizarStatus(
-        @Parameter(description = "ID do pedido") @PathVariable Long id,
-        @Valid @RequestBody StatusPedidoDTO statusDTO) {
+   @Operation(summary = "Atualizar status do pedido", description = "Atualiza o status de um pedido")
+   @ApiResponses({
+       @ApiResponse(responseCode = "200", description = "Status atualizado com sucesso"),
+       @ApiResponse(responseCode = "404", description = "Pedido não encontrado"),
+       @ApiResponse(responseCode = "400", description = "Transição de status inválida")
+   })
+   public ResponseEntity<ApiResponseWrapper<PedidoResponseDTO>> atualizarStatus(
+           @Parameter(description = "ID do pedido") @PathVariable Long id,
+           @Valid @RequestBody StatusPedidoDTO statusDTO) {
 
-    // Converte a String recebida para o Enum StatusPedido
-    StatusPedido novoStatus;
-    try {
-        novoStatus = StatusPedido.valueOf(statusDTO.getStatus().toUpperCase());
-    } catch (IllegalArgumentException e) {
-        ApiResponseWrapper<PedidoResponseDTO> errorResponse =
-                new ApiResponseWrapper<>(false, null, "Status inválido: " + statusDTO.getStatus());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-    }
+       // Converte a string recebida para Enum StatusPedido, tratando erro se inválido
+       StatusPedido novoStatus;
+       try {
+           novoStatus = StatusPedido.valueOf(statusDTO.getStatus().toUpperCase());
+       } catch (IllegalArgumentException e) {
+           ApiResponseWrapper<PedidoResponseDTO> errorResponse =
+                   new ApiResponseWrapper<>(false, null, "Status inválido: " + statusDTO.getStatus());
+           return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+       }
 
-    // Chama o service já com StatusPedido válido
-    PedidoResponseDTO pedido = pedidoService.atualizarStatusPedido(id, novoStatus);
-    ApiResponseWrapper<PedidoResponseDTO> response =
-            new ApiResponseWrapper<>(true, pedido, "Status atualizado com sucesso");
+       // Chama o serviço para atualizar status do pedido
+       PedidoResponseDTO pedido = pedidoService.atualizarStatusPedido(id, novoStatus);
+       ApiResponseWrapper<PedidoResponseDTO> response =
+               new ApiResponseWrapper<>(true, pedido, "Status atualizado com sucesso");
 
-    return ResponseEntity.ok(response);
-}
+       return ResponseEntity.ok(response);
+   }
+
     // --------------------------------------------------------------------------
     // 🔹 CANCELAR PEDIDO
     // --------------------------------------------------------------------------
@@ -139,7 +147,9 @@ public ResponseEntity<ApiResponseWrapper<PedidoResponseDTO>> atualizarStatus(
     public ResponseEntity<Void> cancelarPedido(
             @Parameter(description = "ID do pedido") @PathVariable Long id) {
 
+        // Chama o serviço para cancelar o pedido
         pedidoService.cancelarPedido(id);
+        // Retorna HTTP 204 (No Content) indicando cancelamento bem-sucedido
         return ResponseEntity.noContent().build();
     }
 
@@ -155,7 +165,9 @@ public ResponseEntity<ApiResponseWrapper<PedidoResponseDTO>> atualizarStatus(
     public ResponseEntity<ApiResponseWrapper<List<PedidoResponseDTO>>> buscarPorCliente(
             @Parameter(description = "ID do cliente") @PathVariable Long clienteId) {
 
+        // Chama o serviço para buscar pedidos de um cliente específico
         List<PedidoResponseDTO> pedidos = pedidoService.buscarPedidosPorCliente(clienteId);
+        // Envolve a lista em wrapper com mensagem de sucesso
         ApiResponseWrapper<List<PedidoResponseDTO>> response =
                 new ApiResponseWrapper<>(true, pedidos, "Histórico recuperado com sucesso");
 
@@ -175,7 +187,9 @@ public ResponseEntity<ApiResponseWrapper<PedidoResponseDTO>> atualizarStatus(
             @Parameter(description = "ID do restaurante") @PathVariable Long restauranteId,
             @Parameter(description = "Status do pedido") @RequestParam(required = false) StatusPedido status) {
 
+        // Chama o serviço para buscar pedidos de um restaurante, filtrando por status opcional
         List<PedidoResponseDTO> pedidos = pedidoService.buscarPedidosPorRestaurante(restauranteId, status);
+        // Envolve a lista em wrapper com mensagem de sucesso
         ApiResponseWrapper<List<PedidoResponseDTO>> response =
                 new ApiResponseWrapper<>(true, pedidos, "Pedidos recuperados com sucesso");
 
@@ -197,7 +211,9 @@ public ResponseEntity<ApiResponseWrapper<PedidoResponseDTO>> atualizarStatus(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Itens para cálculo")
             CalculoPedidoDTO dto) {
 
+        // Chama o serviço para calcular total do pedido sem salvar
         CalculoPedidoResponseDTO calculo = pedidoService.calcularTotalPedido(dto);
+        // Envolve o resultado em wrapper com mensagem de sucesso
         ApiResponseWrapper<CalculoPedidoResponseDTO> response =
                 new ApiResponseWrapper<>(true, calculo, "Total calculado com sucesso");
 

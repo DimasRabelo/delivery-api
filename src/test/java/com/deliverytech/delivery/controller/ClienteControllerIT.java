@@ -1,5 +1,6 @@
 package com.deliverytech.delivery.controller;
 
+// Importa as classes necessárias
 import com.deliverytech.delivery.dto.ClienteDTO;
 import com.deliverytech.delivery.entity.Cliente;
 import com.deliverytech.delivery.repository.ClienteRepository;
@@ -13,32 +14,41 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
-//import java.util.Optional;
-
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+/**
+ * Classe de testes de integração para o ClienteController.
+ * Usa o MockMvc para simular requisições HTTP reais.
+ */
 @SpringBootTest
-@ActiveProfiles("test")
-@AutoConfigureMockMvc
+@ActiveProfiles("test") // Usa o perfil de testes (application-test.properties)
+@AutoConfigureMockMvc   // Configura o MockMvc automaticamente
 class ClienteControllerIT {
 
     @Autowired
-    private MockMvc mockMvc;
+    private MockMvc mockMvc; // Simula as requisições HTTP para a API
 
     @Autowired
-    private ObjectMapper objectMapper;
+    private ObjectMapper objectMapper; // Converte objetos Java em JSON e vice-versa
 
     @Autowired
-    private ClienteRepository clienteRepository;
+    private ClienteRepository clienteRepository; // Permite manipular os dados diretamente no banco de teste
 
+    /**
+     * Executado antes de cada teste.
+     * Limpa o repositório para garantir que cada teste comece com o banco limpo.
+     */
     @BeforeEach
     void setup() {
-        clienteRepository.deleteAll(); // Limpar dados antes de cada teste
+        clienteRepository.deleteAll();
     }
 
-    // Novo método: imprime apenas um cliente
+    /**
+     * Método auxiliar para imprimir dados de um cliente no console durante os testes.
+     * Facilita a depuração dos resultados.
+     */
     private void imprimirCliente(String mensagem, Cliente cliente) {
         System.out.println("===== " + mensagem + " =====");
         if (cliente == null) {
@@ -54,6 +64,10 @@ class ClienteControllerIT {
         System.out.println("-----------------------------");
     }
 
+    /**
+     * Teste: deve cadastrar um novo cliente com sucesso.
+     * Verifica se o retorno contém os dados esperados e se o cliente foi salvo no banco.
+     */
     @Test
     void deveCadastrarCliente() throws Exception {
         imprimirCliente("ANTES de cadastrar", null);
@@ -67,7 +81,7 @@ class ClienteControllerIT {
         mockMvc.perform(post("/api/clientes")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(clienteDTO)))
-                .andExpect(status().isCreated())
+                .andExpect(status().isCreated()) // Espera retorno HTTP 201
                 .andExpect(jsonPath("$.nome", is("Carlos Silva")))
                 .andExpect(jsonPath("$.email", is("carlos.silva@example.com")));
 
@@ -75,6 +89,10 @@ class ClienteControllerIT {
         imprimirCliente("DEPOIS de cadastrar", cadastrado);
     }
 
+    /**
+     * Teste: deve buscar um cliente existente pelo ID.
+     * Verifica se os dados retornados correspondem ao cliente salvo.
+     */
     @Test
     void deveRetornarClientePorId() throws Exception {
         Cliente cliente = new Cliente();
@@ -88,7 +106,7 @@ class ClienteControllerIT {
         imprimirCliente("ANTES de buscar por ID", cliente);
 
         mockMvc.perform(get("/api/clientes/{id}", cliente.getId()))
-                .andExpect(status().isOk())
+                .andExpect(status().isOk()) // Espera retorno HTTP 200
                 .andExpect(jsonPath("$.nome", is("Ana Souza")))
                 .andExpect(jsonPath("$.email", is("ana.souza@example.com")));
 
@@ -96,6 +114,10 @@ class ClienteControllerIT {
         imprimirCliente("DEPOIS de buscar por ID", clienteBuscado);
     }
 
+    /**
+     * Teste: deve atualizar os dados de um cliente existente.
+     * Verifica se o nome foi alterado corretamente.
+     */
     @Test
     void deveAtualizarCliente() throws Exception {
         Cliente cliente = new Cliente();
@@ -124,6 +146,10 @@ class ClienteControllerIT {
         imprimirCliente("DEPOIS de atualizar", atualizado);
     }
 
+    /**
+     * Teste: deve desativar (deletar logicamente) um cliente.
+     * O campo "ativo" deve passar de true para false.
+     */
     @Test
     void deveDeletarCliente() throws Exception {
         Cliente cliente = new Cliente();
@@ -137,15 +163,19 @@ class ClienteControllerIT {
         imprimirCliente("ANTES de deletar", cliente);
 
         mockMvc.perform(delete("/api/clientes/{id}", cliente.getId()))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isNoContent()); // Espera retorno HTTP 204
 
         Cliente deletado = clienteRepository.findById(cliente.getId()).orElse(null);
         assert deletado != null;
-        assert !deletado.isAtivo(); // ativo deve ser false
+        assert !deletado.isAtivo(); // Deve estar desativado
 
         imprimirCliente("DEPOIS de deletar", deletado);
     }
 
+    /**
+     * Teste: deve retornar erro ao tentar cadastrar um cliente com email duplicado.
+     * Verifica se o sistema retorna um status 400 (Bad Request).
+     */
     @Test
     void deveRetornarErroAoCadastrarClienteComEmailExistente() throws Exception {
         Cliente cliente = new Cliente();
@@ -160,14 +190,14 @@ class ClienteControllerIT {
 
         ClienteDTO novoCliente = new ClienteDTO();
         novoCliente.setNome("Outro João");
-        novoCliente.setEmail("joao.paulo@example.com"); // mesmo email
+        novoCliente.setEmail("joao.paulo@example.com"); // Email repetido
         novoCliente.setTelefone("11955555555");
         novoCliente.setEndereco("Rua Nova, 20");
 
         mockMvc.perform(post("/api/clientes")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(novoCliente)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest()); // Espera erro 400
 
         imprimirCliente("DEPOIS de tentar cadastrar email duplicado", cliente);
         System.out.println("Tentativa de cadastrar email duplicado resultou em BAD_REQUEST");
