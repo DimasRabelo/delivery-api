@@ -1,9 +1,9 @@
 package com.deliverytech.delivery.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
+import com.deliverytech.delivery.validation.ValidTelefone;
+import com.deliverytech.delivery.validation.ValidCategoria;
 import java.math.BigDecimal;
 
 /**
@@ -14,85 +14,51 @@ import java.math.BigDecimal;
 @Schema(description = "Dados para cadastro de restaurante")
 public class RestauranteDTO {
 
-    // ---------------------------------------------------
-    // Nome do restaurante
-    // Exemplo: "Pizza Frango"
-    // Campo obrigatório para identificar o restaurante
-    // ---------------------------------------------------
     @Schema(description = "Nome do restaurante", example = "Pizza Frango", required = true)
     @NotBlank(message = "Nome é obrigatório")
+    @Size(min = 2, max = 100, message = "Nome deve ter entre 2 e 100 caracteres")
     private String nome;
 
-    // ---------------------------------------------------
-    // Categoria do restaurante
-    // Exemplo: "Italiana", pode ter valores permitidos
-    // Útil para filtros e organização de restaurantes
-    // ---------------------------------------------------
-    @Schema(description = "Categoria do restaurante", example = "Italiana", allowableValues = {"Italiana", "Brasileira", "Japonesa", "Mexicana", "Árabe"})
-    @NotBlank(message = "Categoria é obrigatória")
+    @Schema(description = "Categoria do restaurante", example = "Italiana")
+    @NotNull(message = "Categoria é obrigatória")
+    @ValidCategoria
     private String categoria;
 
-    // ---------------------------------------------------
-    // Endereço completo
-    // Exemplo: "Rua das Flores, 123 - Centro"
-    // Campo obrigatório para entrega e localização
-    // ---------------------------------------------------
-    @Schema(description = "Endereço completo do restaurante", example = "Rua das Flores, 123 - Centro")
-    @NotBlank(message = "Endereço é obrigatório")
-    private String endereco;
-
-    // ---------------------------------------------------
-    // Telefone de contato
-    // Exemplo: "11999999999"
-    // Necessário para comunicação com clientes
-    // ---------------------------------------------------
     @Schema(description = "Telefone para contato", example = "11999999999")
     @NotBlank(message = "Telefone é obrigatório")
+    @ValidTelefone
     private String telefone;
 
-    // ---------------------------------------------------
-    // Taxa de entrega
-    // Exemplo: 5.50
-    // Não pode ser negativa
-    // ---------------------------------------------------
-    @Schema(description = "Taxa de entrega em reais", example = "5.50", minimum = "0")
+    @Schema(description = "Taxa de entrega em reais", example = "5.50", minimum = "0", maximum = "50")
     @NotNull(message = "Taxa de entrega é obrigatória")
-    @DecimalMin(value = "0.0", inclusive = true, message = "Taxa de entrega não pode ser negativa")
+    @DecimalMin(value = "0.01", inclusive = true, message = "Taxa de entrega deve ser positiva")
+    @DecimalMax(value = "50.0", message = "Taxa de entrega não pode exceder R$ 50,00")
     private BigDecimal taxaEntrega;
 
-    // ---------------------------------------------------
-    // Avaliação do restaurante
-    // Exemplo: 4.5
-    // Representa nota média de clientes
-    // ---------------------------------------------------
+    @Schema(description = "Tempo de entrega em minutos", example = "45")
+    @NotNull(message = "Tempo de entrega é obrigatório")
+    @Min(value = 10, message = "Tempo mínimo de entrega é 10 minutos")
+    @Max(value = 120, message = "Tempo máximo de entrega é 120 minutos")
+    private Integer tempoEntrega;
+
+    @Schema(description = "Endereço completo do restaurante", example = "Rua das Flores, 123 - Centro")
+    @NotBlank(message = "Endereço é obrigatório")
+    @Size(max = 200, message = "Endereço não pode exceder 200 caracteres")
+    private String endereco;
+
+    @Schema(description = "Email para contato do restaurante", example = "contato@restaurante.com")
+    @Email(message = "Email deve ter formato válido")
+    private String email;
+
     @Schema(description = "Avaliação do restaurante", example = "4.5", minimum = "0")
     @NotNull(message = "Avaliação é obrigatória")
     @DecimalMin(value = "0.0", inclusive = true, message = "Avaliação não pode ser negativa")
     private BigDecimal avaliacao;
 
-    // ---------------------------------------------------
-    // Status ativo/inativo
-    // Exemplo: true
-    // Controla se o restaurante aparece para pedidos
-    // ---------------------------------------------------
     @Schema(description = "Indica se o restaurante está ativo", example = "true")
     @NotNull(message = "Status ativo é obrigatório")
     private Boolean ativo;
 
-    // ---------------------------------------------------
-    // Tempo de entrega estimado
-    // Exemplo: 45 (minutos)
-    // Útil para informar o cliente sobre previsão de entrega
-    // ---------------------------------------------------
-    @Schema(description = "Tempo de entrega em minutos", example = "45")
-    @NotNull(message = "Tempo de entrega é obrigatório")
-    private Integer tempoEntrega;
-
-    // ---------------------------------------------------
-    // Horário de funcionamento
-    // Exemplo: "08:00-22:00"
-    // Informativo para saber quando o restaurante está aberto
-    // ---------------------------------------------------
     @Schema(description = "Horário de funcionamento do restaurante", example = "08:00-22:00")
     @NotBlank(message = "Horário de funcionamento é obrigatório")
     private String horarioFuncionamento;
@@ -126,4 +92,7 @@ public class RestauranteDTO {
 
     public String getHorarioFuncionamento() { return horarioFuncionamento; }
     public void setHorarioFuncionamento(String horarioFuncionamento) { this.horarioFuncionamento = horarioFuncionamento; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 }
