@@ -3,14 +3,14 @@ package com.deliverytech.delivery.exception;
 import java.time.LocalDateTime;
 import java.util.Map;
 
-public class ValidationErrorResponse {
+public class ValidationException {
 
     private int status;
     private String error;
     private Map<String, String> validationErrors;
     private LocalDateTime timestamp;
 
-    public ValidationErrorResponse(int status, String error, Map<String, String> validationErrors, LocalDateTime timestamp) {
+    public ValidationException(int status, String error, Map<String, String> validationErrors, LocalDateTime timestamp) {
         this.status = status;
         this.error = error;
         this.validationErrors = validationErrors;

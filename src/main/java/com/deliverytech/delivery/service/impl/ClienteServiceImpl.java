@@ -1,7 +1,7 @@
 package com.deliverytech.delivery.service.impl;
 
 import com.deliverytech.delivery.dto.ClienteDTO;
-import com.deliverytech.delivery.dto.ClienteResponseDTO;
+import com.deliverytech.delivery.dto.response.ClienteResponseDTO;
 import com.deliverytech.delivery.entity.Cliente;
 import com.deliverytech.delivery.exception.BusinessException;
 import com.deliverytech.delivery.repository.ClienteRepository;

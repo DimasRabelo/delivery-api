@@ -1,7 +1,8 @@
 package com.deliverytech.delivery.service;
 
 import com.deliverytech.delivery.dto.ProdutoDTO;
-import com.deliverytech.delivery.dto.ProdutoResponseDTO;
+import com.deliverytech.delivery.dto.response.ProdutoResponseDTO;
+
 import java.util.List;
 
 public interface ProdutoService {

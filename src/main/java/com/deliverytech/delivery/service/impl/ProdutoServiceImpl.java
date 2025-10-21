@@ -1,7 +1,7 @@
 package com.deliverytech.delivery.service.impl;
 
 import com.deliverytech.delivery.dto.ProdutoDTO;
-import com.deliverytech.delivery.dto.ProdutoResponseDTO;
+import com.deliverytech.delivery.dto.response.ProdutoResponseDTO;
 import com.deliverytech.delivery.entity.Produto;
 import com.deliverytech.delivery.entity.Restaurante;
 import com.deliverytech.delivery.exception.BusinessException;

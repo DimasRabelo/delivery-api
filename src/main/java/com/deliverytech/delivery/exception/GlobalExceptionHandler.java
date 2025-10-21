@@ -7,6 +7,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import com.deliverytech.delivery.dto.ErrorResponse;
+
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,7 +39,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ValidationErrorResponse> handleValidationException(MethodArgumentNotValidException ex) {
+    public ResponseEntity<ValidationException> handleValidationException(MethodArgumentNotValidException ex) {
 
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getAllErrors().forEach(error -> {
@@ -46,7 +48,7 @@ public class GlobalExceptionHandler {
             errors.put(fieldName, errorMessage);
         });
 
-        ValidationErrorResponse errorResponse = new ValidationErrorResponse(
+        ValidationException errorResponse = new ValidationException(
                 HttpStatus.BAD_REQUEST.value(),
                 "Dados inválidos",
                 errors,

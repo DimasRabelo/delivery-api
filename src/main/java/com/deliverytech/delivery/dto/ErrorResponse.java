@@ -1,4 +1,4 @@
-package com.deliverytech.delivery.exception;
+package com.deliverytech.delivery.dto;
 
 import java.time.LocalDateTime;
 

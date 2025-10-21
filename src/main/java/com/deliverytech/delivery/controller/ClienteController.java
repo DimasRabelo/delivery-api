@@ -1,7 +1,7 @@
 package com.deliverytech.delivery.controller;
 
 import com.deliverytech.delivery.dto.ClienteDTO;
-import com.deliverytech.delivery.dto.ClienteResponseDTO;
+import com.deliverytech.delivery.dto.response.ClienteResponseDTO;
 import com.deliverytech.delivery.service.ClienteService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
