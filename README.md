@@ -1,75 +1,73 @@
 🍔 DeliveryTech API
 
-Sistema de delivery desenvolvido com Spring Boot e Java 21 LTS para gerenciar clientes, restaurantes, produtos e pedidos.
-Agora com camada de serviços e controllers REST completos, regras de negócio robustas e transações consistentes.
+Sistema de delivery desenvolvido com Spring Boot 3.5.6 e Java 21 LTS para gerenciar clientes, restaurantes, produtos, pedidos e relatórios.
+Agora com camada de serviços robusta, controllers REST completos, validações, transações consistentes e documentação profissional com Swagger/OpenAPI.
 
 🚀 Tecnologias Utilizadas
 
 Java 21 LTS
 
-Spring Boot 3.5.6
-
-Spring Web, Spring Data JPA
+Spring Boot 3.5.6 (Web, Data JPA, Validation)
 
 H2 Database (em memória)
 
 Maven
 
-Bean Validation
-
 ModelMapper
 
-🏗️ Arquitetura do Sistema
-[Cliente Mobile/Web]
+springdoc-openapi-ui (Swagger)
+
+🏗️ Arquitetura
+[App Mobile / Portal Web / Integrações]
         ↓ HTTP REST
 [Controllers] ← Recebem requisições, validam entrada
         ↓
-[Services] ← Regras de negócio, validações, transações
+[Services] ← Regras de negócio e transações
         ↓
-[Repositories] ← Acesso aos dados
+[Repositories] ← Acesso ao banco de dados
         ↓
-[Banco de Dados]
+[Banco de Dados (H2)]
 
 
-Controllers: Exposição de endpoints REST
+Controllers → Endpoints REST
 
-Services: Lógica de negócio, validações, transações
+Services → Lógica de negócio, validações e transações
 
-Repositories: Acesso e consultas ao banco
+Repositories → Persistência
 
-Banco: H2 em memória para testes
+Banco → H2 em memória
 
-🧩 Estrutura das Pastas
-src/main/java
- └─ com.deliverytech
-     ├─ controller       # REST Controllers
-     ├─ service          # Lógica de negócio
-     ├─ repository       # Camada de persistência
-     ├─ dto              # DTOs request/response
-     └─ entity           # Entidades JPA
+🧩 Estrutura de Pastas
+
+![Estrutura do projeto](https://raw.githubusercontent.com/DimasRabelo/delivery-api/main/src/main/estrutura%3Dprojeto.png)
+
 
 ⚙️ Funcionalidades Implementadas
-🛠️ Camada de Services
+🛠️ Services
 
-ClienteService: cadastro, busca, atualização, toggle de status
+ClienteService → cadastro, busca, atualização, toggle status
 
-RestauranteService: cadastro, busca, filtro por categoria, taxa de entrega
+RestauranteService → cadastro, filtros, cálculo taxa entrega
 
-ProdutoService: cadastro, busca por restaurante/categoria, controle de disponibilidade
+ProdutoService → cadastro, busca, controle de disponibilidade
 
-PedidoService: criação de pedido com transação completa, cálculo de total, atualização de status, cancelamento
+PedidoService → criação de pedidos, cálculo de total, atualização de status, cancelamento
+
+RelatorioService → geração de relatórios: vendas, produtos mais vendidos, clientes ativos, pedidos por período
 
 📦 DTOs e Validações
 
 Request DTOs: ClienteDTO, RestauranteDTO, ProdutoDTO, PedidoDTO, ItemPedidoDTO
 
-Response DTOs: ClienteResponseDTO, RestauranteResponseDTO, ProdutoResponseDTO, PedidoResponseDTO, PedidoResumoDTO
+Response DTOs: ClienteResponseDTO, RestauranteResponseDTO, ProdutoResponseDTO, PedidoResponseDTO, PedidoResumoDTO, RelatorioVendasDTO, RelatorioProdutosDTO, RelatorioClientesDTO, RelatorioPedidosDTO
 
-Validações: @NotNull, @NotBlank, @Email, @Size, @DecimalMin, @Valid
+Validações padrão: @NotNull, @NotBlank, @Email, @Size, @DecimalMin, @Valid
+
+Validações customizadas: @ValidCEP, @ValidTelefone, @ValidCategoria, @ValidHorarioFuncionamento
 
 🔄 Regras de Negócio
 
-Cliente ativo obrigatoriamente para pedidos
+Cliente deve estar ativo para pedidos
 
 Email único para clientes
 
@@ -77,256 +75,153 @@ Produtos válidos pertencentes ao restaurante
 
 Status de pedido com transições válidas
 
-Total do pedido calculado somando itens + taxa de entrega
+Total do pedido = soma itens + taxa de entrega
 
 💥 Transações
 
-@Transactional nos métodos críticos (ex.: criarPedido)
+@Transactional em métodos críticos
 
-Falha em qualquer etapa reverte toda a operação
+Falha em qualquer etapa → operação revertida
 
-📋 Endpoints REST (Testes Locais)
+📋 Endpoints REST
 
-Todos os endpoints devem ser testados em: http://localhost:8080/
-
-Você pode testar todos os endpoints usando a coleção Postman:
-DeliveryTech Postman Collection
+Base URL: http://localhost:8080/api
 
 🔹 Clientes
 
-Criar Cliente
+POST /clientes → criar cliente
 
-POST /api/clientes
-Content-Type: application/json
+GET /clientes → listar clientes ativos
 
-{
-  "nome": "Lucas Pereira",
-  "email": "lucas@email.com",
-  "telefone": "(11) 99999-7777",
-  "endereco": "Rua F, 404 - São Paulo/SP"
-}
+GET /clientes/{id} → buscar cliente por ID
 
+GET /clientes/email/{email} → buscar por email
 
-Listar Clientes Ativos
+PUT /clientes/{id} → atualizar cliente
 
-GET /api/clientes
-
-
-Buscar Cliente por ID
-
-GET /api/clientes/4
-
-
-Buscar Cliente por Email
-
-GET /api/clientes/email/pedro@email.com
-
-
-Atualizar Cliente
-
-PUT /api/clientes/1
-Content-Type: application/json
-
-{
-  "id": 1,
-  "nome": "João Silva",
-  "email": "joao@email.com",
-  "telefone": "(11) 99999-1111",
-  "endereco": "Rua Antonio Pinto Ferreira Filho, 123 - São Paulo/SP",
-  "ativo": true
-}
-
-
-Ativar/Desativar Cliente
-
-PATCH /api/clientes/1/status
-Content-Type: application/json
-
-{
-  "ativo": false
-}
+PATCH /clientes/{id}/status → ativar/desativar
 
 🔹 Restaurantes
 
-Cadastrar Restaurante
+CRUD completo
 
-POST /api/restaurantes
-Content-Type: application/json
+Filtros: por categoria e ativo
 
-{
-  "nome": "Churrascaria Bom Sabor",
-  "categoria": "Churrasco",
-  "endereco": "Av. Brasil, 123",
-  "telefone": "(11) 4444-5555",
-  "taxaEntrega": 6.5,
-  "avaliacao": 4.3,
-  "ativo": true
-}
+Cálculo de taxa de entrega: /restaurantes/{id}/taxa-entrega/{cep}
 
-
-Listar Restaurantes Ativos
-
-GET /api/restaurantes
-
-
-Buscar Restaurante por ID
-
-GET /api/restaurantes/3
-
-
-Filtrar por Categoria
-
-GET /api/restaurantes/categoria/Hamburgueria
-
-
-Atualizar Restaurante
-
-PUT /api/restaurantes/2
-Content-Type: application/json
-
-{
-  "nome": "Churrascaria Bom Sabor",
-  "categoria": "Churrasco",
-  "endereco": "Av. Brasil, 800",
-  "telefone": "(11) 4444-5555",
-  "taxaEntrega": 6.5,
-  "avaliacao": 4.3
-}
-
-
-Calcular Taxa de Entrega
-
-GET /api/restaurantes/4/taxa-entrega/01001-000
-
-
-Ativar/Desativar Restaurante
-
-PATCH /api/restaurantes/4/status
-Content-Type: application/json
-
-{
-  "ativo": true
-}
+Restaurantes próximos: /restaurantes/proximos/{cep}
 
 🔹 Produtos
 
-Cadastrar Produto
+CRUD completo
 
-POST /api/produtos
-Content-Type: application/json
+Toggle disponibilidade: /produtos/{id}/disponibilidade
 
-{
-  "nome": "Pizza Quatro Queijos",
-  "descricao": "Molho de tomate, mussarela, parmesão, provolone e gorgonzola",
-  "categoria": "Pizza",
-  "preco": 42.90,
-  "disponivel": true,
-  "restauranteId": 1
-}
-
-
-Listar Produtos de um Restaurante
-
-GET /api/produtos/restaurante/2
-
-
-Buscar Produto por ID
-
-GET /api/produtos/3
-
-
-Filtrar Produto por Categoria
-
-GET /api/produtos/categoria/Pizza
-
-
-Alterar Disponibilidade
-
-PATCH /api/produtos/1/disponibilidade?disponivel=false
-
-
-Atualizar Produto
-
-PUT /api/produtos/1
-Content-Type: application/json
-
-{
-  "nome": "Pizza Margherita Atualizada",
-  "descricao": "Molho de tomate, mussarela, manjericão e orégano",
-  "preco": 42.00,
-  "categoria": "Pizza",
-  "disponivel": true,
-  "restauranteId": 1
-}
+Filtros: por restaurante, categoria ou nome
 
 🔹 Pedidos
 
-Criar Pedido
+Criar, buscar, atualizar status e cancelar
 
-POST /api/pedidos
-Content-Type: application/json
+Histórico por cliente e restaurante
+
+Calcular total sem salvar: /pedidos/calcular
+
+🔹 Relatórios
+
+Vendas por restaurante: /relatorios/vendas-por-restaurante?inicio=YYYY-MM-DD&fim=YYYY-MM-DD
+
+Produtos mais vendidos: /relatorios/produtos-mais-vendidos?inicio=YYYY-MM-DD&fim=YYYY-MM-DD
+
+Clientes mais ativos: /relatorios/clientes-ativos?inicio=YYYY-MM-DD&fim=YYYY-MM-DD
+
+Pedidos por período: /relatorios/pedidos-por-periodo?inicio=YYYY-MM-DD&fim=YYYY-MM-DD
+
+Todos os relatórios retornam ApiResponse<T> padronizado.
+
+🧪 Testes
+
+MockMvc → integração completa para todos os controllers
+
+Cenários obrigatórios: criação, busca, atualização, exclusão, filtros, relatórios
+
+Testes de validação: dados inválidos, conflitos, entidades inexistentes
+
+Collection Postman/Insomnia pronta para execução
+
+🎯 Cenários de Teste Obrigatórios
+
+GET /restaurantes?categoria=Italiana&ativo=true&page=0&size=10
+
+GET /restaurantes/1/produtos?disponivel=true
+
+POST /pedidos → criar pedido completo
+
+GET /relatorios/vendas-por-restaurante → período definido
+
+Swagger UI → interface funcionando, Try it Out
+
+🌟 Padronização de Respostas
+
+ApiResponse<T>:
 
 {
-  "clienteId": 1,
-  "restauranteId": 1,
-  "itens": [
-    { "produtoId": 2, "quantidade": 1 },
-    { "produtoId": 3, "quantidade": 1 }
-  ],
-  "observacoes": "Sem cebola",
-  "enderecoEntrega": "Rua Exemplo, 123"
+  "success": true,
+  "data": { ... },
+  "message": "Operação realizada com sucesso",
+  "timestamp": "2025-10-21T12:00:00Z"
 }
 
 
-Calcular Total dos Itens
-
-POST /api/pedidos/calcular
-Content-Type: application/json
-
-[
-  { "produtoId": 2, "quantidade": 2 },
-  { "produtoId": 3, "quantidade": 1 }
-]
-
-
-Atualizar Status do Pedido
-
-PATCH /api/pedidos/2/status
-Content-Type: application/json
+PagedResponse<T>:
 
 {
-  "status": "PREPARANDO"
+  "content": [ ... ],
+  "page": { "number":0, "size":10, "totalElements":50, "totalPages":5 },
+  "links": { "first":"/api/restaurantes?page=0", "last":"/api/restaurantes?page=4" }
 }
 
 
-Listar Histórico de Pedidos de um Cliente
+ErrorResponse (RFC 7807):
 
-GET /api/pedidos/clientes/3/pedidos
+{
+  "timestamp": "2025-10-21T12:00:00",
+  "status": 400,
+  "error": "Dados inválidos",
+  "message": "Erro de validação nos dados enviados",
+  "path": "/api/produtos",
+  "details": { "nome": "Nome é obrigatório", "preco": "Preço deve ser maior que zero" }
+}
 
-
-Cancelar Pedido
-
-DELETE /api/pedidos/1
-
-🧪 Testes e Validação
-
-Testes unitários para Services
-
-Testes de integração para Controllers
-
-Collection Postman/Insomnia: postman/DeliveryAPI.postman_collection.json
-
-🏃‍♂️ Como Executar
+🔧 Como Executar
 git clone https://github.com/DimasRabelo/delivery-api.git
 cd delivery-api
 ./mvnw spring-boot:run
 
 
-Console H2: http://localhost:8080/h2-console
+Swagger UI: http://localhost:8080/swagger-ui/index.html
+
+API Docs: http://localhost:8080/api-docs
+
+H2 Console: http://localhost:8080/h2-console
 
 JDBC URL: jdbc:h2:mem:deliverydb
+
 User: sa
+
 Password: (em branco)
+
+📦 Entregáveis
+
+Controllers REST completos
+
+Swagger/OpenAPI atualizado
+
+Testes de integração (MockMvc)
+
+Respostas padronizadas e códigos HTTP corretos
+
+Collection Postman/Insomnia com todos os cenários
 
 👨‍💻 Desenvolvedor
 
