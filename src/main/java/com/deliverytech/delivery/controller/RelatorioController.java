@@ -43,24 +43,35 @@ public class RelatorioController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fim) {
 
         List<RelatorioVendasDTO> relatorio = relatorioService.gerarRelatorioVendas(inicio, fim);
-        return ResponseEntity.ok(new ApiResponseWrapper<>(true, relatorio, "Relatório de vendas gerado com sucesso"));
-    }
+      // Definindo a mensagem conforme se a lista está vazia ou não
+    String mensagem = relatorio.isEmpty()
+            ? "Nenhum produto vendido no período informado"
+            : "Relatório de produtos gerado com sucesso";
+
+    return ResponseEntity.ok(new ApiResponseWrapper<>(true, relatorio, mensagem));
+}
 
     // ======================================================
     // Produtos mais vendidos
     // ======================================================
     @GetMapping("/produtos-mais-vendidos")
-    @Operation(summary = "Produtos mais vendidos",
-               description = "Retorna os produtos com maior quantidade vendida no período")
-    public ResponseEntity<ApiResponseWrapper<List<RelatorioProdutosDTO>>> produtosMaisVendidos(
-            @RequestParam("dataInicio")
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate inicio,
-            @RequestParam("dataFim")
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fim) {
+@Operation(summary = "Produtos mais vendidos",
+           description = "Retorna os produtos com maior quantidade vendida no período")
+public ResponseEntity<ApiResponseWrapper<List<RelatorioProdutosDTO>>> produtosMaisVendidos(
+        @RequestParam("dataInicio")
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate inicio,
+        @RequestParam("dataFim")
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fim) {
 
-        List<RelatorioProdutosDTO> relatorio = relatorioService.gerarRelatorioProdutos(inicio, fim);
-        return ResponseEntity.ok(new ApiResponseWrapper<>(true, relatorio, "Relatório de produtos gerado com sucesso"));
-    }
+    List<RelatorioProdutosDTO> relatorio = relatorioService.gerarRelatorioProdutos(inicio, fim);
+
+    // Definindo a mensagem conforme se a lista está vazia ou não
+    String mensagem = relatorio.isEmpty()
+            ? "Nenhum produto vendido no período informado"
+            : "Relatório de produtos gerado com sucesso";
+
+    return ResponseEntity.ok(new ApiResponseWrapper<>(true, relatorio, mensagem));
+}
 
     // ======================================================
     // Clientes mais ativos
@@ -75,8 +86,13 @@ public class RelatorioController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fim) {
 
         List<RelatorioClientesDTO> relatorio = relatorioService.gerarRelatorioClientes(inicio, fim);
-        return ResponseEntity.ok(new ApiResponseWrapper<>(true, relatorio, "Relatório de clientes gerado com sucesso"));
-    }
+        // Definindo a mensagem conforme se a lista está vazia ou não
+    String mensagem = relatorio.isEmpty()
+            ? "Nenhum Cliente ativo no período informado"
+            : "Relatório de produtos gerado com sucesso";
+
+    return ResponseEntity.ok(new ApiResponseWrapper<>(true, relatorio, mensagem));
+}
 
     // ======================================================
     // Pedidos por período
@@ -91,6 +107,11 @@ public class RelatorioController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fim) {
 
         List<RelatorioPedidosDTO> relatorio = relatorioService.gerarRelatorioPedidos(inicio, fim);
-        return ResponseEntity.ok(new ApiResponseWrapper<>(true, relatorio, "Relatório de pedidos gerado com sucesso"));
-    }
+       // Definindo a mensagem conforme se a lista está vazia ou não
+    String mensagem = relatorio.isEmpty()
+            ? "Nenhum Pedido no período informado"
+            : "Relatório de produtos gerado com sucesso";
+
+    return ResponseEntity.ok(new ApiResponseWrapper<>(true, relatorio, mensagem));
+}
 }

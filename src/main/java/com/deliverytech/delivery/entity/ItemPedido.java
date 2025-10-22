@@ -16,7 +16,7 @@ public class ItemPedido {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private int quantidade;
+    private Integer quantidade;
     private BigDecimal precoUnitario;
     private BigDecimal subtotal;
 

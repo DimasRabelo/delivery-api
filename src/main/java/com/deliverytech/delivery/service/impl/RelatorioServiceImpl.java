@@ -2,11 +2,11 @@ package com.deliverytech.delivery.service.impl;
 
 import com.deliverytech.delivery.dto.relatorio.*;
 import com.deliverytech.delivery.entity.*;
-import com.deliverytech.delivery.exception.EntityNotFoundException;
 import com.deliverytech.delivery.repository.PedidoRepository;
 import com.deliverytech.delivery.service.RelatorioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -24,6 +24,7 @@ public class RelatorioServiceImpl implements RelatorioService {
     // RELATÓRIO DE VENDAS POR RESTAURANTE
     // ======================================================
     @Override
+    @Transactional(readOnly = true)
     public List<RelatorioVendasDTO> gerarRelatorioVendas(LocalDate inicio, LocalDate fim) {
         LocalDateTime inicioDia = inicio.atStartOfDay();
         LocalDateTime fimDia = fim.atTime(23, 59, 59);
@@ -36,7 +37,7 @@ public class RelatorioServiceImpl implements RelatorioService {
                 .collect(Collectors.toList());
 
         if (pedidos.isEmpty()) {
-            throw new EntityNotFoundException("Nenhum pedido encontrado no período informado");
+            return Collections.emptyList(); // Nenhum pedido → retorna lista vazia
         }
 
         Map<Restaurante, List<Pedido>> pedidosPorRestaurante =
@@ -62,6 +63,7 @@ public class RelatorioServiceImpl implements RelatorioService {
     // RELATÓRIO DE PRODUTOS MAIS VENDIDOS
     // ======================================================
     @Override
+    @Transactional(readOnly = true)
     public List<RelatorioProdutosDTO> gerarRelatorioProdutos(LocalDate inicio, LocalDate fim) {
         LocalDateTime inicioDia = inicio.atStartOfDay();
         LocalDateTime fimDia = fim.atTime(23, 59, 59);
@@ -74,29 +76,34 @@ public class RelatorioServiceImpl implements RelatorioService {
                 .collect(Collectors.toList());
 
         if (pedidos.isEmpty()) {
-            throw new EntityNotFoundException("Nenhum pedido encontrado no período informado");
+            return Collections.emptyList(); // Nenhum pedido → retorna lista vazia
         }
 
-        Map<Produto, Integer> contagemProdutos = new HashMap<>();
+        Map<Long, Integer> contagemProdutos = new HashMap<>();
+        Map<Long, Produto> produtosMap = new HashMap<>();
 
-       for (Pedido pedido : pedidos) {
-    for (ItemPedido item : pedido.getItens()) {
-        if (item.getProduto() != null) {  // removeu item.getQuantidade() != null
-            contagemProdutos.merge(item.getProduto(), item.getQuantidade(), Integer::sum);
+        for (Pedido pedido : pedidos) {
+            if (pedido.getItens() != null) {
+                for (ItemPedido item : pedido.getItens()) {
+                    if (item != null && item.getProduto() != null && item.getQuantidade() != null) {
+                        Long produtoId = item.getProduto().getId();
+                        contagemProdutos.merge(produtoId, item.getQuantidade(), Integer::sum);
+                        produtosMap.put(produtoId, item.getProduto());
+                    }
+                }
+            }
         }
-    }
-}
 
         if (contagemProdutos.isEmpty()) {
-            throw new EntityNotFoundException("Nenhum produto vendido no período informado");
+            return Collections.emptyList(); // Nenhum produto vendido
         }
 
         return contagemProdutos.entrySet().stream()
                 .map(entry -> {
-                    Produto produto = entry.getKey();
+                    Produto produto = produtosMap.get(entry.getKey());
                     Integer totalVendido = entry.getValue();
-                    BigDecimal receitaTotal = produto.getPreco()
-                            .multiply(BigDecimal.valueOf(totalVendido));
+                    BigDecimal preco = produto.getPreco() != null ? produto.getPreco() : BigDecimal.ZERO;
+                    BigDecimal receitaTotal = preco.multiply(BigDecimal.valueOf(totalVendido));
                     return new RelatorioProdutosDTO(
                             produto.getNome(),
                             produto.getCategoria(),
@@ -112,6 +119,7 @@ public class RelatorioServiceImpl implements RelatorioService {
     // RELATÓRIO DE CLIENTES COM MAIS PEDIDOS
     // ======================================================
     @Override
+    @Transactional(readOnly = true)
     public List<RelatorioClientesDTO> gerarRelatorioClientes(LocalDate inicio, LocalDate fim) {
         LocalDateTime inicioDia = inicio.atStartOfDay();
         LocalDateTime fimDia = fim.atTime(23, 59, 59);
@@ -124,7 +132,7 @@ public class RelatorioServiceImpl implements RelatorioService {
                 .collect(Collectors.toList());
 
         if (pedidos.isEmpty()) {
-            throw new EntityNotFoundException("Nenhum pedido encontrado no período informado");
+            return Collections.emptyList(); // Nenhum pedido → retorna lista vazia
         }
 
         Map<Cliente, List<Pedido>> pedidosPorCliente =
@@ -151,6 +159,7 @@ public class RelatorioServiceImpl implements RelatorioService {
     // RELATÓRIO DE PEDIDOS (GERAL)
     // ======================================================
     @Override
+    @Transactional(readOnly = true)
     public List<RelatorioPedidosDTO> gerarRelatorioPedidos(LocalDate inicio, LocalDate fim) {
         LocalDateTime inicioDia = inicio.atStartOfDay();
         LocalDateTime fimDia = fim.atTime(23, 59, 59);
@@ -164,7 +173,7 @@ public class RelatorioServiceImpl implements RelatorioService {
                 .collect(Collectors.toList());
 
         if (pedidos.isEmpty()) {
-            throw new EntityNotFoundException("Nenhum pedido encontrado no período informado");
+            return Collections.emptyList(); // Nenhum pedido → retorna lista vazia
         }
 
         return pedidos.stream()
