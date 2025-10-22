@@ -3,20 +3,19 @@ package com.deliverytech.delivery.service.impl;
 import com.deliverytech.delivery.dto.RestauranteDTO;
 import com.deliverytech.delivery.dto.response.RestauranteResponseDTO;
 import com.deliverytech.delivery.entity.Restaurante;
-import com.deliverytech.delivery.exception.BusinessException;
+import com.deliverytech.delivery.exception.ConflictException;
 import com.deliverytech.delivery.exception.EntityNotFoundException;
 import com.deliverytech.delivery.repository.RestauranteRepository;
 import com.deliverytech.delivery.service.RestauranteService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,7 +32,13 @@ public class RestauranteServiceImpl implements RestauranteService {
     @Override
     public RestauranteResponseDTO cadastrarRestaurante(RestauranteDTO dto) {
         restauranteRepository.findByNome(dto.getNome())
-                .ifPresent(r -> { throw new BusinessException("Restaurante já cadastrado: " + dto.getNome()); });
+            .ifPresent(r -> { 
+                throw new ConflictException(
+                    "Restaurante já cadastrado: " + dto.getNome(),
+                    "nome",
+                    dto.getNome()
+                ); 
+            });
 
         Restaurante restaurante = modelMapper.map(dto, Restaurante.class);
         restaurante.setAtivo(true);
@@ -75,7 +80,13 @@ public class RestauranteServiceImpl implements RestauranteService {
                 .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado: " + id));
 
         restauranteRepository.findByNome(dto.getNome())
-                .ifPresent(r -> { if (!r.getId().equals(id)) throw new BusinessException("Nome já cadastrado: " + dto.getNome()); });
+                .ifPresent(r -> { if (!r.getId().equals(id)) 
+                    throw new ConflictException(
+                        "Nome já cadastrado: " + dto.getNome(),
+                        "nome",
+                        dto.getNome()
+                    ); 
+                });
 
         restaurante.setNome(dto.getNome());
         restaurante.setCategoria(dto.getCategoria());
@@ -99,78 +110,74 @@ public class RestauranteServiceImpl implements RestauranteService {
         return modelMapper.map(restaurante, RestauranteResponseDTO.class);
     }
 
-  
-@Override
-public BigDecimal calcularTaxaEntrega(Long restauranteId, String cepDestino) {
-    Restaurante restaurante = restauranteRepository.findById(restauranteId)
-            .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado: " + restauranteId));
+    @Override
+    public BigDecimal calcularTaxaEntrega(Long restauranteId, String cepDestino) {
+        Restaurante restaurante = restauranteRepository.findById(restauranteId)
+                .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado: " + restauranteId));
 
-    if (!restaurante.getAtivo()) {
-        throw new BusinessException("Restaurante não está disponível");
+        if (!restaurante.getAtivo()) {
+            throw new ConflictException("Restaurante não está disponível");
+        }
+
+        BigDecimal taxaBase = restaurante.getTaxaEntrega() != null 
+                ? restaurante.getTaxaEntrega() 
+                : BigDecimal.valueOf(5.00);
+
+        char ultimoDigito = cepDestino != null && !cepDestino.isEmpty()
+                ? cepDestino.charAt(cepDestino.length() - 1)
+                : '0';
+
+        if (Character.isDigit(ultimoDigito) && (ultimoDigito - '0') % 2 != 0) {
+            taxaBase = taxaBase.add(BigDecimal.valueOf(5.00));
+        }
+
+        return taxaBase.setScale(2, RoundingMode.HALF_UP);
     }
 
-    // Simulação simples: se o CEP de destino terminar com número par, taxa base; ímpar, taxa + 5
-    BigDecimal taxaBase = restaurante.getTaxaEntrega() != null ? restaurante.getTaxaEntrega() : BigDecimal.valueOf(5.00);
-    char ultimoDigito = cepDestino != null && !cepDestino.isEmpty()
-            ? cepDestino.charAt(cepDestino.length() - 1)
-            : '0';
+    @Override
+    public List<RestauranteResponseDTO> buscarRestaurantesProximos(String cep, Integer raioKm) {
+        List<Restaurante> ativos = restauranteRepository.findByAtivoTrue();
 
-    if (Character.isDigit(ultimoDigito) && (ultimoDigito - '0') % 2 != 0) {
-        taxaBase = taxaBase.add(BigDecimal.valueOf(5.00));
+        char ultimoDigito = cep != null && !cep.isEmpty() ? cep.charAt(cep.length() - 1) : '0';
+        List<Restaurante> proximos;
+
+        if (Character.isDigit(ultimoDigito) && (ultimoDigito - '0') % 2 != 0) {
+            int meio = ativos.size() / 2;
+            proximos = ativos.subList(0, meio);
+        } else {
+            proximos = ativos;
+        }
+
+        return proximos.stream()
+                .map(r -> modelMapper.map(r, RestauranteResponseDTO.class))
+                .collect(Collectors.toList());
     }
 
-    return taxaBase.setScale(2, java.math.RoundingMode.HALF_UP);
-}
+    @Override
+    public Page<RestauranteResponseDTO> listarRestaurantes(String categoria, Boolean ativo, Pageable pageable) {
+        Page<Restaurante> restaurantesPage;
 
+        if (categoria != null && ativo != null) {
+            restaurantesPage = restauranteRepository.findByCategoriaAndAtivo(categoria, ativo, pageable);
+        } else if (categoria != null) {
+            restaurantesPage = restauranteRepository.findByCategoria(categoria, pageable);
+        } else if (ativo != null) {
+            restaurantesPage = restauranteRepository.findByAtivo(ativo, pageable);
+        } else {
+            restaurantesPage = restauranteRepository.findAll(pageable);
+        }
 
-   @Override
-public List<RestauranteResponseDTO> buscarRestaurantesProximos(String cep, Integer raioKm) {
-    // Pega todos restaurantes ativos
-    List<Restaurante> ativos = restauranteRepository.findByAtivoTrue();
-
-    // Simulação: se o último dígito do CEP for ímpar, retorna metade da lista; se par, toda a lista
-    char ultimoDigito = cep != null && !cep.isEmpty() ? cep.charAt(cep.length() - 1) : '0';
-    List<Restaurante> proximos;
-
-    if (Character.isDigit(ultimoDigito) && (ultimoDigito - '0') % 2 != 0) {
-        int meio = ativos.size() / 2;
-        proximos = ativos.subList(0, meio);
-    } else {
-        proximos = ativos;
+        return restaurantesPage.map(r -> modelMapper.map(r, RestauranteResponseDTO.class));
     }
-
-    return proximos.stream()
-            .map(r -> modelMapper.map(r, RestauranteResponseDTO.class))
-            .collect(Collectors.toList());
-}
-
-
-   @Override
-public Page<RestauranteResponseDTO> listarRestaurantes(String categoria, Boolean ativo, Pageable pageable) {
-    Page<Restaurante> restaurantesPage;
-
-    if (categoria != null && ativo != null) {
-        restaurantesPage = restauranteRepository.findByCategoriaAndAtivo(categoria, ativo, pageable);
-    } else if (categoria != null) {
-        restaurantesPage = restauranteRepository.findByCategoria(categoria, pageable);
-    } else if (ativo != null) {
-        restaurantesPage = restauranteRepository.findByAtivo(ativo, pageable);
-    } else {
-        restaurantesPage = restauranteRepository.findAll(pageable);
-    }
-
-    // Converte Page<Restaurante> para Page<RestauranteResponseDTO>
-    return restaurantesPage.map(r -> modelMapper.map(r, RestauranteResponseDTO.class));
-}
 
     private void validarDadosRestaurante(Restaurante restaurante) {
         if (restaurante.getNome() == null || restaurante.getNome().trim().isEmpty())
-            throw new BusinessException("Nome é obrigatório");
+            throw new ConflictException("Nome é obrigatório", "nome", null);
         if (restaurante.getTelefone() == null || restaurante.getTelefone().trim().isEmpty())
-            throw new BusinessException("Telefone é obrigatório");
+            throw new ConflictException("Telefone é obrigatório", "telefone", null);
         if (restaurante.getEndereco() == null || restaurante.getEndereco().trim().isEmpty())
-            throw new BusinessException("Endereço é obrigatório");
+            throw new ConflictException("Endereço é obrigatório", "endereco", null);
         if (restaurante.getTaxaEntrega() != null && restaurante.getTaxaEntrega().compareTo(BigDecimal.ZERO) < 0)
-            throw new BusinessException("Taxa de entrega não pode ser negativa");
+            throw new ConflictException("Taxa de entrega não pode ser negativa", "taxaEntrega", restaurante.getTaxaEntrega());
     }
 }

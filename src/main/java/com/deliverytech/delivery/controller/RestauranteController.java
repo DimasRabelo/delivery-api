@@ -12,16 +12,21 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import jakarta.validation.Valid;
+
 import java.math.BigDecimal;
 import java.util.List;
 
+@Validated
 @RestController
 @RequestMapping("/api/restaurantes")
 @CrossOrigin(origins = "*")
@@ -47,13 +52,10 @@ public class RestauranteController {
                     description = "Dados do restaurante a ser criado"
             ) RestauranteDTO dto) {
 
-        // Chama o serviço para cadastrar o restaurante
         RestauranteResponseDTO restaurante = restauranteService.cadastrarRestaurante(dto);
-        // Envolve a resposta em um wrapper com mensagem de sucesso
         ApiResponseWrapper<RestauranteResponseDTO> response =
                 new ApiResponseWrapper<>(true, restaurante, "Restaurante criado com sucesso");
 
-        // Retorna HTTP 201 (Created) com os dados do restaurante
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -68,12 +70,8 @@ public class RestauranteController {
             @Parameter(description = "Status ativo do restaurante") @RequestParam(required = false) Boolean ativo,
             @Parameter(description = "Parâmetros de paginação") Pageable pageable) {
 
-        // Chama o serviço para listar restaurantes com filtros e paginação
         Page<RestauranteResponseDTO> restaurantes = restauranteService.listarRestaurantes(categoria, ativo, pageable);
-        // Envolve a página de restaurantes em um wrapper de resposta paginada
         PagedResponseWrapper<RestauranteResponseDTO> response = new PagedResponseWrapper<>(restaurantes);
-
-        // Retorna HTTP 200 com a lista paginada
         return ResponseEntity.ok(response);
     }
 
@@ -85,11 +83,9 @@ public class RestauranteController {
             @ApiResponse(responseCode = "404", description = "Restaurante não encontrado")
     })
     public ResponseEntity<ApiResponseWrapper<RestauranteResponseDTO>> buscarPorId(
-            @Parameter(description = "ID do restaurante") @PathVariable Long id) {
+            @Parameter(description = "ID do restaurante") @PathVariable @Positive(message = "O ID deve ser positivo") Long id) {
 
-        // Chama o serviço para buscar o restaurante pelo ID
         RestauranteResponseDTO restaurante = restauranteService.buscarRestaurantePorId(id);
-        // Envolve a resposta em um wrapper com mensagem de sucesso
         ApiResponseWrapper<RestauranteResponseDTO> response =
                 new ApiResponseWrapper<>(true, restaurante, "Restaurante encontrado");
         return ResponseEntity.ok(response);
@@ -104,12 +100,10 @@ public class RestauranteController {
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
     public ResponseEntity<ApiResponseWrapper<RestauranteResponseDTO>> atualizar(
-            @Parameter(description = "ID do restaurante") @PathVariable Long id,
+            @Parameter(description = "ID do restaurante") @PathVariable @Positive(message = "O ID deve ser positivo") Long id,
             @Valid @RequestBody RestauranteDTO dto) {
 
-        // Chama o serviço para atualizar o restaurante
         RestauranteResponseDTO restaurante = restauranteService.atualizarRestaurante(id, dto);
-        // Envolve a resposta em um wrapper com mensagem de sucesso
         ApiResponseWrapper<RestauranteResponseDTO> response =
                 new ApiResponseWrapper<>(true, restaurante, "Restaurante atualizado com sucesso");
 
@@ -124,11 +118,9 @@ public class RestauranteController {
             @ApiResponse(responseCode = "404", description = "Restaurante não encontrado")
     })
     public ResponseEntity<ApiResponseWrapper<RestauranteResponseDTO>> alterarStatus(
-            @Parameter(description = "ID do restaurante") @PathVariable Long id) {
+            @Parameter(description = "ID do restaurante") @PathVariable @Positive(message = "O ID deve ser positivo") Long id) {
 
-        // Chama o serviço para alternar o status do restaurante
         RestauranteResponseDTO restaurante = restauranteService.alterarStatusRestaurante(id);
-        // Envolve a resposta em um wrapper com mensagem de sucesso
         ApiResponseWrapper<RestauranteResponseDTO> response =
                 new ApiResponseWrapper<>(true, restaurante, "Status alterado com sucesso");
 
@@ -142,11 +134,9 @@ public class RestauranteController {
             @ApiResponse(responseCode = "200", description = "Restaurantes encontrados")
     })
     public ResponseEntity<ApiResponseWrapper<List<RestauranteResponseDTO>>> buscarPorCategoria(
-            @Parameter(description = "Categoria do restaurante") @PathVariable String categoria) {
+            @Parameter(description = "Categoria do restaurante") @PathVariable @NotBlank(message = "A categoria não pode ser vazia") String categoria) {
 
-        // Chama o serviço para buscar restaurantes da categoria informada
         List<RestauranteResponseDTO> restaurantes = restauranteService.buscarRestaurantesPorCategoria(categoria);
-        // Envolve a lista em um wrapper com mensagem de sucesso
         ApiResponseWrapper<List<RestauranteResponseDTO>> response =
                 new ApiResponseWrapper<>(true, restaurantes, "Restaurantes encontrados");
 
@@ -161,12 +151,10 @@ public class RestauranteController {
             @ApiResponse(responseCode = "404", description = "Restaurante não encontrado")
     })
     public ResponseEntity<ApiResponseWrapper<BigDecimal>> calcularTaxaEntrega(
-            @Parameter(description = "ID do restaurante") @PathVariable Long id,
-            @Parameter(description = "CEP de destino") @PathVariable String cep) {
+            @Parameter(description = "ID do restaurante") @PathVariable @Positive(message = "O ID deve ser positivo") Long id,
+            @Parameter(description = "CEP de destino") @PathVariable @NotBlank(message = "O CEP é obrigatório") String cep) {
 
-        // Chama o serviço para calcular a taxa de entrega
         BigDecimal taxa = restauranteService.calcularTaxaEntrega(id, cep);
-        // Envolve a taxa em um wrapper com mensagem de sucesso
         ApiResponseWrapper<BigDecimal> response =
                 new ApiResponseWrapper<>(true, taxa, "Taxa calculada com sucesso");
 
@@ -180,12 +168,10 @@ public class RestauranteController {
             @ApiResponse(responseCode = "200", description = "Restaurantes próximos encontrados")
     })
     public ResponseEntity<ApiResponseWrapper<List<RestauranteResponseDTO>>> buscarProximos(
-            @Parameter(description = "CEP de referência") @PathVariable String cep,
-            @Parameter(description = "Raio em km") @RequestParam(defaultValue = "10") Integer raio) {
+            @Parameter(description = "CEP de referência") @PathVariable @NotBlank(message = "O CEP é obrigatório") String cep,
+            @Parameter(description = "Raio em km") @RequestParam(defaultValue = "10") @Positive(message = "O raio deve ser positivo") Integer raio) {
 
-        // Chama o serviço para buscar restaurantes próximos dentro do raio informado
         List<RestauranteResponseDTO> restaurantes = restauranteService.buscarRestaurantesProximos(cep, raio);
-        // Envolve a lista em um wrapper com mensagem de sucesso
         ApiResponseWrapper<List<RestauranteResponseDTO>> response =
                 new ApiResponseWrapper<>(true, restaurantes, "Restaurantes próximos encontrados");
 
@@ -200,14 +186,13 @@ public class RestauranteController {
             @ApiResponse(responseCode = "404", description = "Restaurante não encontrado")
     })
     public ResponseEntity<ApiResponseWrapper<List<ProdutoResponseDTO>>> buscarProdutosDoRestaurante(
-            @Parameter(description = "ID do restaurante") @PathVariable Long restauranteId,
+            @Parameter(description = "ID do restaurante") @PathVariable @Positive(message = "O ID deve ser positivo") Long restauranteId,
             @Parameter(description = "Filtrar apenas disponíveis") @RequestParam(required = false) Boolean disponivel) {
 
-        // Chama o serviço para buscar produtos do restaurante, podendo filtrar por disponibilidade
         List<ProdutoResponseDTO> produtos = produtoService.buscarProdutosPorRestaurante(restauranteId, disponivel);
-        // Envolve a lista de produtos em um wrapper com mensagem de sucesso
         ApiResponseWrapper<List<ProdutoResponseDTO>> response =
                 new ApiResponseWrapper<>(true, produtos, "Produtos encontrados");
+
         return ResponseEntity.ok(response);
     }
 }
