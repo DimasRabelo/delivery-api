@@ -129,13 +129,13 @@ Calcular total sem salvar: /pedidos/calcular
 
 🔹 Relatórios
 
-Vendas por restaurante: /relatorios/vendas-por-restaurante?inicio=YYYY-MM-DD&fim=YYYY-MM-DD
+Vendas por restaurante: /relatorios/vendas-por-restaurante?dataInicio=YYYY-MM-DD&dataFim=YYYY-MM-DD
 
-Produtos mais vendidos: /relatorios/produtos-mais-vendidos?inicio=YYYY-MM-DD&fim=YYYY-MM-DD
+Produtos mais vendidos: /relatorios/produtos-mais-vendidos?dataInicio=YYYY-MM-DD&dataFim=YYYY-MM-DD
 
-Clientes mais ativos: /relatorios/clientes-ativos?inicio=YYYY-MM-DD&fim=YYYY-MM-DD
+Clientes mais ativos: /relatorios/clientes-ativos?dataInicio=YYYY-MM-DD&dataFim=YYYY-MM-DD
 
-Pedidos por período: /relatorios/pedidos-por-periodo?inicio=YYYY-MM-DD&fim=YYYY-MM-DD
+Pedidos por período: /relatorios/pedidos-por-periodo?dataInicio=YYYY-MM-DD&dataFim=YYYY-MM-DD
 
 Todos os relatórios retornam ApiResponse<T> padronizado.
 
