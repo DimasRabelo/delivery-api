@@ -23,4 +23,9 @@ public interface ProdutoService {
 
 
     void removerProduto(Long id);
+
+    // =====================
+    // VERIFICA SE O USUÁRIO LOGADO É DONO DO PRODUTO
+    // =====================
+    boolean isOwner(Long produtoId);
 }

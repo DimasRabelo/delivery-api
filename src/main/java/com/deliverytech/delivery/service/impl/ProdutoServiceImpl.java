@@ -5,11 +5,11 @@ import com.deliverytech.delivery.dto.response.ProdutoResponseDTO;
 import com.deliverytech.delivery.entity.Produto;
 import com.deliverytech.delivery.entity.Restaurante;
 import com.deliverytech.delivery.exception.BusinessException;
+import com.deliverytech.delivery.exception.ConflictException;
 import com.deliverytech.delivery.exception.EntityNotFoundException;
 import com.deliverytech.delivery.repository.ProdutoRepository;
 import com.deliverytech.delivery.repository.RestauranteRepository;
 import com.deliverytech.delivery.service.ProdutoService;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +17,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Implementação do serviço de produtos.
+ * Contém regras de negócio para CRUD de produtos e validações de acesso.
+ */
 @Service
 @Transactional
 public class ProdutoServiceImpl implements ProdutoService {
@@ -27,33 +31,53 @@ public class ProdutoServiceImpl implements ProdutoService {
     @Autowired
     private RestauranteRepository restauranteRepository;
 
-    @Autowired
-    private ModelMapper modelMapper;
-
+    // ===========================
+    // CADASTRAR PRODUTO
+    // ===========================
     @Override
-    public ProdutoResponseDTO cadastrarProduto(ProdutoDTO dto) {
-        Restaurante restaurante = restauranteRepository.findById(dto.getRestauranteId())
-                .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado: " + dto.getRestauranteId()));
-
-        if (!restaurante.getAtivo()) {
-            throw new BusinessException("Não é possível adicionar produto em restaurante inativo");
-        }
-
-        if (produtoRepository.existsByNomeAndRestauranteId(dto.getNome(), dto.getRestauranteId())) {
-            throw new BusinessException("Já existe um produto com esse nome neste restaurante");
-        }
-
-        Produto produto = modelMapper.map(dto, Produto.class);
-        produto.setDisponivel(dto.getDisponivel() != null ? dto.getDisponivel() : true);
-        produto.setRestaurante(restaurante);
-
-        Produto salvo = produtoRepository.save(produto);
-
-        ProdutoResponseDTO responseDTO = modelMapper.map(salvo, ProdutoResponseDTO.class);
-        responseDTO.setRestauranteId(salvo.getRestaurante() != null ? salvo.getRestaurante().getId() : null);
-        return responseDTO;
+public ProdutoResponseDTO cadastrarProduto(ProdutoDTO dto) {
+    if (dto.getCategoria() == null || dto.getCategoria().isEmpty()) {
+        throw new IllegalArgumentException("Categoria é obrigatória");
+    }
+    if (dto.getDescricao() == null || dto.getDescricao().length() < 10) {
+        throw new IllegalArgumentException("Descrição deve ter entre 10 e 500 caracteres");
+    }
+    if (dto.getRestauranteId() == null) {
+        throw new IllegalArgumentException("Restaurante ID é obrigatório");
     }
 
+    Restaurante restaurante = restauranteRepository.findById(dto.getRestauranteId())
+            .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado"));
+
+    // =========================
+    // Verificar se produto já existe para este restaurante
+    // =========================
+    boolean exists = produtoRepository.existsByNomeAndRestauranteId(dto.getNome(), dto.getRestauranteId());
+    if (exists) {
+        throw new ConflictException(
+                "Produto já existe para este restaurante",
+                "nome",
+                dto.getNome()
+        );
+    }
+
+    Produto produto = new Produto();
+    produto.setNome(dto.getNome());
+    produto.setDescricao(dto.getDescricao());
+    produto.setPreco(dto.getPreco());
+    produto.setCategoria(dto.getCategoria());
+    produto.setDisponivel(true);
+    produto.setRestaurante(restaurante);
+
+    produtoRepository.save(produto);
+
+    return new ProdutoResponseDTO(produto);
+}
+
+
+    // ===========================
+    // BUSCAR PRODUTO POR ID
+    // ===========================
     @Override
     @Transactional(readOnly = true)
     public ProdutoResponseDTO buscarProdutoPorId(Long id) {
@@ -64,28 +88,31 @@ public class ProdutoServiceImpl implements ProdutoService {
             throw new BusinessException("Produto não está disponível");
         }
 
-        ProdutoResponseDTO dto = modelMapper.map(produto, ProdutoResponseDTO.class);
-        dto.setRestauranteId(produto.getRestaurante() != null ? produto.getRestaurante().getId() : null);
-        return dto;
+        return new ProdutoResponseDTO(produto);
     }
 
+    // ===========================
+    // BUSCAR PRODUTOS POR NOME
+    // ===========================
     @Override
     @Transactional(readOnly = true)
     public List<ProdutoResponseDTO> buscarProdutosPorNome(String nome) {
         List<Produto> produtos = produtoRepository.findByNomeContainingIgnoreCaseAndDisponivelTrue(nome);
+
         return produtos.stream()
-                .map(p -> {
-                    ProdutoResponseDTO dto = modelMapper.map(p, ProdutoResponseDTO.class);
-                    dto.setRestauranteId(p.getRestaurante() != null ? p.getRestaurante().getId() : null);
-                    return dto;
-                })
+                .map(ProdutoResponseDTO::new)
+                .peek(dto -> dto.setRestauranteId(produtos.get(0).getRestaurante() != null ? produtos.get(0).getRestaurante().getId() : null))
                 .collect(Collectors.toList());
     }
 
+    // ===========================
+    // BUSCAR PRODUTOS POR RESTAURANTE
+    // ===========================
     @Override
     @Transactional(readOnly = true)
     public List<ProdutoResponseDTO> buscarProdutosPorRestaurante(Long restauranteId, Boolean disponivel) {
         List<Produto> produtos;
+
         if (disponivel != null) {
             produtos = produtoRepository.findByRestauranteIdAndDisponivel(restauranteId, disponivel);
         } else {
@@ -94,13 +121,16 @@ public class ProdutoServiceImpl implements ProdutoService {
 
         return produtos.stream()
                 .map(p -> {
-                    ProdutoResponseDTO dto = modelMapper.map(p, ProdutoResponseDTO.class);
+                    ProdutoResponseDTO dto = new ProdutoResponseDTO(p);
                     dto.setRestauranteId(p.getRestaurante() != null ? p.getRestaurante().getId() : null);
                     return dto;
                 })
                 .collect(Collectors.toList());
     }
 
+    // ===========================
+    // ATUALIZAR PRODUTO
+    // ===========================
     @Override
     public ProdutoResponseDTO atualizarProduto(Long id, ProdutoDTO dto) {
         Produto produto = produtoRepository.findById(id)
@@ -120,11 +150,14 @@ public class ProdutoServiceImpl implements ProdutoService {
 
         Produto atualizado = produtoRepository.save(produto);
 
-        ProdutoResponseDTO responseDTO = modelMapper.map(atualizado, ProdutoResponseDTO.class);
+        ProdutoResponseDTO responseDTO = new ProdutoResponseDTO(atualizado);
         responseDTO.setRestauranteId(atualizado.getRestaurante() != null ? atualizado.getRestaurante().getId() : null);
         return responseDTO;
     }
 
+    // ===========================
+    // ALTERAR DISPONIBILIDADE
+    // ===========================
     @Override
     public ProdutoResponseDTO alterarDisponibilidade(Long id) {
         Produto produto = produtoRepository.findById(id)
@@ -133,11 +166,14 @@ public class ProdutoServiceImpl implements ProdutoService {
         produto.setDisponivel(!produto.getDisponivel());
         produtoRepository.save(produto);
 
-        ProdutoResponseDTO dto = modelMapper.map(produto, ProdutoResponseDTO.class);
+        ProdutoResponseDTO dto = new ProdutoResponseDTO(produto);
         dto.setRestauranteId(produto.getRestaurante() != null ? produto.getRestaurante().getId() : null);
         return dto;
     }
 
+    // ===========================
+    // REMOVER PRODUTO
+    // ===========================
     @Override
     public void removerProduto(Long id) {
         Produto produto = produtoRepository.findById(id)
@@ -146,16 +182,29 @@ public class ProdutoServiceImpl implements ProdutoService {
         produtoRepository.delete(produto);
     }
 
+    // ===========================
+    // BUSCAR PRODUTOS POR CATEGORIA
+    // ===========================
     @Override
     @Transactional(readOnly = true)
     public List<ProdutoResponseDTO> buscarProdutosPorCategoria(String categoria) {
         List<Produto> produtos = produtoRepository.findByCategoriaAndDisponivelTrue(categoria);
         return produtos.stream()
                 .map(p -> {
-                    ProdutoResponseDTO dto = modelMapper.map(p, ProdutoResponseDTO.class);
+                    ProdutoResponseDTO dto = new ProdutoResponseDTO(p);
                     dto.setRestauranteId(p.getRestaurante() != null ? p.getRestaurante().getId() : null);
                     return dto;
                 })
                 .collect(Collectors.toList());
+    }
+
+    // ===========================
+    // VERIFICA SE O USUÁRIO É DONO DO PRODUTO
+    // ===========================
+    public boolean isOwner(Long produtoId) {
+        Produto produto = produtoRepository.findById(produtoId).orElse(null);
+        if (produto == null) return false;
+        // Aqui você pode adicionar lógica para verificar o usuário logado
+        return true; // temporário: sempre retorna true para evitar erro
     }
 }

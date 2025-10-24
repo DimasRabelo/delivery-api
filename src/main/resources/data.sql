@@ -1,11 +1,11 @@
--- Inserir usuários de teste
+-- Inserir usuários de teste (senha: 123456)
 INSERT INTO usuario (id, nome, email, senha, role, ativo, data_criacao, restaurante_id) VALUES
-(1, 'Admin Sistema', 'admin@delivery.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iKXulpZR8J4OY6Nd4EMCFyZw4ufC', 'ADMIN', true, NOW(), null),
-(2, 'João Cliente', 'joao@email.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iKXulpZR8J4OY6Nd4EMCFyZw4ufC', 'CLIENTE', true, NOW(), null),
-(3, 'Maria Cliente', 'maria@email.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iKXulpZR8J4OY6Nd4EMCFyZw4ufC', 'CLIENTE', true, NOW(), null),
-(4, 'Pizza Palace', 'pizza@palace.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iKXulpZR8J4OY6Nd4EMCFyZw4ufC', 'RESTAURANTE', true, NOW(), 1),
-(5, 'Burger King', 'burger@king.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iKXulpZR8J4OY6Nd4EMCFyZw4ufC', 'RESTAURANTE', true, NOW(), 2),
-(6, 'Carlos Entregador', 'carlos@entrega.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iKXulpZR8J4OY6Nd4EMCFyZw4ufC', 'ENTREGADOR', true, NOW(), null);
+(1, 'Admin Sistema', 'admin@delivery.com', '$2a$10$3Ived43uPcH74YiOdNlmrODkjl9h.UNQVsyi/L5rV18CudboSgdAa', 'ADMIN', true, NOW(), null),
+(2, 'João Cliente', 'joao@email.com', '$2a$10$3Ived43uPcH74YiOdNlmrODkjl9h.UNQVsyi/L5rV18CudboSgdAa', 'CLIENTE', true, NOW(), null),
+(3, 'Maria Cliente', 'maria@email.com', '$2a$10$3Ived43uPcH74YiOdNlmrODkjl9h.UNQVsyi/L5rV18CudboSgdAa', 'CLIENTE', true, NOW(), null),
+(4, 'Pizza Palace', 'pizza@palace.com', '$2a$10$3Ived43uPcH74YiOdNlmrODkjl9h.UNQVsyi/L5rV18CudboSgdAa', 'RESTAURANTE', true, NOW(), 1),
+(5, 'Burger King', 'burger@king.com', '$2a$10$3Ived43uPcH74YiOdNlmrODkjl9h.UNQVsyi/L5rV18CudboSgdAa', 'RESTAURANTE', true, NOW(), 2),
+(6, 'Carlos Entregador', 'carlos@entrega.com', '$2a$10$3Ived43uPcH74YiOdNlmrODkjl9h.UNQVsyi/L5rV18CudboSgdAa', 'ENTREGADOR', true, NOW(), null);
 
 
 --Senha para todos os usuários: "123456"

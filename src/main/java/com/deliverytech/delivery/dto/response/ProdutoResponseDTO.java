@@ -1,5 +1,6 @@
 package com.deliverytech.delivery.dto.response;
 
+import com.deliverytech.delivery.entity.Produto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 
@@ -10,61 +11,44 @@ import java.math.BigDecimal;
 @Schema(description = "DTO de resposta com dados do produto")
 public class ProdutoResponseDTO {
 
-    // ---------------------------------------------------
-    // ID do produto
-    // Exemplo: 1
-    // Usado para identificar unicamente o produto
-    // ---------------------------------------------------
     @Schema(description = "ID do produto", example = "1")
     private Long id;
 
-    // ---------------------------------------------------
-    // Nome do produto
-    // Exemplo: "Pizza Margherita"
-    // Informativo para o usuário/cliente
-    // ---------------------------------------------------
     @Schema(description = "Nome do produto", example = "Pizza Margherita")
     private String nome;
 
-    // ---------------------------------------------------
-    // Descrição do produto
-    // Exemplo: "Pizza de massa fina com queijo e tomate"
-    // Pode ser usado para exibir detalhes do produto no front-end
-    // ---------------------------------------------------
     @Schema(description = "Descrição do produto", example = "Pizza de massa fina com queijo e tomate")
     private String descricao;
 
-    // ---------------------------------------------------
-    // Preço do produto
-    // Exemplo: 35.50
-    // Mostra o valor que será cobrado
-    // ---------------------------------------------------
     @Schema(description = "Preço do produto", example = "35.50")
     private BigDecimal preco;
 
-    // ---------------------------------------------------
-    // Disponibilidade do produto
-    // Exemplo: true
-    // Indica se o produto pode ser comprado
-    // ---------------------------------------------------
     @Schema(description = "Indica se o produto está disponível", example = "true")
     private Boolean disponivel;
 
-    // ---------------------------------------------------
-    // ID do restaurante
-    // Exemplo: 2
-    // Informa de qual restaurante o produto pertence
-    // ---------------------------------------------------
     @Schema(description = "ID do restaurante do produto", example = "2")
     private Long restauranteId;
 
-    // ---------------------------------------------------
-    // Categoria do produto
-    // Exemplo: "Italiana"
-    // Pode ser usado para filtros e exibição no front-end
-    // ---------------------------------------------------
     @Schema(description = "Categoria do produto", example = "Italiana")
     private String categoria;
+
+    // =======================
+    // CONSTRUTOR VAZIO
+    // =======================
+    public ProdutoResponseDTO() {}
+
+    // =======================
+    // CONSTRUTOR COM PRODUTO
+    // =======================
+    public ProdutoResponseDTO(Produto produto) {
+        this.id = produto.getId();
+        this.nome = produto.getNome();
+        this.descricao = produto.getDescricao();
+        this.preco = produto.getPreco();
+        this.disponivel = produto.getDisponivel();
+        this.restauranteId = produto.getRestaurante() != null ? produto.getRestaurante().getId() : null;
+        this.categoria = produto.getCategoria();
+    }
 
     // =======================
     // GETTERS E SETTERS

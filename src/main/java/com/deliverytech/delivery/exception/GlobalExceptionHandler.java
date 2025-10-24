@@ -8,6 +8,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.security.access.AccessDeniedException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -84,6 +85,25 @@ public class GlobalExceptionHandler {
         errorResponse.setDetails(details.isEmpty() ? null : details);
 
         return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
+    }
+
+    // ============================================================
+    //  Acesso negado por roles (Spring Security)
+    // ============================================================
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDeniedException(
+            AccessDeniedException ex, WebRequest request) {
+
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.FORBIDDEN.value(),
+                "Acesso negado",
+                "Você não possui permissão para acessar este recurso",
+                request.getDescription(false).replace("uri=", "")
+        );
+
+        errorResponse.setErrorCode("ACCESS_DENIED");
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
     }
 
     // ============================================================
