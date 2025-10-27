@@ -10,6 +10,7 @@ import com.deliverytech.delivery.exception.EntityNotFoundException;
 import com.deliverytech.delivery.repository.ProdutoRepository;
 import com.deliverytech.delivery.repository.RestauranteRepository;
 import com.deliverytech.delivery.service.ProdutoService;
+import com.deliverytech.delivery.security.jwt.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,11 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Implementação do serviço de produtos.
- * Contém regras de negócio para CRUD de produtos e validações de acesso.
- */
-@Service
+@Service("produtoService")
 @Transactional
 public class ProdutoServiceImpl implements ProdutoService {
 
@@ -35,45 +32,37 @@ public class ProdutoServiceImpl implements ProdutoService {
     // CADASTRAR PRODUTO
     // ===========================
     @Override
-public ProdutoResponseDTO cadastrarProduto(ProdutoDTO dto) {
-    if (dto.getCategoria() == null || dto.getCategoria().isEmpty()) {
-        throw new IllegalArgumentException("Categoria é obrigatória");
+    public ProdutoResponseDTO cadastrarProduto(ProdutoDTO dto) {
+        if (dto.getCategoria() == null || dto.getCategoria().isEmpty()) {
+            throw new IllegalArgumentException("Categoria é obrigatória");
+        }
+        if (dto.getDescricao() == null || dto.getDescricao().length() < 10) {
+            throw new IllegalArgumentException("Descrição deve ter entre 10 e 500 caracteres");
+        }
+        if (dto.getRestauranteId() == null) {
+            throw new IllegalArgumentException("Restaurante ID é obrigatório");
+        }
+
+        Restaurante restaurante = restauranteRepository.findById(dto.getRestauranteId())
+                .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado"));
+
+        boolean exists = produtoRepository.existsByNomeAndRestauranteId(dto.getNome(), dto.getRestauranteId());
+        if (exists) {
+            throw new ConflictException("Produto já existe para este restaurante", "nome", dto.getNome());
+        }
+
+        Produto produto = new Produto();
+        produto.setNome(dto.getNome());
+        produto.setDescricao(dto.getDescricao());
+        produto.setPreco(dto.getPreco());
+        produto.setCategoria(dto.getCategoria());
+        produto.setDisponivel(true);
+        produto.setRestaurante(restaurante);
+
+        produtoRepository.save(produto);
+
+        return new ProdutoResponseDTO(produto);
     }
-    if (dto.getDescricao() == null || dto.getDescricao().length() < 10) {
-        throw new IllegalArgumentException("Descrição deve ter entre 10 e 500 caracteres");
-    }
-    if (dto.getRestauranteId() == null) {
-        throw new IllegalArgumentException("Restaurante ID é obrigatório");
-    }
-
-    Restaurante restaurante = restauranteRepository.findById(dto.getRestauranteId())
-            .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado"));
-
-    // =========================
-    // Verificar se produto já existe para este restaurante
-    // =========================
-    boolean exists = produtoRepository.existsByNomeAndRestauranteId(dto.getNome(), dto.getRestauranteId());
-    if (exists) {
-        throw new ConflictException(
-                "Produto já existe para este restaurante",
-                "nome",
-                dto.getNome()
-        );
-    }
-
-    Produto produto = new Produto();
-    produto.setNome(dto.getNome());
-    produto.setDescricao(dto.getDescricao());
-    produto.setPreco(dto.getPreco());
-    produto.setCategoria(dto.getCategoria());
-    produto.setDisponivel(true);
-    produto.setRestaurante(restaurante);
-
-    produtoRepository.save(produto);
-
-    return new ProdutoResponseDTO(produto);
-}
-
 
     // ===========================
     // BUSCAR PRODUTO POR ID
@@ -88,7 +77,9 @@ public ProdutoResponseDTO cadastrarProduto(ProdutoDTO dto) {
             throw new BusinessException("Produto não está disponível");
         }
 
-        return new ProdutoResponseDTO(produto);
+        ProdutoResponseDTO dto = new ProdutoResponseDTO(produto);
+        dto.setRestauranteId(produto.getRestaurante() != null ? produto.getRestaurante().getId() : null);
+        return dto;
     }
 
     // ===========================
@@ -100,8 +91,11 @@ public ProdutoResponseDTO cadastrarProduto(ProdutoDTO dto) {
         List<Produto> produtos = produtoRepository.findByNomeContainingIgnoreCaseAndDisponivelTrue(nome);
 
         return produtos.stream()
-                .map(ProdutoResponseDTO::new)
-                .peek(dto -> dto.setRestauranteId(produtos.get(0).getRestaurante() != null ? produtos.get(0).getRestaurante().getId() : null))
+                .map(p -> {
+                    ProdutoResponseDTO dto = new ProdutoResponseDTO(p);
+                    dto.setRestauranteId(p.getRestaurante() != null ? p.getRestaurante().getId() : null);
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 
@@ -112,7 +106,6 @@ public ProdutoResponseDTO cadastrarProduto(ProdutoDTO dto) {
     @Transactional(readOnly = true)
     public List<ProdutoResponseDTO> buscarProdutosPorRestaurante(Long restauranteId, Boolean disponivel) {
         List<Produto> produtos;
-
         if (disponivel != null) {
             produtos = produtoRepository.findByRestauranteIdAndDisponivel(restauranteId, disponivel);
         } else {
@@ -177,7 +170,7 @@ public ProdutoResponseDTO cadastrarProduto(ProdutoDTO dto) {
     @Override
     public void removerProduto(Long id) {
         Produto produto = produtoRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado"));
 
         produtoRepository.delete(produto);
     }
@@ -201,10 +194,15 @@ public ProdutoResponseDTO cadastrarProduto(ProdutoDTO dto) {
     // ===========================
     // VERIFICA SE O USUÁRIO É DONO DO PRODUTO
     // ===========================
+    @Override
     public boolean isOwner(Long produtoId) {
         Produto produto = produtoRepository.findById(produtoId).orElse(null);
         if (produto == null) return false;
-        // Aqui você pode adicionar lógica para verificar o usuário logado
-        return true; // temporário: sempre retorna true para evitar erro
+
+        Long restauranteLogadoId = SecurityUtils.getCurrentRestauranteId();
+        if (restauranteLogadoId == null) return false;
+
+        return produto.getRestaurante() != null &&
+               produto.getRestaurante().getId().equals(restauranteLogadoId);
     }
 }

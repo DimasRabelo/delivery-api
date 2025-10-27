@@ -94,11 +94,26 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleAccessDeniedException(
             AccessDeniedException ex, WebRequest request) {
 
+        String path = request.getDescription(false).replace("uri=", "");
+        String message;
+
+        if (path.startsWith("/api/produtos")) {
+            message = "Restaurante não é dono do produto.";
+        } else if (path.startsWith("/api/pedidos")) {
+            message = "Cliente não é dono do pedido.";
+        } else if (path.startsWith("/api/clientes")) {
+            message = "Acesso negado a dados de outro cliente.";
+        } else if (path.startsWith("/api/restaurantes")) {
+            message = "Você não possui permissão para alterar este restaurante.";
+        } else {
+            message = "Você não possui permissão para acessar este recurso.";
+        }
+
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.FORBIDDEN.value(),
                 "Acesso negado",
-                "Você não possui permissão para acessar este recurso",
-                request.getDescription(false).replace("uri=", "")
+                message,
+                path
         );
 
         errorResponse.setErrorCode("ACCESS_DENIED");

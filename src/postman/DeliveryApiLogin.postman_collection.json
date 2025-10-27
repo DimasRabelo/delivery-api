@@ -1,0 +1,342 @@
+{
+	"info": {
+		"_postman_id": "4bd232b5-7684-4c4c-85c0-abfd9efba02d",
+		"name": "DeliveryApiLogin",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "48728016",
+		"_collection_link": "https://dimasrabelo-1043334.postman.co/workspace/Dimas-Aparecido-Rabelo-de-Souza~c9b7d2ea-87f8-43af-8363-ff0b28cd3ae7/collection/48728016-4bd232b5-7684-4c4c-85c0-abfd9efba02d?action=share&source=collection_link&creator=48728016"
+	},
+	"item": [
+		{
+			"name": "RegistrandoUsuario",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"nome\": \"João Silva\",\n  \"email\": \"joao@email.com\",\n  \"senha\": \"123456\",\n  \"role\": \"CLIENTE\"\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/auth/register",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"auth",
+						"register"
+					]
+				},
+				"description": "Registrando Usuário"
+			},
+			"response": []
+		},
+		{
+			"name": "LoginExistente",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"email\": \"joao@email.com\",\n  \"senha\": \"123456\"\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/auth/login",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"auth",
+						"login"
+					]
+				},
+				"description": "Verificando Login válido"
+			},
+			"response": []
+		},
+		{
+			"name": "LoginInvalido",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"email\": \"joao@email.com\",\n  \"senha\": \"senhaerrada\"\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/auth/login",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"auth",
+						"login"
+					]
+				},
+				"description": "Teste de Login Inválido"
+			},
+			"response": []
+		},
+		{
+			"name": "AcessoInvalido",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"email\": \"joao@email.com\",\n  \"senha\": \"senhaerrada\"\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/pedidos/meus",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"pedidos",
+						"meus"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "AcessoComTokenVálido",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiQ0xJRU5URSIsIm5vbWUiOiJKb8OjbyBDbGllbnRlIiwidXNlcklkIjoyLCJzdWIiOiJqb2FvQGVtYWlsLmNvbSIsImlhdCI6MTc2MTM0MzkzOSwiZXhwIjoxNzYxNDMwMzM5fQ.zSu7Fb5QwRo7guT8cV2jHAQYGTt9TLam2Liz7-BY2yc",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/auth/me",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"auth",
+						"me"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "AcessoNegadoPorRole",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiQ0xJRU5URSIsIm5vbWUiOiJKb8OjbyBTaWx2YSIsInVzZXJJZCI6Miwic3ViIjoiam9hb0BlbWFpbC5jb20iLCJpYXQiOjE3NjEzNDEyMDMsImV4cCI6MTc2MTQyNzYwM30.Pt0CQWvfSFiyo0etqGyOrBnWR4SzVGZP0PHz20Wy6XQ",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"nome\": \"Pizza Quatro Queijos\",\n  \"descricao\": \"Pizza com mussarela, provolone, gorgonzola e parmesão\",\n  \"preco\": 50.0,\n  \"categoria\": \"Pizza\",\n  \"restauranteId\": 1\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/produtos",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"produtos"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "AcessoComRoleRestaurante",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiUkVTVEFVUkFOVEUiLCJyZXN0YXVyYW50ZUlkIjoxLCJub21lIjoiUGl6emEgUGFsYWNlIiwidXNlcklkIjo0LCJzdWIiOiJwaXp6YUBwYWxhY2UuY29tIiwiaWF0IjoxNzYxMzQ4MjA1LCJleHAiOjE3NjE0MzQ2MDV9.rXQW3TuobtwxqzG5nCbxR9ERtzYAnYZrPdJD5Jh6L34",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"nome\": \"Pizza Calabresa\",\n  \"descricao\": \"Pizza com molho de tomate, mussarela e calabresa\",\n  \"preco\": 45.0,\n  \"categoria\": \"Pizza\",\n  \"restauranteId\": 1\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/produtos",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"produtos"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Token-Ausente-Ou-Inválido",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/auth/me",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"auth",
+						"me"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Acesso-Publico-Lista-Restaurante",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/restaurantes",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"restaurantes"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "VERIFICAÇÃO DE PROPRIEDADE (Produto de Outro Restaurante)",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiUkVTVEFVUkFOVEUiLCJyZXN0YXVyYW50ZUlkIjoyLCJub21lIjoiQnVyZ2VyIEtpbmciLCJ1c2VySWQiOjUsInN1YiI6ImJ1cmdlckBraW5nLmNvbSIsImlhdCI6MTc2MTU4MjU5OSwiZXhwIjoxNzYxNTg0Mzk5fQ.i4m0mGDxXYqvSGsQPqwZ7Xh-Zf6bFxefd1DQpWM10kE",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"nome\": \"Pizza Atualizada\",\n  \"descricao\": \"Alterando produto de outro restaurante\",\n  \"preco\": 50.0,\n  \"categoria\": \"Pizza\",\n  \"restauranteId\": 1\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/produtos/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"produtos",
+						"1"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

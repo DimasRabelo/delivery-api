@@ -1,0 +1,204 @@
+{
+	"info": {
+		"_postman_id": "29505c6a-e027-417d-a444-1a69a52cdcef",
+		"name": "Relatorios Delivery API",
+		"description": "Coleção de testes de relatórios para o sistema Delivery API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "48728016",
+		"_collection_link": "https://dimasrabelo-1043334.postman.co/workspace/Dimas-Aparecido-Rabelo-de-Souza~c9b7d2ea-87f8-43af-8363-ff0b28cd3ae7/collection/48728016-29505c6a-e027-417d-a444-1a69a52cdcef?action=share&source=collection_link&creator=48728016"
+	},
+	"item": [
+		{
+			"name": "Vendas por Restaurante",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test('Retorna lista de restaurantes', function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.length).to.be.above(0);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/relatorios/vendas-por-restaurante?dataInicio=2025-10-01&dataFim=2025-10-31",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"relatorios",
+						"vendas-por-restaurante"
+					],
+					"query": [
+						{
+							"key": "dataInicio",
+							"value": "2025-10-01"
+						},
+						{
+							"key": "dataFim",
+							"value": "2025-10-31"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Produtos Mais Vendidos",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test('Produtos retornados', function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.length).to.be.above(0);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/relatorios/produtos-mais-vendidos?dataInicio=2025-10-01&dataFim=2025-10-31",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"relatorios",
+						"produtos-mais-vendidos"
+					],
+					"query": [
+						{
+							"key": "dataInicio",
+							"value": "2025-10-01"
+						},
+						{
+							"key": "dataFim",
+							"value": "2025-10-31"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Clientes Mais Ativos",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test('Clientes retornados', function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.length).to.be.above(0);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/relatorios/clientes-ativos?dataInicio=2025-10-01&dataFim=2025-10-31",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"relatorios",
+						"clientes-ativos"
+					],
+					"query": [
+						{
+							"key": "dataInicio",
+							"value": "2025-10-01"
+						},
+						{
+							"key": "dataFim",
+							"value": "2025-10-31"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Pedidos por Período",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test('Pedidos retornados', function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.length).to.be.above(0);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/relatorios/pedidos-por-periodo?dataInicio=2025-10-01&dataFim=2025-10-31",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"relatorios",
+						"pedidos-por-periodo"
+					],
+					"query": [
+						{
+							"key": "dataInicio",
+							"value": "2025-10-01"
+						},
+						{
+							"key": "dataFim",
+							"value": "2025-10-31"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

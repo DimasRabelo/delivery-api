@@ -1,0 +1,246 @@
+{
+	"info": {
+		"_postman_id": "521d2db0-3569-4060-bbee-fa803384c9ba",
+		"name": "DeliveryApiTestValidation",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "48728016",
+		"_collection_link": "https://dimasrabelo-1043334.postman.co/workspace/Dimas-Aparecido-Rabelo-de-Souza~c9b7d2ea-87f8-43af-8363-ff0b28cd3ae7/collection/48728016-521d2db0-3569-4060-bbee-fa803384c9ba?action=share&source=collection_link&creator=48728016"
+	},
+	"item": [
+		{
+			"name": "Restaurante com Nome Vazio",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"nome\": \"\",\n  \"categoria\": \"ITALIANA\",\n  \"telefone\": \"11999999999\",\n  \"taxaEntrega\": 5.0,\n  \"tempoEntrega\": 30,\n  \"endereco\": \"Rua das Flores, 123\",\n  \"email\": \"contato@restaurante.com\"\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/restaurantes",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"restaurantes"
+					]
+				},
+				"description": "Teste de validação de erros"
+			},
+			"response": []
+		},
+		{
+			"name": "Produto com Preço Negativo",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"nome\": \"Pizza Margherita\",\n  \"preco\": -10.00,\n  \"categoria\": \"PIZZA\",\n  \"descricao\": \"Pizza tradicional italiana\",\n  \"restauranteId\": 1\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/produtos",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"produtos"
+					]
+				},
+				"description": "Teste de Validação"
+			},
+			"response": []
+		},
+		{
+			"name": "Restaurante Inexistente",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/restaurantes/999",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"restaurantes",
+						"999"
+					]
+				},
+				"description": "Teste de Validação"
+			},
+			"response": []
+		},
+		{
+			"name": "Pedido sem Itens",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"clienteId\": 1,\n  \"restauranteId\": 1,\n  \"itens\": [],\n  \"enderecoEntrega\": \"Rua das Palmeiras, 456\",\n  \"cep\": \"01234-567\",\n  \"formaPagamento\": \"CARTAO_CREDITO\"\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/pedidos",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"pedidos"
+					]
+				},
+				"description": "Teste de validação"
+			},
+			"response": []
+		},
+		{
+			"name": "Restaurante com Telefone Inválido",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"nome\": \"Restaurante Teste\",\n  \"categoria\": \"BRASILEIRA\",\n  \"telefone\": \"123\",\n  \"taxaEntrega\": 5.0,\n  \"tempoEntrega\": 30,\n  \"endereco\": \"Rua das Flores, 123\",\n  \"email\": \"contato@teste.com\"\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/restaurantes",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"restaurantes"
+					]
+				},
+				"description": "teste de validação"
+			},
+			"response": []
+		},
+		{
+			"name": "Restaurante com Nome Duplicado",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"nome\": \"Restaurante Teste\",\n  \"categoria\": \"BRASILEIRA\",\n  \"telefone\": \"11999999999\",\n  \"taxaEntrega\": 5.0,\n  \"tempoEntrega\": 30,\n  \"endereco\": \"Rua das Flores, 123\",\n  \"email\": \"contato@teste.com\",\n  \"ativo\": true,\n  \"horarioFuncionamento\": \"10:00-22:00\",\n  \"avaliacao\": 4.5\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/restaurantes",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"restaurantes"
+					]
+				},
+				"description": "Validação do dados"
+			},
+			"response": []
+		},
+		{
+			"name": "Pedido com CEP Inválido",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"clienteId\": 1,\n  \"restauranteId\": 1,\n  \"itens\": [\n    { \"produtoId\": 1, \"quantidade\": 2 }\n  ],\n  \"enderecoEntrega\": \"Rua das Palmeiras, 456\",\n  \"cep\": \"123\",\n  \"formaPagamento\": \"CARTAO_CREDITO\"\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/pedidos",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"pedidos"
+					]
+				},
+				"description": "validações de erro"
+			},
+			"response": []
+		}
+	]
+}
