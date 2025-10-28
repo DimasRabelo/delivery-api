@@ -15,8 +15,14 @@ public interface ClienteRepository extends JpaRepository<Cliente, Long> {
     // Buscar cliente por email
     Optional<Cliente> findByEmail(String email);
 
-    // Verificar se email já existe
+    // Verificar se email já existe (NECESSÁRIO PARA OS TESTES)
     boolean existsByEmail(String email);
+
+    // ==============================================================
+    // ADICIONADO: NECESSÁRIO PARA A VALIDAÇÃO DO CPF
+    // ==============================================================
+    boolean existsByCpf(String cpf);
+    // =G============================================================
 
     // Buscar apenas clientes ativos
     List<Cliente> findByAtivoTrue();
@@ -38,17 +44,4 @@ public interface ClienteRepository extends JpaRepository<Cliente, Long> {
     // Contar clientes ativos
     @Query("SELECT COUNT(c) FROM Cliente c WHERE c.ativo = true")
     Long countClientesAtivos();
-
-//   @Query(value = "SELECT c.nome, COALESCE(SUM(ip.quantidade), 0) as total_produtos " +
-//                "FROM cliente c " +
-//                "LEFT JOIN pedido p ON c.id = p.cliente_id " +
-//                "LEFT JOIN itens_pedido ip ON p.id = ip.pedido_id " +
-//                "GROUP BY c.id, c.nome " +
-//                "ORDER BY total_produtos DESC " +
-//                "LIMIT 10", nativeQuery = true)
-// List<Object[]> rankingClientesPorPedidos();
-
-
-
-
 }

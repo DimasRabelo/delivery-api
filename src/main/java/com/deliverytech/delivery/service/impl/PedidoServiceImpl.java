@@ -20,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,25 +42,36 @@ public class PedidoServiceImpl implements PedidoService {
     @Autowired
     private ModelMapper modelMapper;
 
-    @Override
+   @Override
     @Transactional
     public PedidoResponseDTO criarPedido(PedidoDTO dto) {
-        // Validar cliente
+        // 1. Validar cliente
         Cliente cliente = clienteRepository.findById(dto.getClienteId())
                 .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado"));
         if (!cliente.isAtivo()) {
             throw new BusinessException("Cliente inativo não pode fazer pedidos");
         }
 
-        // Validar restaurante
+        // 2. Validar restaurante
         Restaurante restaurante = restauranteRepository.findById(dto.getRestauranteId())
                 .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado"));
         if (!restaurante.getAtivo()) {
             throw new BusinessException("Restaurante não está disponível");
         }
 
-        // Validar produtos e calcular subtotal
-        List<ItemPedido> itensPedido = new ArrayList<>();
+        // ==========================================================
+        // LÓGICA CORRIGIDA
+        // ==========================================================
+
+        // 3. Criar o Pedido primeiro
+        Pedido pedido = new Pedido();
+        pedido.setCliente(cliente);
+        pedido.setRestaurante(restaurante);
+        pedido.setDataPedido(LocalDateTime.now());
+        pedido.setStatus(StatusPedido.PENDENTE);
+        pedido.setEnderecoEntrega(dto.getEnderecoEntrega());
+
+        // 4. Validar produtos, calcular subtotal E ADICIONAR ITENS AO PEDIDO
         BigDecimal subtotal = BigDecimal.ZERO;
 
         for (ItemPedidoDTO itemDTO : dto.getItens()) {
@@ -81,52 +91,46 @@ public class PedidoServiceImpl implements PedidoService {
             item.setQuantidade(itemDTO.getQuantidade());
             item.setPrecoUnitario(produto.getPreco());
             item.setSubtotal(produto.getPreco().multiply(BigDecimal.valueOf(itemDTO.getQuantidade())));
+            
+            // --- ESTA É A CORREÇÃO ---
+            // Associa o item ao pedido (relação bidirecional) ANTES de salvar
+            item.setPedido(pedido);
+            pedido.getItens().add(item); // (Assumindo que Pedido.java tem 'itens = new ArrayList<>()')
+            // ---------------------------
 
-            itensPedido.add(item);
             subtotal = subtotal.add(item.getSubtotal());
         }
 
-        // Calcular total do pedido
+        // 5. Calcular e setar o total no pedido
         BigDecimal taxaEntrega = restaurante.getTaxaEntrega();
         BigDecimal valorTotal = subtotal.add(taxaEntrega);
-
-        // Salvar pedido
-        Pedido pedido = new Pedido();
-        pedido.setCliente(cliente);
-        pedido.setRestaurante(restaurante);
-        pedido.setDataPedido(LocalDateTime.now());
-        pedido.setStatus(StatusPedido.PENDENTE);
-        pedido.setEnderecoEntrega(dto.getEnderecoEntrega());
         pedido.setSubtotal(subtotal);
         pedido.setTaxaEntrega(taxaEntrega);
         pedido.setValorTotal(valorTotal);
 
+        // 6. Salvar pedido (AGORA ele tem 2 itens)
+        // O JPA (com Cascade) salvará o pedido e os itens
         Pedido pedidoSalvo = pedidoRepository.save(pedido);
 
-        // Salvar itens do pedido
-        for (ItemPedido item : itensPedido) {
-            item.setPedido(pedidoSalvo);
-        }
-        pedidoSalvo.setItens(itensPedido);
-
-        // Mapear para DTO
+        // ==========================================================
+        
+        // 7. Mapear para DTO
         PedidoResponseDTO responseDTO = modelMapper.map(pedidoSalvo, PedidoResponseDTO.class);
         responseDTO.setClienteId(cliente.getId());
         responseDTO.setClienteNome(cliente.getNome());
         responseDTO.setRestauranteId(restaurante.getId());
         responseDTO.setRestauranteNome(restaurante.getNome());
         responseDTO.setTotal(valorTotal);
-        responseDTO.setItens(itensPedido.stream()
+        responseDTO.setItens(pedidoSalvo.getItens().stream() // Usa pedidoSalvo.getItens()
                 .map(item -> {
                     ItemPedidoDTO iDTO = new ItemPedidoDTO();
                     iDTO.setProdutoId(item.getProduto().getId());
                     iDTO.setQuantidade(item.getQuantidade());
                     return iDTO;
-                }).collect(Collectors.toList()));
+                }).collect(Collectors.toList())); // Use toList()
 
         return responseDTO;
     }
-
     @Override
     @Transactional(readOnly = true)
     public PedidoResponseDTO buscarPedidoPorId(Long id) {

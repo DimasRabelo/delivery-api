@@ -41,8 +41,8 @@ public class Pedido {
     @JoinColumn(name = "restaurante_id")
     private Restaurante restaurante;
 
-    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL)
-    private List<ItemPedido> itens = new ArrayList<>();
+  @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
+private List<ItemPedido> itens = new ArrayList<>();
 
   
 

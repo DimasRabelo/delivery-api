@@ -25,14 +25,26 @@ public class ClienteServiceImpl implements ClienteService {
 
     @Override
     public ClienteResponseDTO cadastrarCliente(ClienteDTO dto) {
-        // Validar email único
+        // Validar email único (existente)
         if (clienteRepository.existsByEmail(dto.getEmail())) {
             throw new BusinessException("Email já cadastrado: " + dto.getEmail());
         }
 
+        // ==============================================
+        // ADICIONADO: Validação de CPF (do DTO)
+        // ==============================================
+        if (dto.getCpf() == null || dto.getCpf().isBlank()) {
+             throw new BusinessException("CPF é obrigatório."); // Garante que o DTO tem
+        }
+        if (clienteRepository.existsByCpf(dto.getCpf())) {
+            throw new BusinessException("CPF já cadastrado: " + dto.getCpf());
+        }
+        // ==============================================
+
         // Converter DTO para entidade
         Cliente cliente = modelMapper.map(dto, Cliente.class);
-        cliente.setAtivo(true);
+        cliente.setAtivo(true); 
+        // O ModelMapper vai mapear o 'cpf' do DTO para a entidade automaticamente
 
         // Salvar cliente
         Cliente clienteSalvo = clienteRepository.save(cliente);
@@ -70,11 +82,25 @@ public class ClienteServiceImpl implements ClienteService {
             throw new BusinessException("Email já cadastrado: " + dto.getEmail());
         }
 
+        // ==============================================
+        // ADICIONADO: Validação de CPF (do DTO)
+        // ==============================================
+        if (dto.getCpf() == null || dto.getCpf().isBlank()) {
+            throw new BusinessException("CPF é obrigatório.");
+        }
+        // Validar CPF único (se mudou)
+        if (!cliente.getCpf().equals(dto.getCpf()) &&
+                clienteRepository.existsByCpf(dto.getCpf())) {
+            throw new BusinessException("CPF já cadastrado: " + dto.getCpf());
+        }
+        // ==============================================
+
         // Atualizar dados
         cliente.setNome(dto.getNome());
         cliente.setEmail(dto.getEmail());
         cliente.setTelefone(dto.getTelefone());
         cliente.setEndereco(dto.getEndereco());
+        cliente.setCpf(dto.getCpf()); // <-- ADICIONADO: Atualização do CPF
 
         Cliente clienteAtualizado = clienteRepository.save(cliente);
         return modelMapper.map(clienteAtualizado, ClienteResponseDTO.class);
