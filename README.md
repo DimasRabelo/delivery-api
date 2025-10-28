@@ -1,169 +1,268 @@
 🍔 DeliveryTech API
+Sistema de delivery robusto desenvolvido com Spring Boot 3 e Java 21, focado em alta performance e segurança.
 
-Sistema de delivery desenvolvido com Spring Boot 3.5.6 e Java 21 LTS para gerenciar clientes, restaurantes, produtos, pedidos e relatórios.
-Agora com camada de serviços robusta, controllers REST completos, validações, transações consistentes e documentação profissional com Swagger/OpenAPI.
+Este projeto implementa uma API REST completa para gerenciar clientes, restaurantes, produtos e pedidos, com uma camada de segurança granular usando Spring Security 6 e autenticação stateless via JSON Web Tokens (JWT).
+
+O sistema controla o acesso baseado em perfis (ADMIN, RESTAURANTE, CLIENTE), garante a propriedade dos dados (ex: um restaurante só pode gerenciar seus próprios produtos) e expõe uma documentação profissional com Swagger/OpenAPI.
 
 🚀 Tecnologias Utilizadas
-
 Java 21 LTS
 
-Spring Boot 3.5.6 (Web, Data JPA, Validation)
+Spring Boot 3.5.6
 
-H2 Database (em memória)
+Spring Web: Para construção de endpoints REST.
 
-Maven
+Spring Data JPA: Para persistência de dados.
 
-ModelMapper
+Spring Validation: Para validação de DTOs.
 
-springdoc-openapi-ui (Swagger)
+Spring Security 6: Para Autenticação e Autorização.
+
+JWT (JSON Web Tokens): Para gerenciamento de sessão stateless (via biblioteca jjwt).
+
+H2 Database: Banco de dados relacional em memória para desenvolvimento e testes.
+
+springdoc-openapi (Swagger): Para documentação interativa da API.
+
+Maven: Para gerenciamento de dependências.
 
 🏗️ Arquitetura
-[App Mobile / Portal Web / Integrações]
-        ↓ HTTP REST
-[Controllers] ← Recebem requisições, validam entrada
-        ↓
-[Services] ← Regras de negócio e transações
-        ↓
-[Repositories] ← Acesso ao banco de dados
-        ↓
-[Banco de Dados (H2)]
+A aplicação segue uma arquitetura em camadas, agora com o JwtAuthenticationFilter como o "portão de entrada" para requisições protegidas.
 
+Snippet de código
 
-Controllers → Endpoints REST
+graph TD
+    A[App Mobile / Portal Web] -->|HTTP REST| B(JwtAuthenticationFilter);
+    B -->|Token Válido?| C{Controllers};
+    C -->|Valida DTOs e @PreAuthorize| D[Services];
+    D -->|Define Regras de Negócio e @Transactional| E[Repositories];
+    E -->|Executa Queries (JPA)| F[Banco de Dados (H2)];
+    
+    subgraph "Camada de Segurança (Spring Security)"
+        B
+        G(SecurityConfig)
+        H(JwtUtil)
+        I(AuthService/UserDetailsService)
+    end
+## 🏗️ Estrutura de Pastas
 
-Services → Lógica de negócio, validações e transações
+A estrutura do projeto foi organizada para refletir a separação de responsabilidades, com um novo pacote `security` dedicado:
 
-Repositories → Persistência
-
-Banco → H2 em memória
-
-🧩 Estrutura de Pastas
-
-![Estrutura do projeto](https://raw.githubusercontent.com/DimasRabelo/delivery-api/main/src/main/estrutura%3Dprojeto.png)
-
-
+```text
+📦src
+ ┣ 📂main
+ ┃ ┣ 📂java
+ ┃ ┃ ┗ 📂com
+ ┃ ┃ ┃ ┗ 📂deliverytech
+ ┃ ┃ ┃ ┃ ┗ 📂delivery
+ ┃ ┃ ┃ ┃ ┃ ┣ 📂config
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ModelMapperConfig.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜SecurityConfig.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜SwaggerConfig.java
+ ┃ ┃ ┃ ┃ ┃ ┣ 📂controller
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂auth
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜AuthController.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜UsuarioController.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ClienteController.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜PedidoController.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ProdutoController.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜RelatorioController.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜RestauranteController.java
+ ┃ ┃ ┃ ┃ ┃ ┣ 📂dto
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂auth
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜LoginRequest.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜LoginResponse.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜RegisterRequest.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜UserResponse.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂relatorio
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜RelatorioClientesDTO.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜RelatorioPedidosDTO.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜RelatorioProdutosDTO.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜RelatorioVendasDTO.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂response
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ApiResponseWrapper.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜CalculoPedidoDTO.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜CalculoPedidoResponseDTO.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ClienteResponseDTO.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ErrorResponse.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜PagedResponseWrapper.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜PedidoResponseDTO.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ProdutoResponseDTO.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜RestauranteResponseDTO.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ClienteDTO.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ItemPedidoDTO.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜PedidoDTO.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ProdutoDTO.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜RestauranteDTO.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜StatusPedidoDTO.java
+ ┃ ┃ ┃ ┃ ┃ ┣ 📂entity
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜Cliente.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ItemPedido.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜Pedido.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜Produto.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜Restaurante.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜Usuario.java
+ ┃ ┃ ┃ ┃ ┃ ┣ 📂enums
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜Role.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜StatusPedido.java
+ ┃ ┃ ┃ ┃ ┃ ┣ 📂exception
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜BusinessException.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ConflictException.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜EntityNotFoundException.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜GlobalExceptionHandler.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜ValidationException.java
+ ┃ ┃ ┃ ┃ ┃ ┣ 📂repository
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂auth
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜UsuarioRepository.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ClienteRepository.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜PedidoRepository.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ProdutoRepository.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜RestauranteRepository.java
+ ┃ ┃ ┃ ┃ ┃ ┣ 📂security
+ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📂jwt
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜JwtAuthenticationFilter.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜JwtUtil.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜SecurityUtils.java
+ ┃ ┃ ┃ ┃ ┃ ┣ 📂service
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂auth
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜AuthService.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜UsuarioService.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂impl
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ClienteServiceImpl.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜PedidoServiceImpl.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ProdutoServiceImpl.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜RelatorioServiceImpl.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜RestauranteServiceImpl.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ClienteService.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜PedidoService.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ProdutoService.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜RelatorioService.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜RestauranteService.java
+ ┃ ┃ ┃ ┃ ┃ ┣ 📂validation
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜CEPValidator.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜CategoriaValidator.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜TelefoneValidator.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ValidCEP.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ValidCategoria.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ValidHorarioFuncionamento.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜ValidTelefone.java
+ ┃ ┃ ┃ ┃ ┃ ┣ 📜DeliveryApiApplication.java
+ ┃ ┃ ┃ ┃ ┃ ┗ 📜GerarSenha.java
+ ┃ ┣ 📂resources
+ ┃ ┃ ┣ 📜_data.sql
+ ┃ ┃ ┣ 📜application.properties
+ ┃ ┃ ┗ 📜data.sql
+ ┃ ┗ 📜estrutura=projeto.png
+ ┣ 📂postman
+ ┃ ┣ 📜DeliveryApi.postman_collection.json
+ ┃ ┣ 📜DeliveryApiLogin.postman_collection.json
+ ┃ ┣ 📜DeliveryApiTestValidation.postman_collection.json
+ ┃ ┗ 📜Relatorios Delivery API.postman_collection.json
+ ┗ 📂test
+ ┃ ┗ 📂java
+ ┃ ┃ ┗ 📂com
+ ┃ ┃ ┃ ┗ 📂deliverytech
+ ┃ ┃ ┃ ┃ ┗ 📂delivery
+ ┃ ┃ ┃ ┃ ┃ ┣ 📂controller
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ClienteControllerIT.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜PedidoControllerIT.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ProdutoControllerIT.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜RestauranteControllerIT.java
+ ┃ ┃ ┃ ┃ ┃ ┣ 📂repository
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ClienteRepositoryTest.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜PedidoRepositoryTest.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜ProdutoRepositoryTest.java
+ ┃ ┃ ┃ ┃ ┃ ┗ 📂service
+ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜ClienteServiceTest.java
 ⚙️ Funcionalidades Implementadas
-🛠️ Services
+🔐 Segurança (Spring Security + JWT)
+Autenticação Stateless: Autenticação via Bearer Token (JWT).
 
-ClienteService → cadastro, busca, atualização, toggle status
+Autorização Granular: Uso de @PreAuthorize para controle de acesso em nível de método, diferenciando ADMIN, RESTAURANTE e CLIENTE.
 
-RestauranteService → cadastro, filtros, cálculo taxa entrega
+Verificação de Propriedade: Lógica de serviço (ex: @produtoService.isOwner(#id)) que garante que um usuário RESTAURANTE só possa editar seus próprios recursos.
 
-ProdutoService → cadastro, busca, controle de disponibilidade
+Endpoints de Autenticação: POST /api/auth/login, POST /api/auth/register e GET /api/auth/me.
 
-PedidoService → criação de pedidos, cálculo de total, atualização de status, cancelamento
+Hashing de Senhas: Senhas são armazenadas usando BCryptPasswordEncoder.
 
-RelatorioService → geração de relatórios: vendas, produtos mais vendidos, clientes ativos, pedidos por período
+Tratamento de Exceções: Respostas 401 (Unauthorized) e 403 (Forbidden) customizadas e padronizadas.
+
+🛠️ Services (Regras de Negócio)
+AuthService: Implementa UserDetailsService para carregar usuários e gerencia o registro.
+
+RestauranteService: Cadastro, filtros, cálculo de taxa de entrega e verificação de propriedade (isOwner).
+
+ProdutoService: Gerenciamento de cardápio e verificação de propriedade (isOwner).
+
+PedidoService: Lógica complexa para criação de pedidos, cálculo de total, atualização de status e verificação de acesso (canAccess).
+
+RelatorioService: Geração de relatórios de vendas, produtos, clientes, etc.
 
 📦 DTOs e Validações
+Auth DTOs: LoginRequest, LoginResponse (com token), RegisterRequest, UserResponse (DTO seguro, sem senha).
 
-Request DTOs: ClienteDTO, RestauranteDTO, ProdutoDTO, PedidoDTO, ItemPedidoDTO
+Request DTOs: ClienteDTO, RestauranteDTO, ProdutoDTO, PedidoDTO, ItemPedidoDTO.
 
-Response DTOs: ClienteResponseDTO, RestauranteResponseDTO, ProdutoResponseDTO, PedidoResponseDTO, PedidoResumoDTO, RelatorioVendasDTO, RelatorioProdutosDTO, RelatorioClientesDTO, RelatorioPedidosDTO
+Response DTOs: ClienteResponseDTO, RestauranteResponseDTO, ProdutoResponseDTO, PedidoResponseDTO, etc.
 
-Validações padrão: @NotNull, @NotBlank, @Email, @Size, @DecimalMin, @Valid
+Validações: @Valid, @NotNull, @NotBlank, @Email, @Size, e validações customizadas.
 
-Validações customizadas: @ValidCEP, @ValidTelefone, @ValidCategoria, @ValidHorarioFuncionamento
-
-🔄 Regras de Negócio
-
-Cliente deve estar ativo para pedidos
-
-Email único para clientes
-
-Produtos válidos pertencentes ao restaurante
-
-Status de pedido com transições válidas
-
-Total do pedido = soma itens + taxa de entrega
-
-💥 Transações
-
-@Transactional em métodos críticos
-
-Falha em qualquer etapa → operação revertida
-
-📋 Endpoints REST
+📋 Endpoints REST (Principais)
+A API é dividida em endpoints públicos (para consulta) e protegidos (que exigem autenticação e autorização).
 
 Base URL: http://localhost:8080/api
 
-🔹 Clientes
+🔑 Autenticação (Público)
+POST /auth/login: Autentica um usuário e retorna um token JWT.
 
-POST /clientes → criar cliente
+POST /auth/register: Registra um novo usuário (CLIENTE ou RESTAURANTE).
 
-GET /clientes → listar clientes ativos
+🍽️ Endpoints Públicos (Consulta)
+GET /restaurantes: Lista restaurantes (com filtros).
 
-GET /clientes/{id} → buscar cliente por ID
+GET /restaurantes/{id}: Busca um restaurante por ID.
 
-GET /clientes/email/{email} → buscar por email
+GET /restaurantes/{id}/produtos: Lista o cardápio (produtos) de um restaurante.
 
-PUT /clientes/{id} → atualizar cliente
+GET /restaurantes/{id}/taxa-entrega/{cep}: Calcula a taxa de entrega.
 
-PATCH /clientes/{id}/status → ativar/desativar
+GET /produtos/{id}: Busca um produto por ID.
 
-🔹 Restaurantes
+POST /pedidos/calcular: Calcula o total de um pedido (sem salvar).
 
-CRUD completo
+🛡️ Endpoints Protegidos (Requerem Token)
+GET /auth/me: Retorna os dados do usuário logado.
 
-Filtros: por categoria e ativo
+POST /restaurantes: Cadastra um novo restaurante (ADMIN).
 
-Cálculo de taxa de entrega: /restaurantes/{id}/taxa-entrega/{cep}
+PUT /restaurantes/{id}: Atualiza um restaurante (ADMIN ou RESTAURANTE dono).
 
-Restaurantes próximos: /restaurantes/proximos/{cep}
+POST /produtos: Cadastra um novo produto (ADMIN ou RESTAURANTE dono).
 
-🔹 Produtos
+PUT /produtos/{id}: Atualiza um produto (ADMIN ou RESTAURANTE dono).
 
-CRUD completo
+DELETE /produtos/{id}: Remove um produto (ADMIN ou RESTAURANTE dono).
 
-Toggle disponibilidade: /produtos/{id}/disponibilidade
+POST /pedidos: Cria um novo pedido (CLIENTE).
 
-Filtros: por restaurante, categoria ou nome
+GET /pedidos/{id}: Busca um pedido (ADMIN ou envolvidos no pedido).
 
-🔹 Pedidos
+GET /pedidos/cliente/{clienteId}: Histórico de pedidos do cliente (ADMIN ou o próprio CLIENTE).
 
-Criar, buscar, atualizar status e cancelar
+GET /pedidos/restaurante/{restauranteId}: Pedidos recebidos pelo restaurante (ADMIN ou o próprio RESTAURANTE).
 
-Histórico por cliente e restaurante
+PATCH /pedidos/{id}/status: Atualiza o status de um pedido.
 
-Calcular total sem salvar: /pedidos/calcular
+GET /relatorios/...: Endpoints de relatórios (ADMIN ou RESTAURANTE dono).
 
-🔹 Relatórios
-
-Vendas por restaurante: /relatorios/vendas-por-restaurante?dataInicio=YYYY-MM-DD&dataFim=YYYY-MM-DD
-
-Produtos mais vendidos: /relatorios/produtos-mais-vendidos?dataInicio=YYYY-MM-DD&dataFim=YYYY-MM-DD
-
-Clientes mais ativos: /relatorios/clientes-ativos?dataInicio=YYYY-MM-DD&dataFim=YYYY-MM-DD
-
-Pedidos por período: /relatorios/pedidos-por-periodo?dataInicio=YYYY-MM-DD&dataFim=YYYY-MM-DD
-
-Todos os relatórios retornam ApiResponse<T> padronizado.
-
-🧪 Testes
-
-MockMvc → integração completa para todos os controllers
-
-Cenários obrigatórios: criação, busca, atualização, exclusão, filtros, relatórios
-
-Testes de validação: dados inválidos, conflitos, entidades inexistentes
-
-Collection Postman/Insomnia pronta para execução
-
-🎯 Cenários de Teste Obrigatórios
-
-GET /restaurantes?categoria=Italiana&ativo=true&page=0&size=10
-
-GET /restaurantes/1/produtos?disponivel=true
-
-POST /pedidos → criar pedido completo
-
-GET /relatorios/vendas-por-restaurante → período definido
-
-Swagger UI → interface funcionando, Try it Out
+(... e outros endpoints de CRUD e gerenciamento.)
 
 🌟 Padronização de Respostas
+Sucesso (2xx) e Paginação
+Respostas de sucesso seguem um wrapper padrão (ApiResponseWrapper) e as respostas paginadas (PagedResponseWrapper) incluem metadados de paginação.
 
-ApiResponse<T>:
+JSON
 
 {
   "success": true,
@@ -171,18 +270,32 @@ ApiResponse<T>:
   "message": "Operação realizada com sucesso",
   "timestamp": "2025-10-21T12:00:00Z"
 }
+Erros (4xx / 5xx)
+Erros de validação, autenticação e autorização seguem um padrão RFC 7807 (ErrorResponse).
 
+Erro 401 (Unauthorized) - (Token ausente, inválido ou expirado)
 
-PagedResponse<T>:
+JSON
 
 {
-  "content": [ ... ],
-  "page": { "number":0, "size":10, "totalElements":50, "totalPages":5 },
-  "links": { "first":"/api/restaurantes?page=0", "last":"/api/restaurantes?page=4" }
+  "status": 401,
+  "error": "Unauthorized",
+  "message": "Token expirado",
+  "path": "/api/pedidos/1"
 }
+Erro 403 (Forbidden) - (Usuário não tem permissão)
 
+JSON
 
-ErrorResponse (RFC 7807):
+{
+  "status": 403,
+  "error": "Forbidden",
+  "message": "Acesso negado",
+  "path": "/api/restaurantes"
+}
+Erro 400 (Bad Request) - (Validação de DTO)
+
+JSON
 
 {
   "timestamp": "2025-10-21T12:00:00",
@@ -190,42 +303,51 @@ ErrorResponse (RFC 7807):
   "error": "Dados inválidos",
   "message": "Erro de validação nos dados enviados",
   "path": "/api/produtos",
-  "details": { "nome": "Nome é obrigatório", "preco": "Preço deve ser maior que zero" }
+  "details": {
+    "nome": "Nome é obrigatório"
+  }
 }
-
 🔧 Como Executar
+Clonar o repositório:
+
+Bash
+
 git clone https://github.com/DimasRabelo/delivery-api.git
 cd delivery-api
+Executar a aplicação (via Maven Wrapper):
+
+Bash
+
 ./mvnw spring-boot:run
+A API estará disponível em http://localhost:8080.
 
+🧪 Como Testar (Autenticação)
+Registre um usuário: POST http://localhost:8080/api/auth/register (Envie um JSON com nome, email, senha e role - ex: "CLIENTE").
 
-Swagger UI: http://localhost:8080/swagger-ui/index.html
+Faça Login: POST http://localhost:8080/api/auth/login (Envie email e senha).
 
-API Docs: http://localhost:8080/api-docs
+Copie o Token: A resposta irá conter o token (ex: "eyJhbGciOi...").
 
-H2 Console: http://localhost:8080/h2-console
+Teste Endpoints Protegidos: Para acessar endpoints como GET /api/auth/me, configure sua ferramenta (Postman/Insomnia) para incluir o Bearer Token no Header de Autorização: Authorization: Bearer eyJhbGciOi...
+
+🌐 Links Úteis
+Swagger UI (Documentação Interativa): http://localhost:8080/swagger-ui/index.html
+
+API Docs (JSON OpenAPI): http://localhost:8080/api-docs
+
+H2 Database Console (Acesso ao banco): http://localhost:8080/h2-console
 
 JDBC URL: jdbc:h2:mem:deliverydb
 
 User: sa
 
-Password: (em branco)
-
-📦 Entregáveis
-
-Controllers REST completos
-
-Swagger/OpenAPI atualizado
-
-Testes de integração (MockMvc)
-
-Respostas padronizadas e códigos HTTP corretos
-
-Collection Postman/Insomnia com todos os cenários
+Password: password (definido em application.properties)
 
 👨‍💻 Desenvolvedor
-
 Dimas Aparecido Rabelo
+
 🎓 Curso: Arquitetura de Sistemas
-💻 Tecnologias: Java 21 | Spring Boot | H2 | Maven
-📍 Projeto desenvolvido para módulo de Camada de Serviços e REST API
+
+💻 Tecnologias: Java 21 | Spring Boot | Spring Security | JWT | H2 | Maven
+
+📍 Projeto desenvolvido para módulos de API REST, Serviços e Segurança.
