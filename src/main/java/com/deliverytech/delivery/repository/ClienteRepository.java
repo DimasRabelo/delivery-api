@@ -5,6 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,8 +20,7 @@ public interface ClienteRepository extends JpaRepository<Cliente, Long> {
     // Verificar se email já existe (NECESSÁRIO PARA OS TESTES)
     boolean existsByEmail(String email);
 
-    // ==============================================================
-    // ADICIONADO: NECESSÁRIO PARA A VALIDAÇÃO DO CPF
+    // VALIDAÇÃO DO CPF
     // ==============================================================
     boolean existsByCpf(String cpf);
     // =G============================================================
@@ -44,4 +45,7 @@ public interface ClienteRepository extends JpaRepository<Cliente, Long> {
     // Contar clientes ativos
     @Query("SELECT COUNT(c) FROM Cliente c WHERE c.ativo = true")
     Long countClientesAtivos();
+
+    // Novo Método Páginado 
+    Page<Cliente> findByAtivoTrue(Pageable pageable);
 }

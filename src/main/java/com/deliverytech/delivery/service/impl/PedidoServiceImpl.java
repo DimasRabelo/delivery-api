@@ -17,6 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -42,28 +43,27 @@ public class PedidoServiceImpl implements PedidoService {
     @Autowired
     private ModelMapper modelMapper;
 
-   @Override
+    @Override
     @Transactional
     public PedidoResponseDTO criarPedido(PedidoDTO dto) {
-        // 1. Validar cliente
+        // 1️⃣ Validar cliente
         Cliente cliente = clienteRepository.findById(dto.getClienteId())
                 .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado"));
+
         if (!cliente.isAtivo()) {
+            // Cliente existe, mas está inativo → erro de regra de negócio (400)
             throw new BusinessException("Cliente inativo não pode fazer pedidos");
         }
 
-        // 2. Validar restaurante
+        // 2️⃣ Validar restaurante
         Restaurante restaurante = restauranteRepository.findById(dto.getRestauranteId())
                 .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado"));
+
         if (!restaurante.getAtivo()) {
             throw new BusinessException("Restaurante não está disponível");
         }
 
-        // ==========================================================
-        // LÓGICA CORRIGIDA
-        // ==========================================================
-
-        // 3. Criar o Pedido primeiro
+        // 3️⃣ Criar o Pedido
         Pedido pedido = new Pedido();
         pedido.setCliente(cliente);
         pedido.setRestaurante(restaurante);
@@ -71,9 +71,9 @@ public class PedidoServiceImpl implements PedidoService {
         pedido.setStatus(StatusPedido.PENDENTE);
         pedido.setEnderecoEntrega(dto.getEnderecoEntrega());
 
-        // 4. Validar produtos, calcular subtotal E ADICIONAR ITENS AO PEDIDO
         BigDecimal subtotal = BigDecimal.ZERO;
 
+        // 4️⃣ Validar produtos e montar itens
         for (ItemPedidoDTO itemDTO : dto.getItens()) {
             Produto produto = produtoRepository.findById(itemDTO.getProdutoId())
                     .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado: " + itemDTO.getProdutoId()));
@@ -83,54 +83,54 @@ public class PedidoServiceImpl implements PedidoService {
             }
 
             if (!produto.getRestaurante().getId().equals(dto.getRestauranteId())) {
+                // Produto pertence a outro restaurante → erro de negócio (400)
                 throw new BusinessException("Produto não pertence ao restaurante selecionado");
             }
+if (produto.getEstoque() < itemDTO.getQuantidade()) {
+    throw new BusinessException("Estoque insuficiente para o produto: " + produto.getNome());
+}
 
             ItemPedido item = new ItemPedido();
             item.setProduto(produto);
             item.setQuantidade(itemDTO.getQuantidade());
             item.setPrecoUnitario(produto.getPreco());
             item.setSubtotal(produto.getPreco().multiply(BigDecimal.valueOf(itemDTO.getQuantidade())));
-            
-            // --- ESTA É A CORREÇÃO ---
-            // Associa o item ao pedido (relação bidirecional) ANTES de salvar
             item.setPedido(pedido);
-            pedido.getItens().add(item); // (Assumindo que Pedido.java tem 'itens = new ArrayList<>()')
-            // ---------------------------
+            pedido.getItens().add(item);
 
             subtotal = subtotal.add(item.getSubtotal());
+
+            // Atualiza estoque do produto
+            produto.setEstoque(produto.getEstoque() - itemDTO.getQuantidade());
+            produtoRepository.save(produto);
         }
 
-        // 5. Calcular e setar o total no pedido
         BigDecimal taxaEntrega = restaurante.getTaxaEntrega();
         BigDecimal valorTotal = subtotal.add(taxaEntrega);
+
         pedido.setSubtotal(subtotal);
         pedido.setTaxaEntrega(taxaEntrega);
         pedido.setValorTotal(valorTotal);
 
-        // 6. Salvar pedido (AGORA ele tem 2 itens)
-        // O JPA (com Cascade) salvará o pedido e os itens
         Pedido pedidoSalvo = pedidoRepository.save(pedido);
 
-        // ==========================================================
-        
-        // 7. Mapear para DTO
         PedidoResponseDTO responseDTO = modelMapper.map(pedidoSalvo, PedidoResponseDTO.class);
         responseDTO.setClienteId(cliente.getId());
         responseDTO.setClienteNome(cliente.getNome());
         responseDTO.setRestauranteId(restaurante.getId());
         responseDTO.setRestauranteNome(restaurante.getNome());
         responseDTO.setTotal(valorTotal);
-        responseDTO.setItens(pedidoSalvo.getItens().stream() // Usa pedidoSalvo.getItens()
+        responseDTO.setItens(pedidoSalvo.getItens().stream()
                 .map(item -> {
                     ItemPedidoDTO iDTO = new ItemPedidoDTO();
                     iDTO.setProdutoId(item.getProduto().getId());
                     iDTO.setQuantidade(item.getQuantidade());
                     return iDTO;
-                }).collect(Collectors.toList())); // Use toList()
+                }).collect(Collectors.toList()));
 
         return responseDTO;
     }
+
     @Override
     @Transactional(readOnly = true)
     public PedidoResponseDTO buscarPedidoPorId(Long id) {
@@ -150,7 +150,6 @@ public class PedidoServiceImpl implements PedidoService {
                     iDTO.setQuantidade(item.getQuantidade());
                     return iDTO;
                 }).collect(Collectors.toList()));
-
         return responseDTO;
     }
 
@@ -206,36 +205,31 @@ public class PedidoServiceImpl implements PedidoService {
         return responseDTO;
     }
 
-@Override
-public CalculoPedidoResponseDTO calcularTotalPedido(CalculoPedidoDTO dto) {
-    // 1. Inicializa subtotal
-    BigDecimal subtotal = BigDecimal.ZERO;
+    @Override
+    public CalculoPedidoResponseDTO calcularTotalPedido(CalculoPedidoDTO dto) {
+        BigDecimal subtotal = BigDecimal.ZERO;
 
-    // 2. Calcula subtotal somando preço x quantidade de cada item
-    for (ItemPedidoDTO item : dto.getItens()) {
-        Produto produto = produtoRepository.findById(item.getProdutoId())
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Produto não encontrado: " + item.getProdutoId()));
-        subtotal = subtotal.add(produto.getPreco().multiply(BigDecimal.valueOf(item.getQuantidade())));
+        for (ItemPedidoDTO item : dto.getItens()) {
+            Produto produto = produtoRepository.findById(item.getProdutoId())
+                    .orElseThrow(() -> new EntityNotFoundException(
+                            "Produto não encontrado: " + item.getProdutoId()));
+            subtotal = subtotal.add(produto.getPreco().multiply(BigDecimal.valueOf(item.getQuantidade())));
+        }
+
+        Restaurante restaurante = restauranteRepository.findById(dto.getRestauranteId())
+                .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado"));
+
+        BigDecimal taxaEntrega = restaurante.getTaxaEntrega();
+        BigDecimal total = subtotal.add(taxaEntrega);
+
+        CalculoPedidoResponseDTO response = new CalculoPedidoResponseDTO();
+        response.setSubtotal(subtotal);
+        response.setTaxaEntrega(taxaEntrega);
+        response.setTotal(total);
+
+        return response;
     }
 
-    // 3. Busca restaurante para obter a taxa de entrega
-    Restaurante restaurante = restauranteRepository.findById(dto.getRestauranteId())
-            .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado"));
-
-    BigDecimal taxaEntrega = restaurante.getTaxaEntrega();
-
-    // 4. Calcula total do pedido
-    BigDecimal total = subtotal.add(taxaEntrega);
-
-    // 5. Preenche DTO de resposta
-    CalculoPedidoResponseDTO response = new CalculoPedidoResponseDTO();
-    response.setSubtotal(subtotal);
-    response.setTaxaEntrega(taxaEntrega);
-    response.setTotal(total);
-
-    return response;
-}
     @Override
     public void cancelarPedido(Long id) {
         Pedido pedido = pedidoRepository.findById(id)
@@ -268,12 +262,10 @@ public CalculoPedidoResponseDTO calcularTotalPedido(CalculoPedidoDTO dto) {
         return status == StatusPedido.PENDENTE || status == StatusPedido.CONFIRMADO;
     }
 
-    // =================== LISTAR PEDIDOS COM FILTROS ===================
     @Override
     @Transactional(readOnly = true)
     public Page<PedidoResponseDTO> listarPedidos(StatusPedido status, LocalDate dataInicio, LocalDate dataFim, Pageable pageable) {
         Page<Pedido> pedidos;
-
         LocalDateTime inicio = null;
         LocalDateTime fim = null;
 
@@ -309,7 +301,6 @@ public CalculoPedidoResponseDTO calcularTotalPedido(CalculoPedidoDTO dto) {
         });
     }
 
-    // =================== PEDIDOS POR RESTAURANTE ===================
     @Override
     @Transactional(readOnly = true)
     public List<PedidoResponseDTO> buscarPedidosPorRestaurante(Long restauranteId, StatusPedido status) {

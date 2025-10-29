@@ -2,11 +2,10 @@ package com.deliverytech.delivery.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
+import org.hibernate.validator.constraints.br.CPF;
 
 @Schema(description = "Dados para cadastro ou atualização de cliente")
 public class ClienteDTO {
-
-    // ... (campos nome, email, telefone, endereco - permanecem iguais) ...
 
     @Schema(description = "Nome do cliente", example = "João Silva", required = true)
     @NotBlank(message = "Nome é obrigatório")
@@ -31,23 +30,14 @@ public class ClienteDTO {
     @Size(max = 200, message = "Endereço deve ter no máximo 200 caracteres")
     private String endereco;
 
-    // ==============================================
-    // ADICIONAR ESTE CAMPO
-    // ==============================================
-    @Schema(description = "CPF do cliente (apenas números)", example = "12345678901", required = true)
+    @Schema(description = "CPF do cliente (apenas números)", example = "39053344705", required = true)
     @NotBlank(message = "CPF é obrigatório")
-    @Pattern(
-        regexp = "^\\d{11}$", // Valida que são exatamente 11 dígitos numéricos
-        message = "CPF deve conter exatamente 11 dígitos numéricos"
-    )
+    @CPF(message = "CPF inválido")
     private String cpf;
-    // ==============================================
-
 
     // =======================
     // GETTERS E SETTERS
     // =======================
-    
     public String getNome() { return nome; }
     public void setNome(String nome) { this.nome = nome; }
 
@@ -60,9 +50,6 @@ public class ClienteDTO {
     public String getEndereco() { return endereco; }
     public void setEndereco(String endereco) { this.endereco = endereco; }
 
-    // ==============================================
-    // GETTER E SETTER PARA CPF
-    // ==============================================
     public String getCpf() { return cpf; }
     public void setCpf(String cpf) { this.cpf = cpf; }
 }

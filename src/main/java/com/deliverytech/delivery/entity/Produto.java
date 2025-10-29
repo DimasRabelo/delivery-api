@@ -19,6 +19,7 @@ public class Produto {
     private BigDecimal preco;
     private String categoria;
     private Boolean disponivel;
+    private int estoque;
 
     @ManyToOne
     @JoinColumn(name = "restaurante_id")

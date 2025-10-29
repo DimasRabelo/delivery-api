@@ -58,12 +58,11 @@ public class GlobalExceptionHandler {
         );
 
         errorResponse.setErrorCode(ex.getErrorCode());
-
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 
     // ============================================================
-    //   Conflitos de dados (duplicidade, etc.)
+    //  Conflitos de dados (duplicidade, etc.)
     // ============================================================
     @ExceptionHandler(ConflictException.class)
     public ResponseEntity<ErrorResponse> handleConflictException(
@@ -86,6 +85,29 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
     }
+
+    // ============================================================
+    //  Erros de regra de negócio (BusinessException)
+    // ============================================================
+   @ExceptionHandler(BusinessException.class)
+public ResponseEntity<ErrorResponse> handleBusinessException(
+        BusinessException ex, WebRequest request) {
+
+    HttpStatus status = ex.getStatus() != null ? ex.getStatus() : HttpStatus.BAD_REQUEST;
+
+    ErrorResponse errorResponse = new ErrorResponse(
+            status.value(),
+            "Erro de negócio",
+            ex.getMessage(),
+            request.getDescription(false).replace("uri=", "")
+    );
+
+    errorResponse.setErrorCode(
+            ex.getErrorCode() != null ? ex.getErrorCode() : "BUSINESS_ERROR"
+    );
+
+    return new ResponseEntity<>(errorResponse, status);
+}
 
     // ============================================================
     //  Acesso negado por roles (Spring Security)
@@ -117,7 +139,6 @@ public class GlobalExceptionHandler {
         );
 
         errorResponse.setErrorCode("ACCESS_DENIED");
-
         return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
     }
 
@@ -136,7 +157,6 @@ public class GlobalExceptionHandler {
         );
 
         errorResponse.setErrorCode("INTERNAL_ERROR");
-
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

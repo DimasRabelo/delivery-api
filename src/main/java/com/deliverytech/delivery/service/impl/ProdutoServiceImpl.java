@@ -5,7 +5,7 @@ import com.deliverytech.delivery.dto.response.ProdutoResponseDTO;
 import com.deliverytech.delivery.entity.Produto;
 import com.deliverytech.delivery.entity.Restaurante;
 import com.deliverytech.delivery.exception.BusinessException;
-import com.deliverytech.delivery.exception.ConflictException;
+import com.deliverytech.delivery.exception.ConflictException; // O import será usado
 import com.deliverytech.delivery.exception.EntityNotFoundException;
 import com.deliverytech.delivery.repository.ProdutoRepository;
 import com.deliverytech.delivery.repository.RestauranteRepository;
@@ -33,6 +33,7 @@ public class ProdutoServiceImpl implements ProdutoService {
     // ===========================
     @Override
     public ProdutoResponseDTO cadastrarProduto(ProdutoDTO dto) {
+        // Validações do DTO
         if (dto.getCategoria() == null || dto.getCategoria().isEmpty()) {
             throw new IllegalArgumentException("Categoria é obrigatória");
         }
@@ -43,24 +44,32 @@ public class ProdutoServiceImpl implements ProdutoService {
             throw new IllegalArgumentException("Restaurante ID é obrigatório");
         }
 
+        // Busca Restaurante
         Restaurante restaurante = restauranteRepository.findById(dto.getRestauranteId())
                 .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado"));
 
+        // Lógica de Conflito 
         boolean exists = produtoRepository.existsByNomeAndRestauranteId(dto.getNome(), dto.getRestauranteId());
         if (exists) {
             throw new ConflictException("Produto já existe para este restaurante", "nome", dto.getNome());
         }
 
+        // Cria a entidade Produto
         Produto produto = new Produto();
         produto.setNome(dto.getNome());
         produto.setDescricao(dto.getDescricao());
         produto.setPreco(dto.getPreco());
         produto.setCategoria(dto.getCategoria());
-        produto.setDisponivel(true);
+        produto.setDisponivel(true); 
         produto.setRestaurante(restaurante);
+        
+        // Adiciona o estoque (a nova lógica)
+        produto.setEstoque(dto.getEstoque());
 
+        // Salva no banco
         produtoRepository.save(produto);
 
+        // Retorna o DTO de Resposta (que já lê o estoque)
         return new ProdutoResponseDTO(produto);
     }
 
@@ -140,6 +149,7 @@ public class ProdutoServiceImpl implements ProdutoService {
             produto.setDisponivel(dto.getDisponivel());
         }
         produto.setRestaurante(restaurante);
+        produto.setEstoque(dto.getEstoque());
 
         Produto atualizado = produtoRepository.save(produto);
 

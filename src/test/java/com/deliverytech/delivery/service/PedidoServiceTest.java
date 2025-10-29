@@ -96,6 +96,7 @@ class PedidoServiceTest {
         produto1.setDisponivel(true);
         produto1.setPreco(new BigDecimal("10.00"));
         produto1.setRestaurante(restauranteAberto);
+        produto1.setEstoque(10);
 
         produto2 = new Produto();
         produto2.setId(101L);
@@ -103,6 +104,7 @@ class PedidoServiceTest {
         produto2.setDisponivel(true);
         produto2.setPreco(new BigDecimal("20.00"));
         produto2.setRestaurante(restauranteAberto);
+        produto2.setEstoque(5);
 
         // DTO de Itens
         ItemPedidoDTO itemDTO1 = new ItemPedidoDTO();

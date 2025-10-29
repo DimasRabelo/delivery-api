@@ -32,6 +32,14 @@ public class ProdutoResponseDTO {
     @Schema(description = "Categoria do produto", example = "Italiana")
     private String categoria;
 
+    // ==============================================
+    // ADICIONE ESTE CAMPO
+    // ==============================================
+    @Schema(description = "Quantidade em estoque", example = "50")
+    private int estoque;
+    // ==============================================
+
+
     // =======================
     // CONSTRUTOR VAZIO
     // =======================
@@ -48,11 +56,13 @@ public class ProdutoResponseDTO {
         this.disponivel = produto.getDisponivel();
         this.restauranteId = produto.getRestaurante() != null ? produto.getRestaurante().getId() : null;
         this.categoria = produto.getCategoria();
+        this.estoque = produto.getEstoque();
     }
 
     // =======================
     // GETTERS E SETTERS
     // =======================
+    
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -73,4 +83,7 @@ public class ProdutoResponseDTO {
 
     public String getCategoria() { return categoria; }
     public void setCategoria(String categoria) { this.categoria = categoria; }
+    
+    public int getEstoque() { return estoque; }
+    public void setEstoque(int estoque) { this.estoque = estoque; }
 }
