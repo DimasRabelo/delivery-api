@@ -1,11 +1,13 @@
-🍔 DeliveryTech API
+<h1>🍔 DeliveryTech API </h1>
+
 Sistema de delivery robusto desenvolvido com Spring Boot 3 e Java 21, focado em alta performance e segurança.
 
 Este projeto implementa uma API REST completa para gerenciar clientes, restaurantes, produtos e pedidos, com uma camada de segurança granular usando Spring Security 6 e autenticação stateless via JSON Web Tokens (JWT).
 
 O sistema controla o acesso baseado em perfis (ADMIN, RESTAURANTE, CLIENTE), garante a propriedade dos dados (ex: um restaurante só pode gerenciar seus próprios produtos) e expõe uma documentação profissional com Swagger/OpenAPI.
 
-🚀 Tecnologias Utilizadas
+<h2>🚀 Tecnologias Utilizadas</h2>
+
 Java 21 LTS
 
 Spring Boot 3.5.6
@@ -26,7 +28,7 @@ springdoc-openapi (Swagger): Para documentação interativa da API.
 
 Maven: Para gerenciamento de dependências.
 
-🏗️ Arquitetura
+<h2>🏗️ Arquitetura</h2>
 A aplicação segue uma arquitetura em camadas, agora com o JwtAuthenticationFilter como o "portão de entrada" para requisições protegidas.
 
 Snippet de código
@@ -45,7 +47,7 @@ graph TD
         I(AuthService/UserDetailsService)
     end
     
-## 🏗️ Estrutura de Pastas
+<h2>🏗️ Estrutura de Pastas</h2>
 
 A estrutura do projeto foi organizada para refletir a separação de responsabilidades, com um novo pacote `security` dedicado:
 
@@ -208,7 +210,7 @@ Hashing de Senhas: Senhas são armazenadas usando BCryptPasswordEncoder.
 
 Tratamento de Exceções: Respostas 401 (Unauthorized) e 403 (Forbidden) customizadas e padronizadas.
 
-🛠️ Services (Regras de Negócio)
+##🛠️ Services (Regras de Negócio)
 
 AuthService: Implementa UserDetailsService para carregar usuários e gerencia o registro.
 
