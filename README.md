@@ -196,7 +196,9 @@ A estrutura do projeto foi organizada para refletir a separação de responsabil
 
 ⚙️ Funcionalidades Implementadas
 
+
 🔐 Segurança (Spring Security + JWT)
+
 
 Autenticação Stateless: Autenticação via Bearer Token (JWT).
 
@@ -210,7 +212,9 @@ Hashing de Senhas: Senhas são armazenadas usando BCryptPasswordEncoder.
 
 Tratamento de Exceções: Respostas 401 (Unauthorized) e 403 (Forbidden) customizadas e padronizadas.
 
-##🛠️ Services (Regras de Negócio)
+
+🛠️ Services (Regras de Negócio)
+
 
 AuthService: Implementa UserDetailsService para carregar usuários e gerencia o registro.
 
@@ -222,7 +226,9 @@ PedidoService: Lógica complexa para criação de pedidos, cálculo de total, at
 
 RelatorioService: Geração de relatórios de vendas, produtos, clientes, etc.
 
+
 📦 DTOs e Validações
+
 
 Auth DTOs: LoginRequest, LoginResponse (com token), RegisterRequest, UserResponse (DTO seguro, sem senha).
 
@@ -232,17 +238,22 @@ Response DTOs: ClienteResponseDTO, RestauranteResponseDTO, ProdutoResponseDTO, P
 
 Validações: @Valid, @NotNull, @NotBlank, @Email, @Size, e validações customizadas.
 
+
 📋 Endpoints REST (Principais)
+
 A API é dividida em endpoints públicos (para consulta) e protegidos (que exigem autenticação e autorização).
 
 Base URL: http://localhost:8080/api
 
 🔑 Autenticação (Público)
+
 POST /auth/login: Autentica um usuário e retorna um token JWT.
 
 POST /auth/register: Registra um novo usuário (CLIENTE ou RESTAURANTE).
 
+
 🍽️ Endpoints Públicos (Consulta)
+
 
 GET /restaurantes: Lista restaurantes (com filtros).
 
@@ -256,7 +267,9 @@ GET /produtos/{id}: Busca um produto por ID.
 
 POST /pedidos/calcular: Calcula o total de um pedido (sem salvar).
 
+
 🛡️ Endpoints Protegidos (Requerem Token)
+
 
 GET /auth/me: Retorna os dados do usuário logado.
 
@@ -284,7 +297,9 @@ GET /relatorios/...: Endpoints de relatórios (ADMIN ou RESTAURANTE dono).
 
 (... e outros endpoints de CRUD e gerenciamento.)
 
+
 🌟 Padronização de Respostas
+
 
 Sucesso (2xx) e Paginação
 Respostas de sucesso seguem um wrapper padrão (ApiResponseWrapper) e as respostas paginadas (PagedResponseWrapper) incluem metadados de paginação.
@@ -374,14 +389,13 @@ User: sa
 
 Password: password (definido em application.properties)
 
-* **Testes Automatizados:**
+🧪 Testes Automatizados
+
 
     * **JUnit 5:** Framework principal para testes unitários e de integração.
     * **Mockito:** Para "mockar" (simular) dependências em testes unitários.
     * **MockMvc (Spring Boot Test):** Para testar a camada de API (Controllers) de forma integrada.
     * **JaCoCo:** Plugin para geração de relatórios de cobertura de código.
-
-🧪 Testes Automatizados
 
 Este projeto possui uma suíte robusta de testes automatizados para garantir a qualidade, estabilidade e manutenibilidade do código, cobrindo regras de negócio (Services) e endpoints da API (Controllers).
 
@@ -418,6 +432,7 @@ Este é o comando principal para validar todo o projeto.
 ./run-all-tests.sh
 
 📊 Relatório de Cobertura de Código (JaCoCo)
+
 O projeto está configurado com o plugin JaCoCo para monitorar a porcentagem de código que é coberta pelos testes automatizados. A meta de cobertura definida pela atividade é de 80% para as camadas de serviço.
 
 Para gerar e visualizar o relatório de cobertura:
@@ -494,11 +509,6 @@ Bash
 
 echo file://%cd%\target\site\jacoco\index.html
 Copie e cole a saída (talvez precise trocar \ por /) no seu navegador.
-
-
-
-
-
 
 👨‍💻 Desenvolvedor
 Dimas Aparecido Rabelo
