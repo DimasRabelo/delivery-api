@@ -44,6 +44,7 @@ graph TD
         H(JwtUtil)
         I(AuthService/UserDetailsService)
     end
+    
 ## 🏗️ Estrutura de Pastas
 
 A estrutura do projeto foi organizada para refletir a separação de responsabilidades, com um novo pacote `security` dedicado:
@@ -141,6 +142,8 @@ A estrutura do projeto foi organizada para refletir a separação de responsabil
  ┃ ┃ ┃ ┃ ┃ ┣ 📂validation
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜CEPValidator.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜CategoriaValidator.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜CpfValidator.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜HorarioFuncionamentoValidator.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜TelefoneValidator.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ValidCEP.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ValidCategoria.java
@@ -148,34 +151,51 @@ A estrutura do projeto foi organizada para refletir a separação de responsabil
  ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜ValidTelefone.java
  ┃ ┃ ┃ ┃ ┃ ┣ 📜DeliveryApiApplication.java
  ┃ ┃ ┃ ┃ ┃ ┗ 📜GerarSenha.java
- ┃ ┣ 📂resources
+ ┃ ┗ 📂resources
  ┃ ┃ ┣ 📜_data.sql
  ┃ ┃ ┣ 📜application.properties
  ┃ ┃ ┗ 📜data.sql
- ┃ ┗ 📜estrutura=projeto.png
  ┣ 📂postman
  ┃ ┣ 📜DeliveryApi.postman_collection.json
  ┃ ┣ 📜DeliveryApiLogin.postman_collection.json
  ┃ ┣ 📜DeliveryApiTestValidation.postman_collection.json
  ┃ ┗ 📜Relatorios Delivery API.postman_collection.json
  ┗ 📂test
- ┃ ┗ 📂java
+ ┃ ┣ 📂java
  ┃ ┃ ┗ 📂com
  ┃ ┃ ┃ ┗ 📂deliverytech
  ┃ ┃ ┃ ┃ ┗ 📂delivery
+ ┃ ┃ ┃ ┃ ┃ ┣ 📂config
+ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜TestDataConfiguration.java
  ┃ ┃ ┃ ┃ ┃ ┣ 📂controller
- ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ClienteControllerIT.java
- ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜PedidoControllerIT.java
- ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ProdutoControllerIT.java
- ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜RestauranteControllerIT.java
- ┃ ┃ ┃ ┃ ┃ ┣ 📂repository
- ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ClienteRepositoryTest.java
- ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜PedidoRepositoryTest.java
- ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜ProdutoRepositoryTest.java
- ┃ ┃ ┃ ┃ ┃ ┗ 📂service
- ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜ClienteServiceTest.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂auth
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜AuthControllerIntegrationTest.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ClienteControllerIntegrationTest.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜PedidoControllerIntegrationTest.java
+ ┃ ┃ ┃ ┃ ┃ ┣ 📂entity
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ClienteTest.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ProdutoTest.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜RestauranteTest.java
+ ┃ ┃ ┃ ┃ ┃ ┣ 📂security
+ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📂jwt
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜JwtAuthenticationFilterTest.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜JwtUtilTest.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜SecurityUtilsTest.java
+ ┃ ┃ ┃ ┃ ┃ ┣ 📂service
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ClienteServiceTest.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜PedidoServiceTest.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ProdutoServiceTest.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜RestauranteServiceTest.java
+ ┃ ┃ ┃ ┃ ┃ ┗ 📂validation
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜CpfValidatorTest.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜HorarioFuncionamentoValidatorTest.java
+ ┃ ┗ 📂resources
+ ┃ ┃ ┗ 📜application-test.properties
+
 ⚙️ Funcionalidades Implementadas
+
 🔐 Segurança (Spring Security + JWT)
+
 Autenticação Stateless: Autenticação via Bearer Token (JWT).
 
 Autorização Granular: Uso de @PreAuthorize para controle de acesso em nível de método, diferenciando ADMIN, RESTAURANTE e CLIENTE.
@@ -189,6 +209,7 @@ Hashing de Senhas: Senhas são armazenadas usando BCryptPasswordEncoder.
 Tratamento de Exceções: Respostas 401 (Unauthorized) e 403 (Forbidden) customizadas e padronizadas.
 
 🛠️ Services (Regras de Negócio)
+
 AuthService: Implementa UserDetailsService para carregar usuários e gerencia o registro.
 
 RestauranteService: Cadastro, filtros, cálculo de taxa de entrega e verificação de propriedade (isOwner).
@@ -200,6 +221,7 @@ PedidoService: Lógica complexa para criação de pedidos, cálculo de total, at
 RelatorioService: Geração de relatórios de vendas, produtos, clientes, etc.
 
 📦 DTOs e Validações
+
 Auth DTOs: LoginRequest, LoginResponse (com token), RegisterRequest, UserResponse (DTO seguro, sem senha).
 
 Request DTOs: ClienteDTO, RestauranteDTO, ProdutoDTO, PedidoDTO, ItemPedidoDTO.
@@ -219,6 +241,7 @@ POST /auth/login: Autentica um usuário e retorna um token JWT.
 POST /auth/register: Registra um novo usuário (CLIENTE ou RESTAURANTE).
 
 🍽️ Endpoints Públicos (Consulta)
+
 GET /restaurantes: Lista restaurantes (com filtros).
 
 GET /restaurantes/{id}: Busca um restaurante por ID.
@@ -232,6 +255,7 @@ GET /produtos/{id}: Busca um produto por ID.
 POST /pedidos/calcular: Calcula o total de um pedido (sem salvar).
 
 🛡️ Endpoints Protegidos (Requerem Token)
+
 GET /auth/me: Retorna os dados do usuário logado.
 
 POST /restaurantes: Cadastra um novo restaurante (ADMIN).
@@ -259,6 +283,7 @@ GET /relatorios/...: Endpoints de relatórios (ADMIN ou RESTAURANTE dono).
 (... e outros endpoints de CRUD e gerenciamento.)
 
 🌟 Padronização de Respostas
+
 Sucesso (2xx) e Paginação
 Respostas de sucesso seguem um wrapper padrão (ApiResponseWrapper) e as respostas paginadas (PagedResponseWrapper) incluem metadados de paginação.
 
@@ -307,7 +332,9 @@ JSON
     "nome": "Nome é obrigatório"
   }
 }
+
 🔧 Como Executar
+
 Clonar o repositório:
 
 Bash
@@ -322,6 +349,7 @@ Bash
 A API estará disponível em http://localhost:8080.
 
 🧪 Como Testar (Autenticação)
+
 Registre um usuário: POST http://localhost:8080/api/auth/register (Envie um JSON com nome, email, senha e role - ex: "CLIENTE").
 
 Faça Login: POST http://localhost:8080/api/auth/login (Envie email e senha).
@@ -331,6 +359,7 @@ Copie o Token: A resposta irá conter o token (ex: "eyJhbGciOi...").
 Teste Endpoints Protegidos: Para acessar endpoints como GET /api/auth/me, configure sua ferramenta (Postman/Insomnia) para incluir o Bearer Token no Header de Autorização: Authorization: Bearer eyJhbGciOi...
 
 🌐 Links Úteis
+
 Swagger UI (Documentação Interativa): http://localhost:8080/swagger-ui/index.html
 
 API Docs (JSON OpenAPI): http://localhost:8080/api-docs
@@ -342,6 +371,132 @@ JDBC URL: jdbc:h2:mem:deliverydb
 User: sa
 
 Password: password (definido em application.properties)
+
+* **Testes Automatizados:**
+
+    * **JUnit 5:** Framework principal para testes unitários e de integração.
+    * **Mockito:** Para "mockar" (simular) dependências em testes unitários.
+    * **MockMvc (Spring Boot Test):** Para testar a camada de API (Controllers) de forma integrada.
+    * **JaCoCo:** Plugin para geração de relatórios de cobertura de código.
+
+🧪 Testes Automatizados
+
+Este projeto possui uma suíte robusta de testes automatizados para garantir a qualidade, estabilidade e manutenibilidade do código, cobrindo regras de negócio (Services) e endpoints da API (Controllers).
+
+A suíte de testes é configurada para rodar em um perfil (`test`) dedicado, utilizando um banco de dados H2 em memória (`application-test.properties`) para garantir que os testes sejam isolados e não afetem os dados de desenvolvimento.
+
+### Como Executar os Testes
+
+**1. Executar toda a suíte de testes:**
+Este comando limpa o projeto, executa todos os testes unitários e de integração.
+
+```bash
+./mvnw clean test
+
+# Exemplo para um teste unitário de Serviço
+./mvnw test -Dtest=ClienteServiceTest
+
+# Exemplo para um teste de integração de Controller
+./mvnw test -Dtest=PedidoControllerIntegrationTest
+
+Este projeto possui uma suíte robusta de testes automatizados para garantir a qualidade, estabilidade e manutenibilidade do código, cobrindo regras de negócio (Services) e endpoints da API (Controllers).
+
+A suíte de testes é configurada para rodar em um perfil (`test`) dedicado, utilizando um banco de dados H2 em memória (`application-test.properties`) para garantir que os testes sejam isolados e não afetem os dados de desenvolvimento.
+
+### Como Executar os Testes (Scripts de Automação)
+
+Para facilitar a execução, o projeto inclui scripts de automação (conforme Atividade 4.2).
+
+*(Observação: pode ser necessário dar permissão de execução aos scripts primeiro, usando `chmod +x *.sh`)*
+
+**1. Executar TODOS os testes (Unitários + Integração) e Gerar Relatório:**
+Este é o comando principal para validar todo o projeto.
+
+```bash
+./run-all-tests.sh
+
+📊 Relatório de Cobertura de Código (JaCoCo)
+O projeto está configurado com o plugin JaCoCo para monitorar a porcentagem de código que é coberta pelos testes automatizados. A meta de cobertura definida pela atividade é de 80% para as camadas de serviço.
+
+Para gerar e visualizar o relatório de cobertura:
+
+Execute o goal report do JaCoCo junto com os testes:
+
+./mvnw clean test jacoco:report
+
+Após a execução, abra o relatório HTML principal gerado no diretório target: target/site/jacoco/index.html
+
+🐧 Em Linux
+Use o comando xdg-open. Ele abre o arquivo com o aplicativo padrão do sistema (que, para um .html, será seu navegador padrão).
+
+Bash
+
+xdg-open target/site/jacoco/index.html
+🍎 Em macOS
+O comando é open:
+
+Bash
+
+open target/site/jacoco/index.html
+🪟 Em Windows (PowerShell ou CMD)
+Use o comando start. Ele funciona de forma similar ao open e xdg-open.
+
+Bash
+
+# O Windows aceita barras normais na maioria dos terminais modernos
+start target/site/jacoco/index.html
+
+# Ou, usando o formato de caminho tradicional do Windows
+start target\site\jacoco\index.html
+Dica para usuários de WSL (Subsistema Windows para Linux): Se você estiver usando um terminal Linux dentro do Windows (como o Ubuntu WSL), os comandos xdg-open ou open podem não funcionar para abrir um app do Windows. Nesses casos, use este comando para chamar o explorador do Windows:
+
+Bash
+
+explorer.exe target/site/jacoco/index.html
+2. Via Interface Gráfica (Explorador de Arquivos)
+Este é o método visual padrão, que funciona em qualquer sistema operacional (Windows Explorer, Finder do macOS, Nautilus/Dolphin do Linux).
+
+Abra a pasta raiz do seu projeto.
+
+Navegue pelas pastas: target -> site -> jacoco.
+
+Encontre o arquivo index.html.
+
+Dê um clique duplo nele.
+
+O sistema operacional o abrirá automaticamente no seu navegador web padrão.
+
+3. Via Navegador (Manualmente)
+Você também pode abrir o arquivo diretamente pelo navegador, embora seja o método mais manual.
+
+Abra seu navegador (Chrome, Firefox, Edge, etc.).
+
+Na barra de endereços, você pode fazer duas coisas:
+
+Arrastar e Soltar: Arraste o arquivo index.html (do método 2) e solte-o diretamente na barra de abas ou na janela do navegador.
+
+Usar o protocolo file://: Você precisa digitar file:// seguido do caminho absoluto do arquivo.
+
+Para descobrir o caminho absoluto:
+
+(Linux/macOS) No terminal, na raiz do projeto, digite:
+
+Bash
+
+echo "file://$(pwd)/target/site/jacoco/index.html"
+Copie e cole a saída no seu navegador.
+
+(Windows) No CMD, na raiz do projeto, digite:
+
+Bash
+
+echo file://%cd%\target\site\jacoco\index.html
+Copie e cole a saída (talvez precise trocar \ por /) no seu navegador.
+
+
+
+
+
 
 👨‍💻 Desenvolvedor
 Dimas Aparecido Rabelo
