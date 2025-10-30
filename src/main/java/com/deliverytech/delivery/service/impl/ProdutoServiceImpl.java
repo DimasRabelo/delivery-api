@@ -66,11 +66,11 @@ public class ProdutoServiceImpl implements ProdutoService {
         // Adiciona o estoque (a nova lógica)
         produto.setEstoque(dto.getEstoque());
 
-        // Salva no banco
-        produtoRepository.save(produto);
+      // Salva no banco e captura a entidade gerenciada (com ID)
+Produto produtoSalvo = produtoRepository.save(produto);
 
-        // Retorna o DTO de Resposta (que já lê o estoque)
-        return new ProdutoResponseDTO(produto);
+// Retorna o DTO de Resposta (que já lê o estoque)
+return new ProdutoResponseDTO(produtoSalvo); // Use a variável 'produtoSalvo'
     }
 
     // ===========================

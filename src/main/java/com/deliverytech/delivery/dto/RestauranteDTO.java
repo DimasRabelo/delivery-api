@@ -4,6 +4,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import com.deliverytech.delivery.validation.ValidTelefone;
 import com.deliverytech.delivery.validation.ValidCategoria;
+import com.deliverytech.delivery.validation.ValidHorarioFuncionamento;
+
 import java.math.BigDecimal;
 
 /**
@@ -61,8 +63,10 @@ public class RestauranteDTO {
 
     @Schema(description = "Horário de funcionamento do restaurante", example = "08:00-22:00")
     @NotBlank(message = "Horário de funcionamento é obrigatório")
+    @ValidHorarioFuncionamento
     private String horarioFuncionamento;
 
+    
     // =======================
     // GETTERS E SETTERS
     // =======================

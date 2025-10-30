@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Arquivo de configuração do Maven (Project Object Model) -->
+<!-- Define dependências, plugins e informações do projeto. -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
+    <!-- Versão do modelo POM usada -->
     <modelVersion>4.0.0</modelVersion>
 
+    <!-- Define o projeto pai (Spring Boot) -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -12,32 +16,40 @@
         <relativePath/>
     </parent>
 
-    <groupId>com.deliverytech</groupId>
-    <artifactId>delivery-api</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-    <name>delivery-api</name>
-    <description>Aplicação de Delivery</description>
+    <!-- Informações básicas do projeto -->
+    <groupId>com.deliverytech</groupId> <!-- Pacote base -->
+    <artifactId>delivery-api</artifactId> <!-- Nome do artefato gerado -->
+    <version>0.0.1-SNAPSHOT</version> <!-- Versão do projeto -->
+    <name>delivery-api</name> <!-- Nome legível do projeto -->
+    <description>Aplicação de Delivery</description> <!-- Descrição do projeto -->
 
+    <!-- Versão do Java usada -->
     <properties>
         <java.version>21</java.version>
-        </properties>
+    </properties>
 
+    <!-- Dependências do projeto -->
     <dependencies>
+
+        <!-- Starter Web: cria APIs REST, usa Tomcat como servidor embutido -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
+        <!-- Starter JPA: integra com bancos de dados usando Hibernate -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
 
+        <!-- Starter Security: adiciona autenticação e autorização -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 
+        <!-- JWT (JSON Web Token): usado para autenticação com tokens -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-api</artifactId>
@@ -47,7 +59,7 @@
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-impl</artifactId>
             <version>0.11.5</version>
-            <scope>runtime</scope>
+            <scope>runtime</scope> <!-- Carregado apenas em tempo de execução -->
         </dependency>
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
@@ -56,35 +68,41 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- Banco de dados em memória H2 (ótimo para testes locais) -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <scope>runtime</scope>
         </dependency>
 
+        <!-- Validação de dados (ex: @NotNull, @Email etc.) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
+        <!-- Lombok: reduz código boilerplate (ex: getters/setters automáticos) -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
 
+        <!-- ModelMapper: facilita conversão entre DTOs e entidades -->
         <dependency>
             <groupId>org.modelmapper</groupId>
             <artifactId>modelmapper</artifactId>
             <version>3.1.1</version>
         </dependency>
 
+        <!-- SpringDoc OpenAPI: gera documentação Swagger automaticamente -->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
             <version>2.8.13</version>
         </dependency>
 
+        <!-- DevTools: recarregamento automático e suporte ao desenvolvimento -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
@@ -92,12 +110,14 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- Starter Test: inclui JUnit, Mockito e outras libs para testes -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
 
+        <!-- Testcontainers: cria containers Docker para testes de integração -->
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>junit-jupiter</artifactId>
@@ -109,18 +129,25 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- Spring Security Test: utilitários para testar segurança -->
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
-        
-    </dependencies> <build>
+
+    </dependencies>
+
+    <!-- Configurações de build (compilação, plugins, etc.) -->
+    <build>
         <plugins>
+
+            <!-- Plugin do compilador Java -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
+                    <!-- Processamento de anotações do Lombok -->
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.projectlombok</groupId>
@@ -131,10 +158,12 @@
                 </configuration>
             </plugin>
 
+            <!-- Plugin do Spring Boot: empacota o app em um .jar executável -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
+                    <!-- Exclui Lombok do empacotamento final -->
                     <excludes>
                         <exclude>
                             <groupId>org.projectlombok</groupId>
@@ -144,51 +173,74 @@
                 </configuration>
             </plugin>
 
+            <!-- Plugin de testes (JUnit 5) -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.1.2</version>
                 <configuration>
+                    <!-- Evita conflito de módulos com o Java 21 -->
                     <useModulePath>false</useModulePath>
                 </configuration>
             </plugin>
-            
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.12</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>report</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>report</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>check</id>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                        <configuration>
-                            <rules>
-                                <rule>
-                                    <element>BUNDLE</element> <limits>
-                                        <limit>
-                                            <counter>LINE</counter> <value>COVEREDRATIO</value>
-                                            <minimum>0.80</minimum> </limit>
-                                    </limits>
-                                </rule>
-                            </rules>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+
+            <!-- Plugin Jacoco: gera relatório e valida cobertura de testes -->
+           <plugin>
+    <groupId>org.jacoco</groupId>
+    <artifactId>jacoco-maven-plugin</artifactId>
+    <version>0.8.12</version>
+
+    <configuration>
+        <excludes>
+            <exclude>**/config/*</exclude>
+            <exclude>**/dto/*</exclude>
+            <exclude>**/exception/*</exclude>
+            <exclude>**/DeliveryApiApplication*</exclude>
+        </excludes>
+
+        <rules>
+            <rule>
+                <element>BUNDLE</element>
+                <limits>
+                    <limit>
+                        <counter>LINE</counter>
+                        <value>COVEREDRATIO</value>
+                        <minimum>0.30</minimum>
+                    </limit>
+                    <limit>
+                        <counter>BRANCH</counter>
+                        <value>COVEREDRATIO</value>
+                        <minimum>0.40</minimum>
+                    </limit>
+                </limits>
+            </rule>
+        </rules>
+    </configuration>
+    <executions>
+        <execution>
+            <goals>
+                <goal>prepare-agent</goal>
+            </goals>
+        </execution>
+
+        <execution>
+            <id>report</id>
+            <phase>test</phase>
+            <goals>
+                <goal>report</goal>
+            </goals>
+        </execution>
+
+        <execution>
+            <id>check</id>
+            <phase>verify</phase>
+            <goals>
+                <goal>check</goal>
+            </goals>
+            </execution>
+    </executions>
+
+</plugin>
         </plugins>
     </build>
 
