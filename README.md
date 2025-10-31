@@ -239,7 +239,7 @@ A estrutura do projeto foi organizada para refletir a separação de responsabil
  ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜HorarioFuncionamentoValidatorTest.java
  ┃ ┗ 📂resources
  ┃ ┃ ┗ 📜application-test.properties
-
+```
 <h2>⚙️ Funcionalidades Implementadas</h2>
 
 <h2>🔐 Segurança (Spring Security + JWT)</h2>
