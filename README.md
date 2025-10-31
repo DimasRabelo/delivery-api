@@ -1,10 +1,10 @@
 <h1>🍔 DeliveryTech API </h1>
 
-Sistema de delivery robusto desenvolvido com Spring Boot 3 e Java 21, focado em alta performance e segurança.
+Sistema de delivery robusto desenvolvido com Spring Boot 3 e Java 21, focado em alta performance, segurança e excelente experiência para o desenvolvedor (DX).
 
 Este projeto implementa uma API REST completa para gerenciar clientes, restaurantes, produtos e pedidos, com uma camada de segurança granular usando Spring Security 6 e autenticação stateless via JSON Web Tokens (JWT).
 
-O sistema controla o acesso baseado em perfis (ADMIN, RESTAURANTE, CLIENTE), garante a propriedade dos dados (ex: um restaurante só pode gerenciar seus próprios produtos) e expõe uma documentação profissional com Swagger/OpenAPI.
+O sistema controla o acesso baseado em perfis (ADMIN, RESTAURANTE, CLIENTE) e expõe uma documentação interativa profissional usando Swagger (OpenAPI), permitindo que equipes de front-end e parceiros integrem com a API em questão de horas, não semanas.
 
 <h2>🚀 Tecnologias Utilizadas</h2>
 
@@ -14,7 +14,7 @@ Spring Boot 3.5.6
 
 Spring Web: Para construção de endpoints REST.
 
-Spring Data JPA: Para persistência de dados.
+Spring Data JPA: Para persistência de dados (com Hibernate).
 
 Spring Validation: Para validação de DTOs.
 
@@ -24,32 +24,74 @@ JWT (JSON Web Tokens): Para gerenciamento de sessão stateless (via biblioteca j
 
 H2 Database: Banco de dados relacional em memória para desenvolvimento e testes.
 
-springdoc-openapi (Swagger): Para documentação interativa da API.
+springdoc-openapi (Swagger): Para documentação interativa da API (v2.8.0).
+
+ModelMapper: Para conversão simplificada entre Entidades e DTOs.
 
 Maven: Para gerenciamento de dependências.
 
+JUnit 5 & Mockito: Para testes unitários e de integração.
+
+JaCoCo: Para relatórios de cobertura de testes.
+
+<h2>📖 Documentação Interativa (Swagger)</h2>
+
+A forma mais fácil e rápida de entender, testar e integrar com esta API é usando a interface interativa do Swagger, que foi o foco da Atividade 4.
+
+Após iniciar a aplicação, acesse os links:
+
+Interface Gráfica (Swagger UI):
+
+Navegue visualmente por todos os endpoints, veja os schemas (modelos) de dados e teste as rotas diretamente do seu navegador.
+
+Definição JSON (OpenAPI):
+
+O arquivo JSON que descreve toda a API. Use-o para gerar clientes de API automaticamente em outras linguagens (TypeScript, Dart, etc.).
+
+Como usar a Autenticação no Swagger
+
+Muitos endpoints (marcados com o cadeado 🔒) requerem um token JWT para funcionar.
+
+Vá até a seção 1. Autenticação na interface do Swagger.
+
+Use o endpoint POST /api/auth/login (com um usuário válido do data.sql, ex: joao@email.com / senha123).
+
+Copie o token JWT da resposta.
+
+Clique no botão "Authorize" no topo direito da página.
+
+Na janela que abrir, cole seu token no campo "Value" (o prefixo Bearer já deve estar lá, se não estiver, adicione) e clique em "Authorize".
+
+Pronto! Todos os seus testes seguintes no Swagger UI estarão autenticados.
+
+🔧 Como Executar (Ambiente de Desenvolvimento)
+
+1. Clonar o repositório:
+
+2. Executar a aplicação (via Maven Wrapper):
+
+A API estará disponível em http://localhost:8080.
+
+Links Úteis (Ambiente Local)
+
+API Base URL: http://localhost:8080
+
+Swagger UI (Documentação): http://localhost:8080/swagger-ui.html
+
+H2 Database Console: http://localhost:8080/h2-console
+
+JDBC URL: jdbc:h2:mem:deliverydb
+
+User: sa
+
+Password: (em branco) (definido em application.properties)
+
 <h2>🏗️ Arquitetura</h2>
+
 A aplicação segue uma arquitetura em camadas, agora com o JwtAuthenticationFilter como o "portão de entrada" para requisições protegidas.
 
-Snippet de código
-
-graph TD
-    A[App Mobile / Portal Web] -->|HTTP REST| B(JwtAuthenticationFilter);
-    B -->|Token Válido?| C{Controllers};
-    C -->|Valida DTOs e @PreAuthorize| D[Services];
-    D -->|Define Regras de Negócio e @Transactional| E[Repositories];
-    E -->|Executa Queries (JPA)| F[Banco de Dados (H2)];
-    
-    subgraph "Camada de Segurança (Spring Security)"
-        B
-        G(SecurityConfig)
-        H(JwtUtil)
-        I(AuthService/UserDetailsService)
-    end
-    
 <h2>🏗️ Estrutura de Pastas</h2>
-
-A estrutura do projeto foi organizada para refletir a separação de responsabilidades, com um novo pacote `security` dedicado:
+A estrutura do projeto foi organizada para refletir a separação de responsabilidades, com um novo pacote security dedicado:
 
 ```text
 📦src
@@ -76,7 +118,8 @@ A estrutura do projeto foi organizada para refletir a separação de responsabil
  ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜LoginRequest.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜LoginResponse.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜RegisterRequest.java
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜UserResponse.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜UserResponse.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜UsuarioUpdateDTO.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂relatorio
  ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜RelatorioClientesDTO.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜RelatorioPedidosDTO.java
@@ -135,7 +178,8 @@ A estrutura do projeto foi organizada para refletir a separação de responsabil
  ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜PedidoServiceImpl.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ProdutoServiceImpl.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜RelatorioServiceImpl.java
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜RestauranteServiceImpl.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜RestauranteServiceImpl.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜UsuarioServiceImpl.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ClienteService.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜PedidoService.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ProdutoService.java
@@ -178,6 +222,8 @@ A estrutura do projeto foi organizada para refletir a separação de responsabil
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ClienteTest.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ProdutoTest.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜RestauranteTest.java
+ ┃ ┃ ┃ ┃ ┃ ┣ 📂integration
+ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜SwaggerIntegrationTest.java
  ┃ ┃ ┃ ┃ ┃ ┣ 📂security
  ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📂jwt
  ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜JwtAuthenticationFilterTest.java
@@ -194,11 +240,9 @@ A estrutura do projeto foi organizada para refletir a separação de responsabil
  ┃ ┗ 📂resources
  ┃ ┃ ┗ 📜application-test.properties
 
-⚙️ Funcionalidades Implementadas
+<h2>⚙️ Funcionalidades Implementadas</h2>
 
-
-🔐 Segurança (Spring Security + JWT)
-
+<h2>🔐 Segurança (Spring Security + JWT)</h2>
 
 Autenticação Stateless: Autenticação via Bearer Token (JWT).
 
@@ -212,9 +256,7 @@ Hashing de Senhas: Senhas são armazenadas usando BCryptPasswordEncoder.
 
 Tratamento de Exceções: Respostas 401 (Unauthorized) e 403 (Forbidden) customizadas e padronizadas.
 
-
-🛠️ Services (Regras de Negócio)
-
+<h2>🛠️ Services (Regras de Negócio)</h2>
 
 AuthService: Implementa UserDetailsService para carregar usuários e gerencia o registro.
 
@@ -226,34 +268,29 @@ PedidoService: Lógica complexa para criação de pedidos, cálculo de total, at
 
 RelatorioService: Geração de relatórios de vendas, produtos, clientes, etc.
 
-
-📦 DTOs e Validações
-
+<h2>📦 DTOs e Validações</h2>
 
 Auth DTOs: LoginRequest, LoginResponse (com token), RegisterRequest, UserResponse (DTO seguro, sem senha).
 
 Request DTOs: ClienteDTO, RestauranteDTO, ProdutoDTO, PedidoDTO, ItemPedidoDTO.
 
-Response DTOs: ClienteResponseDTO, RestauranteResponseDTO, ProdutoResponseDTO, PedidoResponseDTO, etc.
+Response DTOs: ClienteResponseDTO, RestauranteResponseDTO, ProdutoResponseDTO, PedidoResponseDTO, e wrappers de resposta (ApiResponseWrapper, PagedResponseWrapper).
 
 Validações: @Valid, @NotNull, @NotBlank, @Email, @Size, e validações customizadas.
 
+<h2>📋 Endpoints REST (Principais)</h2>
 
-📋 Endpoints REST (Principais)
-
-A API é dividida em endpoints públicos (para consulta) e protegidos (que exigem autenticação e autorização).
+A API é dividida em endpoints públicos (para consulta) e protegidos (que exigem autenticação e autorização). Para uma lista completa e interativa, acesse o .
 
 Base URL: http://localhost:8080/api
 
-🔑 Autenticação (Público)
+<h2>🔑 Autenticação (Público)</h2>
 
 POST /auth/login: Autentica um usuário e retorna um token JWT.
 
 POST /auth/register: Registra um novo usuário (CLIENTE ou RESTAURANTE).
 
-
-🍽️ Endpoints Públicos (Consulta)
-
+<h2>🍽️ Endpoints Públicos (Consulta)</h2>
 
 GET /restaurantes: Lista restaurantes (com filtros).
 
@@ -261,15 +298,11 @@ GET /restaurantes/{id}: Busca um restaurante por ID.
 
 GET /restaurantes/{id}/produtos: Lista o cardápio (produtos) de um restaurante.
 
-GET /restaurantes/{id}/taxa-entrega/{cep}: Calcula a taxa de entrega.
-
 GET /produtos/{id}: Busca um produto por ID.
 
 POST /pedidos/calcular: Calcula o total de um pedido (sem salvar).
 
-
-🛡️ Endpoints Protegidos (Requerem Token)
-
+<h2>🛡️ Endpoints Protegidos (Requerem Token)</h2>
 
 GET /auth/me: Retorna os dados do usuário logado.
 
@@ -293,228 +326,51 @@ GET /pedidos/restaurante/{restauranteId}: Pedidos recebidos pelo restaurante (AD
 
 PATCH /pedidos/{id}/status: Atualiza o status de um pedido.
 
-GET /relatorios/...: Endpoints de relatórios (ADMIN ou RESTAURANTE dono).
+GET /relatorios/...: Endpoints de relatórios (ADMIN ou RESTAURANTE dono). (... e outros endpoints de CRUD e gerenciamento.)
 
-(... e outros endpoints de CRUD e gerenciamento.)
-
-
-🌟 Padronização de Respostas
-
+<h2>🌟 Padronização de Respostas</h2>
 
 Sucesso (2xx) e Paginação
+
 Respostas de sucesso seguem um wrapper padrão (ApiResponseWrapper) e as respostas paginadas (PagedResponseWrapper) incluem metadados de paginação.
 
-JSON
-
-{
-  "success": true,
-  "data": { ... },
-  "message": "Operação realizada com sucesso",
-  "timestamp": "2025-10-21T12:00:00Z"
-}
 Erros (4xx / 5xx)
-Erros de validação, autenticação e autorização seguem um padrão RFC 7807 (ErrorResponse).
+Erros de validação, autenticação e autorização seguem um padrão (ErrorResponse).
 
 Erro 401 (Unauthorized) - (Token ausente, inválido ou expirado)
 
-JSON
-
-{
-  "status": 401,
-  "error": "Unauthorized",
-  "message": "Token expirado",
-  "path": "/api/pedidos/1"
-}
 Erro 403 (Forbidden) - (Usuário não tem permissão)
 
-JSON
-
-{
-  "status": 403,
-  "error": "Forbidden",
-  "message": "Acesso negado",
-  "path": "/api/restaurantes"
-}
 Erro 400 (Bad Request) - (Validação de DTO)
 
-JSON
+<h2>🧪 Testes Automatizados</h2>
 
-{
-  "timestamp": "2025-10-21T12:00:00",
-  "status": 400,
-  "error": "Dados inválidos",
-  "message": "Erro de validação nos dados enviados",
-  "path": "/api/produtos",
-  "details": {
-    "nome": "Nome é obrigatório"
-  }
-}
+Este projeto possui uma suíte robusta de testes automatizados (107 testes no total) para garantir a qualidade e estabilidade do código, cobrindo:
 
-🔧 Como Executar
+Testes Unitários (Services): Verificam as regras de negócio de forma isolada (ClienteServiceTest, PedidoServiceTest, etc.).
 
-Clonar o repositório:
+Testes de Integração (Controllers): Verificam a API de ponta a ponta, simulando requisições HTTP (ClienteControllerIntegrationTest, etc.).
 
-Bash
+Testes de Documentação: Verificam se a documentação Swagger está sendo gerada corretamente (SwaggerIntegrationTest).
 
-git clone https://github.com/DimasRabelo/delivery-api.git
-cd delivery-api
-Executar a aplicação (via Maven Wrapper):
+Como Executar os Testes
+1. Executar toda a suíte de testes (100+ testes): Este comando limpa o projeto, executa todos os testes unitários e de integração.
 
-Bash
+(Se você estiver usando os scripts da atividade, pode usar ./run-all-tests.sh)
 
-./mvnw spring-boot:run
-A API estará disponível em http://localhost:8080.
+2. Executar um grupo de testes específico (Scripts):
 
-🧪 Como Testar (Autenticação)
+<h2>📊 Relatório de Cobertura de Código (JaCoCo)</h2>
 
-Registre um usuário: POST http://localhost:8080/api/auth/register (Envie um JSON com nome, email, senha e role - ex: "CLIENTE").
+O projeto está configurado com o JaCoCo para monitorar a cobertura dos testes.
 
-Faça Login: POST http://localhost:8080/api/auth/login (Envie email e senha).
+1. Gere o relatório:
 
-Copie o Token: A resposta irá conter o token (ex: "eyJhbGciOi...").
+2. Abra o relatório no seu navegador: O relatório estará em target/site/jacoco/index.html.
 
-Teste Endpoints Protegidos: Para acessar endpoints como GET /api/auth/me, configure sua ferramenta (Postman/Insomnia) para incluir o Bearer Token no Header de Autorização: Authorization: Bearer eyJhbGciOi...
-
-🌐 Links Úteis
-
-Swagger UI (Documentação Interativa): http://localhost:8080/swagger-ui/index.html
-
-API Docs (JSON OpenAPI): http://localhost:8080/api-docs
-
-H2 Database Console (Acesso ao banco): http://localhost:8080/h2-console
-
-JDBC URL: jdbc:h2:mem:deliverydb
-
-User: sa
-
-Password: password (definido em application.properties)
-
-🧪 Testes Automatizados
-
-
-    * **JUnit 5:** Framework principal para testes unitários e de integração.
-    * **Mockito:** Para "mockar" (simular) dependências em testes unitários.
-    * **MockMvc (Spring Boot Test):** Para testar a camada de API (Controllers) de forma integrada.
-    * **JaCoCo:** Plugin para geração de relatórios de cobertura de código.
-
-Este projeto possui uma suíte robusta de testes automatizados para garantir a qualidade, estabilidade e manutenibilidade do código, cobrindo regras de negócio (Services) e endpoints da API (Controllers).
-
-A suíte de testes é configurada para rodar em um perfil (`test`) dedicado, utilizando um banco de dados H2 em memória (`application-test.properties`) para garantir que os testes sejam isolados e não afetem os dados de desenvolvimento.
-
-### Como Executar os Testes
-
-**1. Executar toda a suíte de testes:**
-Este comando limpa o projeto, executa todos os testes unitários e de integração.
-
-```bash
-./mvnw clean test
-
-# Exemplo para um teste unitário de Serviço
-./mvnw test -Dtest=ClienteServiceTest
-
-# Exemplo para um teste de integração de Controller
-./mvnw test -Dtest=PedidoControllerIntegrationTest
-
-Este projeto possui uma suíte robusta de testes automatizados para garantir a qualidade, estabilidade e manutenibilidade do código, cobrindo regras de negócio (Services) e endpoints da API (Controllers).
-
-A suíte de testes é configurada para rodar em um perfil (`test`) dedicado, utilizando um banco de dados H2 em memória (`application-test.properties`) para garantir que os testes sejam isolados e não afetem os dados de desenvolvimento.
-
-### Como Executar os Testes (Scripts de Automação)
-
-Para facilitar a execução, o projeto inclui scripts de automação (conforme Atividade 4.2).
-
-*(Observação: pode ser necessário dar permissão de execução aos scripts primeiro, usando `chmod +x *.sh`)*
-
-**1. Executar TODOS os testes (Unitários + Integração) e Gerar Relatório:**
-Este é o comando principal para validar todo o projeto.
-
-```bash
-./run-all-tests.sh
-
-📊 Relatório de Cobertura de Código (JaCoCo)
-
-O projeto está configurado com o plugin JaCoCo para monitorar a porcentagem de código que é coberta pelos testes automatizados. A meta de cobertura definida pela atividade é de 80% para as camadas de serviço.
-
-Para gerar e visualizar o relatório de cobertura:
-
-Execute o goal report do JaCoCo junto com os testes:
-
-./mvnw clean test jacoco:report
-
-Após a execução, abra o relatório HTML principal gerado no diretório target: target/site/jacoco/index.html
-
-🐧 Em Linux
-Use o comando xdg-open. Ele abre o arquivo com o aplicativo padrão do sistema (que, para um .html, será seu navegador padrão).
-
-Bash
-
-xdg-open target/site/jacoco/index.html
-🍎 Em macOS
-O comando é open:
-
-Bash
-
-open target/site/jacoco/index.html
-🪟 Em Windows (PowerShell ou CMD)
-Use o comando start. Ele funciona de forma similar ao open e xdg-open.
-
-Bash
-
-# O Windows aceita barras normais na maioria dos terminais modernos
-start target/site/jacoco/index.html
-
-# Ou, usando o formato de caminho tradicional do Windows
-start target\site\jacoco\index.html
-Dica para usuários de WSL (Subsistema Windows para Linux): Se você estiver usando um terminal Linux dentro do Windows (como o Ubuntu WSL), os comandos xdg-open ou open podem não funcionar para abrir um app do Windows. Nesses casos, use este comando para chamar o explorador do Windows:
-
-Bash
-
-explorer.exe target/site/jacoco/index.html
-2. Via Interface Gráfica (Explorador de Arquivos)
-Este é o método visual padrão, que funciona em qualquer sistema operacional (Windows Explorer, Finder do macOS, Nautilus/Dolphin do Linux).
-
-Abra a pasta raiz do seu projeto.
-
-Navegue pelas pastas: target -> site -> jacoco.
-
-Encontre o arquivo index.html.
-
-Dê um clique duplo nele.
-
-O sistema operacional o abrirá automaticamente no seu navegador web padrão.
-
-3. Via Navegador (Manualmente)
-Você também pode abrir o arquivo diretamente pelo navegador, embora seja o método mais manual.
-
-Abra seu navegador (Chrome, Firefox, Edge, etc.).
-
-Na barra de endereços, você pode fazer duas coisas:
-
-Arrastar e Soltar: Arraste o arquivo index.html (do método 2) e solte-o diretamente na barra de abas ou na janela do navegador.
-
-Usar o protocolo file://: Você precisa digitar file:// seguido do caminho absoluto do arquivo.
-
-Para descobrir o caminho absoluto:
-
-(Linux/macOS) No terminal, na raiz do projeto, digite:
-
-Bash
-
-echo "file://$(pwd)/target/site/jacoco/index.html"
-Copie e cole a saída no seu navegador.
-
-(Windows) No CMD, na raiz do projeto, digite:
-
-Bash
-
-echo file://%cd%\target\site\jacoco\index.html
-Copie e cole a saída (talvez precise trocar \ por /) no seu navegador.
+(Os scripts run-all-tests.sh e run-unit-tests.sh já devem gerar o relatório automaticamente)
 
 👨‍💻 Desenvolvedor
 Dimas Aparecido Rabelo
 
-🎓 Curso: Arquitetura de Sistemas
-
-💻 Tecnologias: Java 21 | Spring Boot | Spring Security | JWT | H2 | Maven
-
-📍 Projeto desenvolvido para módulos de API REST, Serviços e Segurança.
+🎓 Curso: Arquitetura de Sistemas 💻 Tecnologias: Java 21 | Spring Boot | Spring Security | JWT | H2 | Maven | Swagger 📍 Projeto desenvolvido para módulos de API REST, Serviços e Segurança.
