@@ -41,15 +41,6 @@ public class ProdutoDTO {
     @AssertTrue(message = "Produto deve estar disponível por padrão") // Validação: Garante que o valor (quando enviado) seja 'true'
     private Boolean disponivel = true; // Define 'true' como valor padrão
     
-    @Schema(description = "URL da imagem do produto", example = "https://meusite.com/pizza.jpg") // Documentação Swagger
-    @Pattern( // Validação: Garante que o texto siga uma Expressão Regular (Regex)
-        regexp = "^(https?://).+\\.(jpg|jpeg|png|gif)$", // Regex: Deve começar com http/https e terminar com .jpg, .jpeg, .png, ou .gif
-        message = "URL da imagem deve ser válida e ter formato JPG, JPEG, PNG ou GIF"
-    )
-    private String imagemUrl;
-
-    // --- CAMPO ADICIONADO ---
-    
     @Schema(description = "Quantidade em estoque", example = "50", required = true) // Documentação Swagger
     @NotNull(message = "Estoque é obrigatório") // Validação
     @Min(value = 0, message = "Estoque não pode ser negativo") // Validação: Valor mínimo é zero
@@ -78,9 +69,7 @@ public class ProdutoDTO {
     public Boolean getDisponivel() { return disponivel; }
     public void setDisponivel(Boolean disponivel) { this.disponivel = disponivel; }
 
-    public String getImagemUrl() { return imagemUrl; }
-    public void setImagemUrl(String imagemUrl) { this.imagemUrl = imagemUrl; }
-
+  
     // --- Getters e Setters do campo adicionado ---
     
     public int getEstoque() { return estoque; }

@@ -132,12 +132,23 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Lista de endpoints públicos que NÃO exigem autenticação
                         .requestMatchers(
-                                "/api-docs/**",         // Documentação Swagger
-                                "/swagger-ui/**",       // UI do Swagger
-                                "/swagger-ui.html",     // UI do Swagger
-                                "/h2-console/**",     // Console do Banco H2
-                                "/api/auth/**",       // Endpoints de login e registro
-                                "/api/restaurantes/**"  // Endpoints de restaurantes (público)
+                                
+                               // Endpoints do Swagger 
+                                "/api-docs/**",
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/swagger-resources/**",
+                                "/webjars/**",
+                                
+                                // Health Check 
+                                "/actuator/health", // Endpoint público para verificação de saúde da aplicação
+                                
+                                // Outros Endpoints Públicos
+                                "/h2-console/**",
+                                "/api/auth/**",
+                                "/api/restaurantes/**",
+                                "/api/produtos/**"  
                         ).permitAll()
                         // Todas as outras requisições DEVE ser autenticadas
                         .anyRequest().authenticated()

@@ -47,17 +47,16 @@ public class Usuario implements UserDetails {
     @Schema(description = "Email do usuário (usado como 'username' para login)", example = "usuario@email.com", required = true) // Documentação Swagger
     private String email;
 
-    /**
-     * Senha criptografada (hash) do usuário.
-     * Usada como 'password' para o login no Spring Security.
-     */
-    @Column(nullable = false)
-    @NotBlank(message = "Senha é obrigatória") // Validação: A senha (hash) não pode ser nula
-    @Schema(description = "Senha criptografada do usuário", 
-            example = "$2a$10$abcdef...xyz", // Exemplo de hash
-            writeOnly = true, // BOA PRÁTICA: Indica ao Swagger que este campo só pode ser escrito (em DTOs de cadastro), mas NUNCA deve ser retornado em respostas.
-            minLength = 8) // Dica para o front-end (embora o hash seja maior)
-    private String senha;
+   /**
+ * Senha criptografada (hash) do usuário.
+ * Usada como 'password' para o login no Spring Security.
+ */
+@Column(nullable = false)
+@NotBlank(message = "Senha é obrigatória")
+// A anotação @Schema é desnecessária aqui, pois a senha NUNCA deve ser exposta.
+// Mas se quiser mantê-la, deve ser simples:
+@Schema(description = "Senha criptografada do usuário (hash)", readOnly = true)
+private String senha;
 
     /**
      * Nome completo do usuário.

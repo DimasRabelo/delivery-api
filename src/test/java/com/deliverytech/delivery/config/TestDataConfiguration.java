@@ -58,14 +58,12 @@ public class TestDataConfiguration {
     @PostConstruct
     @Transactional
     public void setupTestData() {
-        // 1. Limpa os dados de testes anteriores para garantir um estado limpo
-        // A ordem é importante para respeitar as chaves estrangeiras (FKs):
-        // Produto depende de Restaurante, então Produto é deletado primeiro.
+        // 1. Limpa os dados...
         produtoRepository.deleteAll();
         restauranteRepository.deleteAll();
         clienteRepository.deleteAll();
 
-        // 2. Cria e salva um Cliente de teste padrão
+        // 2. Cria e salva um Cliente...
         Cliente cliente = new Cliente();
         cliente.setNome("João Teste");
         cliente.setEmail("joao.teste@email.com");
@@ -79,7 +77,14 @@ public class TestDataConfiguration {
         restaurante.setNome("Restaurante Teste");
         restaurante.setTaxaEntrega(BigDecimal.valueOf(10.00));
         restaurante.setAtivo(true);
-        restauranteRepository.save(restaurante);
+        
+        // ----- PREENCHA OS CAMPOS AQUI -----
+        restaurante.setEndereco("Rua Fictícia de Teste, 123");
+        restaurante.setTelefone("999999999");
+        restaurante.setCategoria("Pizzaria");
+        
+        // ----- SALVE O OBJETO COMPLETO APENAS UMA VEZ -----
+        restauranteRepository.save(restaurante); // <--- SÓ UMA CHAMADA AO SAVE
 
         // 4. Cria e salva um Produto de teste
         Produto produto = new Produto();
@@ -88,7 +93,6 @@ public class TestDataConfiguration {
         produto.setPreco(BigDecimal.valueOf(29.90));
         produto.setEstoque(50);
         produto.setDisponivel(true);
-        // Vincula o produto ao restaurante criado acima (essencial para a FK)
         produto.setRestaurante(restaurante); 
         produtoRepository.save(produto);
     }
