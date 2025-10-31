@@ -2,6 +2,8 @@ package com.deliverytech.delivery.service;
 
 import com.deliverytech.delivery.dto.ProdutoDTO;
 import com.deliverytech.delivery.dto.response.ProdutoResponseDTO;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -21,6 +23,8 @@ public interface ProdutoService {
 
     List<ProdutoResponseDTO> buscarProdutosPorRestaurante(Long restauranteId, Boolean disponivel);
 
+    
+
 
     void removerProduto(Long id);
 
@@ -28,4 +32,7 @@ public interface ProdutoService {
     // VERIFICA SE O USUÁRIO LOGADO É DONO DO PRODUTO
     // =====================
     boolean isOwner(Long produtoId);
+
+    Page<ProdutoResponseDTO> listarProdutos(Pageable pageable, Long restauranteId, String categoria,
+            Boolean disponivel);
 }

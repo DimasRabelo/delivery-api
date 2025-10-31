@@ -18,8 +18,8 @@ INSERT INTO restaurante (id, nome, endereco, telefone, categoria) VALUES
 
 
 -- Inserir produtos
-INSERT INTO produto (id, nome, descricao, preco, categoria, disponivel, restaurante_id) VALUES
-(1, 'Pizza Margherita', 'Pizza com molho de tomate, mussarela e manjericão', 35.90, 'Pizza', true, 1),
-(2, 'Pizza Pepperoni', 'Pizza com molho de tomate, mussarela e pepperoni', 42.90, 'Pizza', true, 1),
-(3, 'Whopper', 'Hambúrguer com carne grelhada, alface, tomate, cebola', 28.90, 'Hambúrguer', true, 2),
-(4, 'Big King', 'Dois hambúrgueres, alface, queijo, molho especial', 32.90, 'Hambúrguer', true, 2);
+INSERT INTO produto (id, nome, descricao, preco, categoria, disponivel, restaurante_id, estoque) VALUES
+(1, 'Pizza Margherita', 'Pizza com molho de tomate, mussarela e manjericão', 35.90, 'Pizza', true, 1, 50),
+(2, 'Pizza Pepperoni', 'Pizza com molho de tomate, mussarela e pepperoni', 42.90, 'Pizza', true, 1, 50),
+(3, 'Whopper', 'Hambúrguer com carne grelhada, alface, tomate, cebola', 28.90, 'Hambúrguer', true, 2, 100),
+(4, 'Big King', 'Dois hambúrgueres, alface, queijo, molho especial', 32.90, 'Hambúrguer', true, 2, 100);

@@ -4,12 +4,11 @@ import com.deliverytech.delivery.dto.PedidoDTO;
 import com.deliverytech.delivery.dto.response.CalculoPedidoDTO;
 import com.deliverytech.delivery.dto.response.CalculoPedidoResponseDTO;
 import com.deliverytech.delivery.dto.response.PedidoResponseDTO;
-//import com.deliverytech.delivery.dto.ItemPedidoDTO;
 import com.deliverytech.delivery.enums.StatusPedido;
-    //import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
     
 
 
@@ -29,7 +28,12 @@ import org.springframework.data.domain.Page;
 
     void cancelarPedido(Long id);
 
-     Page<PedidoResponseDTO> listarPedidos(StatusPedido status, LocalDate dataInicio, LocalDate dataFim, org.springframework.data.domain.Pageable pageable);
+    List<PedidoResponseDTO> buscarPedidosPorRestaurante(Long restauranteId, StatusPedido status);
 
-      List<PedidoResponseDTO> buscarPedidosPorRestaurante(Long restauranteId, StatusPedido status);
+    Page<PedidoResponseDTO> listarPedidos(StatusPedido status, LocalDate dataInicio, LocalDate dataFim, Pageable pageable);
+
+      
+
+      // 👇 ESTE ESTAVA FALTANDO (o do Cliente paginado)
+    Page<PedidoResponseDTO> listarMeusPedidos(Pageable pageable);
 }

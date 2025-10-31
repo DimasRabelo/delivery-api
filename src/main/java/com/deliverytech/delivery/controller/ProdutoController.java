@@ -2,6 +2,7 @@ package com.deliverytech.delivery.controller;
 
 import com.deliverytech.delivery.dto.ProdutoDTO;
 import com.deliverytech.delivery.dto.response.ApiResponseWrapper;
+import com.deliverytech.delivery.dto.response.PagedResponseWrapper;
 import com.deliverytech.delivery.dto.response.ProdutoResponseDTO;
 import com.deliverytech.delivery.service.ProdutoService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,6 +16,8 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -225,6 +228,40 @@ public class ProdutoController {
         List<ProdutoResponseDTO> produtos = produtoService.buscarProdutosPorNome(nome);
         ApiResponseWrapper<List<ProdutoResponseDTO>> response =
                 new ApiResponseWrapper<>(true, produtos, "Busca realizada com sucesso");
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Lista todos os produtos de forma paginada.
+     * Permite filtrar por ID do restaurante, categoria e disponibilidade. Endpoint público.
+     *
+     * @param pageable      Objeto de paginação (tamanho, página, ordenação).
+     * @param restauranteId (Opcional) Filtra produtos pelo ID do restaurante.
+     * @param categoria     (Opcional) Filtra produtos pela categoria.
+     * @param disponivel    (Opcional) Filtra produtos pelo status de disponibilidade.
+     * @return ResponseEntity 200 (OK) com a página de produtos.
+     */
+    @GetMapping
+    @Operation(summary = "Listar produtos (Público, Paginado)",
+               description = "Lista produtos com filtros opcionais (restauranteId, categoria, disponibilidade) e paginação.")
+    @ApiResponse(responseCode = "200", description = "Lista de produtos retornada com sucesso")
+    public ResponseEntity<PagedResponseWrapper<ProdutoResponseDTO>> listar(
+            @Parameter(description = "ID do restaurante para filtrar") 
+            @RequestParam(required = false) Long restauranteId,
+            
+            @Parameter(description = "Categoria para filtrar") 
+            @RequestParam(required = false) String categoria,
+            
+            @Parameter(description = "Status de disponibilidade para filtrar") 
+            @RequestParam(required = false) Boolean disponivel,
+            
+            @Parameter(description = "Parâmetros de paginação (size, page, sort)") 
+            Pageable pageable) {
+
+        
+        Page<ProdutoResponseDTO> paginaProdutos = produtoService.listarProdutos(pageable, restauranteId, categoria, disponivel);
+
+        PagedResponseWrapper<ProdutoResponseDTO> response = new PagedResponseWrapper<>(paginaProdutos);
         return ResponseEntity.ok(response);
     }
 }

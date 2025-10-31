@@ -146,6 +146,31 @@ public class PedidoController {
     }
 
     /**
+     * Lista os pedidos do CLIENTE autenticado, de forma paginada.
+     * Acesso restrito ao próprio cliente.
+     *
+     * @param pageable Objeto de paginação.
+     * @return ResponseEntity 200 (OK) com a página de pedidos do cliente.
+     */
+    @GetMapping("/meus")
+    @PreAuthorize("hasRole('CLIENTE')")
+    @Operation(summary = "Listar meus pedidos (CLIENTE)",
+               description = "Lista os pedidos do cliente autenticado com paginação. Requer role 'CLIENTE'.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Pedidos listados com sucesso"),
+            @ApiResponse(responseCode = "401", description = "Token ausente ou inválido"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado (não é CLIENTE)")
+    })
+    public ResponseEntity<PagedResponseWrapper<PedidoResponseDTO>> listarMeusPedidos(
+            @Parameter(description = "Informações de paginação") Pageable pageable) {
+
+        Page<PedidoResponseDTO> pedidos = pedidoService.listarMeusPedidos(pageable);
+        
+        PagedResponseWrapper<PedidoResponseDTO> response = new PagedResponseWrapper<>(pedidos);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
      * Atualiza o status de um pedido (ex: PENDENTE -> EM_PREPARO).
      * Acesso permitido para 'ADMIN' ou para usuários (CLIENTE/RESTAURANTE)
      * que tenham acesso ao pedido.

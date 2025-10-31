@@ -1,7 +1,12 @@
 package com.deliverytech.delivery.entity;
 
 import com.deliverytech.delivery.enums.Role;
-import jakarta.persistence.*;
+import io.swagger.v3.oas.annotations.media.Schema; // Importação para documentação OpenAPI/Swagger
+import jakarta.persistence.*; // Importações para JPA (Persistência de Dados)
+import jakarta.validation.constraints.Email; // Importações para Validação de dados
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,8 +23,9 @@ import java.util.Collections;
  * 2. Implementação da interface {@link UserDetails} do Spring Security,
  * permitindo que esta entidade seja usada diretamente para autenticação e autorização.
  */
-@Entity
-@Table(name = "usuario")
+@Entity // Marca esta classe como uma entidade gerenciada pela JPA
+@Table(name = "usuario") // Define o nome da tabela
+@Schema(description = "Entidade que representa um Usuário no sistema, usada para autenticação e autorização") // Documentação Swagger
 public class Usuario implements UserDetails {
 
     /**
@@ -27,6 +33,7 @@ public class Usuario implements UserDetails {
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Schema(description = "Identificador único do usuário", example = "1") // Documentação Swagger
     private Long id;
 
     /**
@@ -34,6 +41,10 @@ public class Usuario implements UserDetails {
      * Deve ser único no sistema.
      */
     @Column(nullable = false, unique = true)
+    @NotBlank(message = "Email é obrigatório") // Validação: Não pode ser nulo ou vazio
+    @Email(message = "Email deve ter um formato válido") // Validação: Formato de email
+    @Size(max = 100) // Validação: Tamanho máximo
+    @Schema(description = "Email do usuário (usado como 'username' para login)", example = "usuario@email.com", required = true) // Documentação Swagger
     private String email;
 
     /**
@@ -41,20 +52,30 @@ public class Usuario implements UserDetails {
      * Usada como 'password' para o login no Spring Security.
      */
     @Column(nullable = false)
+    @NotBlank(message = "Senha é obrigatória") // Validação: A senha (hash) não pode ser nula
+    @Schema(description = "Senha criptografada do usuário", 
+            example = "$2a$10$abcdef...xyz", // Exemplo de hash
+            writeOnly = true, // BOA PRÁTICA: Indica ao Swagger que este campo só pode ser escrito (em DTOs de cadastro), mas NUNCA deve ser retornado em respostas.
+            minLength = 8) // Dica para o front-end (embora o hash seja maior)
     private String senha;
 
     /**
      * Nome completo do usuário.
      */
     @Column(nullable = false)
+    @NotBlank(message = "Nome é obrigatório") // Validação
+    @Size(min = 2, max = 100, message = "Nome deve ter entre 2 e 100 caracteres") // Validação: Tamanho
+    @Schema(description = "Nome completo do usuário", example = "Nome Sobrenome", required = true) // Documentação Swagger
     private String nome;
 
     /**
      * Define o nível de permissão do usuário (ex: CLIENTE, RESTAURANTE, ADMIN).
      * Mapeado como String no banco de dados.
      */
-    @Enumerated(EnumType.STRING)
+    @Enumerated(EnumType.STRING) // JPA: Salva o Enum como String ("CLIENTE") ao invés de número (0)
     @Column(nullable = false)
+    @NotNull(message = "Role é obrigatória") // Validação: @NotNull para Enums/Objetos
+    @Schema(description = "Nível de permissão do usuário", example = "CLIENTE", required = true) // Documentação Swagger
     private Role role;
 
     /**
@@ -62,20 +83,23 @@ public class Usuario implements UserDetails {
      * Se 'false', o usuário não pode logar (mapeado para {@link #isEnabled()}).
      */
     @Column(nullable = false)
-    private Boolean ativo = true;
+    @Schema(description = "Indica se o usuário está ativo e pode logar", example = "true", defaultValue = "true") // Documentação Swagger
+    private Boolean ativo = true; // Valor padrão
 
     /**
      * Data e hora em que o registro do usuário foi criado.
      * Preenchido automaticamente na criação.
      */
     @Column(name = "data_criacao", nullable = false)
-    private LocalDateTime dataCriacao = LocalDateTime.now();
+    @Schema(description = "Data e hora de criação do registro", example = "2024-06-05T10:30:00", readOnly = true) // Documentação Swagger: 'readOnly' indica que não deve ser enviado em requests
+    private LocalDateTime dataCriacao = LocalDateTime.now(); // Valor padrão
 
     /**
      * ID do restaurante ao qual este usuário está associado (se aplicável).
      * Usado principalmente para usuários com {@link Role#RESTAURANTE}.
      */
     @Column(name = "restaurante_id")
+    @Schema(description = "ID do restaurante associado (se a role for 'RESTAURANTE')", example = "5", nullable = true) // Documentação Swagger: 'nullable' indica que é opcional
     private Long restauranteId;
 
     // -------------------------------------------------------------------------
@@ -107,73 +131,39 @@ public class Usuario implements UserDetails {
 
     // -------------------------------------------------------------------------
     // Implementação dos métodos UserDetails (Spring Security)
+    // (Estes métodos não são parte do Schema da API, são para lógica interna do Security)
     // -------------------------------------------------------------------------
 
-    /**
-     * Retorna as permissões (roles) concedidas ao usuário.
-     * O Spring Security exige que as roles tenham o prefixo "ROLE_".
-     *
-     * @return Uma coleção contendo a role do usuário (ex: "ROLE_CLIENTE").
-     */
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role.name()));
     }
 
-    /**
-     * Retorna a senha (hash) usada para autenticar o usuário.
-     *
-     * @return A senha criptografada.
-     */
     @Override
     public String getPassword() {
         return senha;
     }
 
-    /**
-     * Retorna o nome de usuário (username) usado para autenticar.
-     * No nosso sistema, usamos o email como username.
-     *
-     * @return O email do usuário.
-     */
     @Override
     public String getUsername() {
         return email;
     }
 
-    /**
-     * Indica se a conta do usuário expirou.
-     * (Não implementado, sempre retorna 'true').
-     */
     @Override
     public boolean isAccountNonExpired() {
         return true;
     }
 
-    /**
-     * Indica se o usuário está bloqueado ou desbloqueado.
-     * (Não implementado, sempre retorna 'true'. O controle é feito por {@link #ativo}).
-     */
     @Override
     public boolean isAccountNonLocked() {
         return true;
     }
 
-    /**
-     * Indica se as credenciais do usuário (senha) expiraram.
-     * (Não implementado, sempre retorna 'true').
-     */
     @Override
     public boolean isCredentialsNonExpired() {
         return true;
     }
 
-    /**
-     * Indica se o usuário está habilitado ou desabilitado.
-     * Mapeado diretamente para o nosso campo {@link #ativo}.
-     *
-     * @return 'true' se o usuário estiver ativo, 'false' caso contrário.
-     */
     @Override
     public boolean isEnabled() {
         return ativo;
@@ -191,7 +181,7 @@ public class Usuario implements UserDetails {
         this.id = id;
     }
 
-
+    // 'getEmail()' é sobrescrito por 'getUsername()', mas é bom ter o getter padrão
     public String getEmail() {
         return email;
     }
@@ -200,6 +190,7 @@ public class Usuario implements UserDetails {
         this.email = email;
     }
 
+    // 'getSenha()' é sobrescrito por 'getPassword()', mas é bom ter o getter padrão
     public String getSenha() {
         return senha;
     }

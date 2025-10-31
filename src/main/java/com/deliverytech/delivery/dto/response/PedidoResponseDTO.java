@@ -1,84 +1,59 @@
 package com.deliverytech.delivery.dto.response;
 
 import com.deliverytech.delivery.dto.ItemPedidoDTO;
-
-
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Schema; // Importação para documentação OpenAPI/Swagger
 import java.math.BigDecimal;
 import java.util.List;
 
-// =======================================================
-// DTO de resposta de um pedido, enviado pelo backend
-// =======================================================
-@Schema(description = "DTO de resposta com os dados de um pedido")
+/**
+ * DTO (Data Transfer Object) de resposta de um pedido, enviado pelo backend.
+ * Esta classe define a estrutura de dados (Schema) que a API retorna
+ * ao consultar os detalhes de um pedido.
+ */
+@Schema(description = "DTO de resposta com os dados de um pedido") // Documentação a nível de classe
 public class PedidoResponseDTO {
 
-    // ---------------------------------------------------
-    // ID do pedido
-    // Exemplo no Swagger: 1
-    // ---------------------------------------------------
-    @Schema(description = "ID do pedido", example = "1")
+    // --- Identificação ---
+
+    @Schema(description = "ID do pedido", example = "1") // Documentação Swagger
     private Long id;
 
-    // ---------------------------------------------------
-    // ID do cliente que realizou o pedido
-    // Exemplo: 1
-    // ---------------------------------------------------
-    @Schema(description = "ID do cliente", example = "1")
+    // --- Cliente ---
+
+    @Schema(description = "ID do cliente", example = "1") // Documentação Swagger
     private Long clienteId;
 
-    // ---------------------------------------------------
-    // Nome do cliente
-    // Exemplo: "João Silva"
-    // ---------------------------------------------------
-    @Schema(description = "Nome do cliente", example = "João Silva")
+    @Schema(description = "Nome do cliente", example = "João Silva") // Documentação Swagger
     private String clienteNome;
 
-    // ---------------------------------------------------
-    // ID do restaurante
-    // Exemplo: 2
-    // ---------------------------------------------------
-    @Schema(description = "ID do restaurante", example = "2")
+    // --- Restaurante ---
+
+    @Schema(description = "ID do restaurante", example = "2") // Documentação Swagger
     private Long restauranteId;
 
-    // ---------------------------------------------------
-    // Nome do restaurante
-    // Exemplo: "Pizza Express"
-    // ---------------------------------------------------
-    @Schema(description = "Nome do restaurante", example = "Pizza Express")
+    @Schema(description = "Nome do restaurante", example = "Pizza Express") // Documentação Swagger
     private String restauranteNome;
 
-    // ---------------------------------------------------
-    // Endereço completo de entrega
-    // Exemplo: "Rua das Flores, 123"
-    // ---------------------------------------------------
-    @Schema(description = "Endereço de entrega", example = "Rua das Flores, 123")
+    // --- Detalhes da Entrega e Status ---
+
+    @Schema(description = "Endereço de entrega", example = "Rua das Flores, 123") // Documentação Swagger
     private String enderecoEntrega;
 
-    // ---------------------------------------------------
-    // Status do pedido (EM_PREPARO, ENTREGUE, CANCELADO...)
-    // Exemplo: "EM_PREPARO"
-    // ---------------------------------------------------
-    @Schema(description = "Status do pedido", example = "EM_PREPARO")
-    private String status;
+    @Schema(description = "Status do pedido", example = "EM_PREPARO") // Documentação Swagger
+    private String status; // Usar String é comum para simplificar o DTO (em vez de Enum)
 
-    // ---------------------------------------------------
-    // Valor total do pedido
-    // Exemplo: 55.50
-    // ---------------------------------------------------
-    @Schema(description = "Valor total do pedido", example = "55.50")
+    // --- Valores e Itens ---
+
+    @Schema(description = "Valor total do pedido", example = "55.50") // Documentação Swagger
     private BigDecimal total;
 
-    // ---------------------------------------------------
-    // Lista de itens do pedido
-    // Cada item é representado pelo ItemPedidoDTO
-    // ---------------------------------------------------
-    @Schema(description = "Lista de itens do pedido")
-    private List<ItemPedidoDTO> itens;
+    @Schema(description = "Lista de itens do pedido") // Documentação Swagger
+    private List<ItemPedidoDTO> itens; // Lista aninhada de DTOs
 
-    // =======================
+    // ===================================================
     // GETTERS E SETTERS
-    // =======================
+    // (Necessários pois a classe não usa Lombok @Data)
+    // ===================================================
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

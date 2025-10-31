@@ -37,7 +37,6 @@ import java.util.List;
 @Validated // Habilita a validação de parâmetros de método (ex: @Positive nos @PathVariables)
 @RestController
 @RequestMapping("/api/restaurantes")
-@CrossOrigin(origins = "*")
 @Tag(name = "3. Restaurantes", description = "Operações públicas e privadas relacionadas aos restaurantes")
 public class RestauranteController {
 

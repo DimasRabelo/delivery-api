@@ -5,7 +5,7 @@ import com.deliverytech.delivery.dto.response.ProdutoResponseDTO;
 import com.deliverytech.delivery.entity.Produto;
 import com.deliverytech.delivery.entity.Restaurante;
 import com.deliverytech.delivery.exception.BusinessException;
-import com.deliverytech.delivery.exception.ConflictException; // O import será usado
+import com.deliverytech.delivery.exception.ConflictException; 
 import com.deliverytech.delivery.exception.EntityNotFoundException;
 import com.deliverytech.delivery.repository.ProdutoRepository;
 import com.deliverytech.delivery.repository.RestauranteRepository;
@@ -14,6 +14,10 @@ import com.deliverytech.delivery.security.jwt.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -214,5 +218,47 @@ return new ProdutoResponseDTO(produtoSalvo); // Use a variável 'produtoSalvo'
 
         return produto.getRestaurante() != null &&
                produto.getRestaurante().getId().equals(restauranteLogadoId);
+    }
+
+    // ===========================
+    // LISTAR PRODUTOS (PAGINADO COM FILTROS)
+    // ===========================
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ProdutoResponseDTO> listarProdutos(Pageable pageable, Long restauranteId, String categoria, Boolean disponivel) {
+        
+        // 1. Cria uma "Specification" base que não filtra nada
+        Specification<Produto> spec = Specification.not(null);
+
+        // 2. Adiciona os filtros dinamicamente, se eles existirem
+        if (restauranteId != null) {
+            spec = spec.and((root, query, cb) -> 
+                cb.equal(root.get("restaurante").get("id"), restauranteId)
+            );
+        }
+
+        if (categoria != null && !categoria.isBlank()) {
+            // Usando 'like' para busca parcial e case-insensitive
+            spec = spec.and((root, query, cb) -> 
+                cb.like(cb.lower(root.get("categoria")), "%" + categoria.toLowerCase() + "%")
+            );
+        }
+
+        if (disponivel != null) {
+            spec = spec.and((root, query, cb) -> 
+                cb.equal(root.get("disponivel"), disponivel)
+            );
+        }
+
+        // 3. Executa a busca no repositório com os filtros e a paginação
+        Page<Produto> paginaDeProdutos = produtoRepository.findAll(spec, pageable);
+
+        // 4. Mapeia a Page<Produto> para Page<ProdutoResponseDTO>
+        //    (Replicando seu padrão de setar o restauranteId manualmente)
+        return paginaDeProdutos.map(produto -> {
+            ProdutoResponseDTO dto = new ProdutoResponseDTO(produto);
+            dto.setRestauranteId(produto.getRestaurante() != null ? produto.getRestaurante().getId() : null);
+            return dto;
+        });
     }
 }

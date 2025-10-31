@@ -1,111 +1,66 @@
 package com.deliverytech.delivery.service.auth;
 
+import com.deliverytech.delivery.dto.auth.UserResponse;
+import com.deliverytech.delivery.dto.auth.UsuarioUpdateDTO;
 import com.deliverytech.delivery.entity.Usuario;
-import com.deliverytech.delivery.repository.auth.UsuarioRepository;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 /**
- * Serviço de negócios para operações de Gerenciamento (CRUD) da entidade {@link Usuario}.
- *
- * Este serviço é consumido principalmente pelo
- * {@link com.deliverytech.delivery.controller.auth.UsuarioController} e lida com
- * a lógica de buscar, salvar, atualizar e deletar usuários.
- *
- * @implNote A lógica de *criação* de novos usuários com criptografia de senha
- * está centralizada no {@link AuthService#criarUsuario(com.deliverytech.delivery.dto.auth.RegisterRequest)}.
+ * Interface de serviço para operações de gerenciamento (CRUD) de Usuários.
+ * Define o "contrato" que o UsuarioController irá consumir.
+ * * (Diferente do AuthService, que lida com registro e login).
  */
-@Service
-public class UsuarioService {
-
-    private final UsuarioRepository usuarioRepository;
+public interface UsuarioService {
 
     /**
-     * Construtor para injeção de dependência do repositório de usuário.
+     * Busca todos os usuários de forma paginada.
+     * (Usado pelo UsuarioController - GET /api/usuarios)
      *
-     * @param usuarioRepository O repositório para acesso aos dados do usuário.
+     * @param pageable Informações de paginação.
+     * @return Uma página (Page) de UserResponse.
      */
-    public UsuarioService(UsuarioRepository usuarioRepository) {
-        this.usuarioRepository = usuarioRepository;
-    }
+    Page<UserResponse> buscarTodos(Pageable pageable);
 
     /**
-     * Busca um usuário pelo seu ID (Chave Primária).
+     * Busca um usuário pela entidade.
+     * Útil para uso interno por outros serviços (ex: AuthService).
      *
-     * @param id O ID do usuário a ser buscado.
-     * @return A entidade {@link Usuario} correspondente.
-     * @throws RuntimeException (ou idealmente, uma exceção customizada) se o
-     * usuário não for encontrado com o ID especificado.
+     * @param id O ID do usuário.
+     * @return A entidade Usuario.
+     * @throws com.deliverytech.delivery.exception.EntityNotFoundException Se não encontrado.
      */
-    public Usuario buscarPorId(Long id) {
-        return usuarioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado com id: " + id));
-    }
+    Usuario buscarPorId(Long id);
 
     /**
-     * Retorna uma lista de todos os usuários cadastrados no sistema.
+     * Busca um usuário e o retorna como DTO (UserResponse).
+     * (Usado pelo UsuarioController - GET /api/usuarios/{id})
      *
-     * @return Uma {@link List} de entidades {@link Usuario}.
+     * @param id O ID do usuário.
+     * @return O DTO UserResponse.
+     * @throws com.deliverytech.delivery.exception.EntityNotFoundException Se não encontrado.
      */
-    public List<Usuario> buscarTodos() {
-        return usuarioRepository.findAll();
-    }
+    UserResponse buscarPorIdResponse(Long id);
 
     /**
-     * Salva ou atualiza uma entidade {@link Usuario} no banco de dados.
+     * Atualiza os dados de um usuário (apenas campos permitidos).
+     * (Usado pelo UsuarioController - PUT /api/usuarios/{id})
      *
-     * @param usuario A entidade {@link Usuario} a ser salva.
-     * @return A entidade {@link Usuario} salva (com o ID preenchido, se for nova).
-     * @implNote Este método não criptografa a senha. Para criar novos usuários
-     * de forma segura, prefira usar {@link AuthService#criarUsuario}.
+     * @param id O ID do usuário a ser atualizado.
+     * @param dto O DTO com os dados (nome, email).
+     * @return O UserResponse do usuário atualizado.
+     * @throws com.deliverytech.delivery.exception.EntityNotFoundException Se não encontrado.
+     * @throws com.deliverytech.delivery.exception.ConflictException Se o email já estiver em uso.
      */
-    public Usuario salvar(Usuario usuario) {
-        return usuarioRepository.save(usuario);
-    }
+    UserResponse atualizar(Long id, UsuarioUpdateDTO dto);
 
     /**
-     * Atualiza os dados de um usuário existente.
-     *
-     * @param id                O ID do usuário a ser atualizado.
-     * @param usuarioAtualizado A entidade com os novos dados (vinda do request).
-     * @return A entidade {@link Usuario} atualizada e salva no banco.
-     * @throws RuntimeException Se o usuário com o 'id' fornecido não for encontrado.
-     *
-     * @implNote 
-     
-     * o {@link org.springframework.security.crypto.password.PasswordEncoder}
-     * para criptografar a nova senha.
-     */
-    public Usuario atualizar(Long id, Usuario usuarioAtualizado) {
-        // 1. Busca o usuário existente no banco
-        Usuario usuario = buscarPorId(id);
-        
-        // 2. Copia os campos do objeto 'usuarioAtualizado' (vindo do request)
-        //    para o objeto 'usuario' (vindo do banco)
-        usuario.setNome(usuarioAtualizado.getNome());
-        usuario.setEmail(usuarioAtualizado.getEmail());
-        usuario.setSenha(usuarioAtualizado.getSenha());
-        
-        usuario.setRole(usuarioAtualizado.getRole());
-        usuario.setAtivo(usuarioAtualizado.getAtivo());
-        usuario.setRestauranteId(usuarioAtualizado.getRestauranteId());
-        
-        // 3. Salva o objeto 'usuario' (agora modificado) de volta no banco
-        return usuarioRepository.save(usuario);
-    }
-
-    /**
-     * Deleta um usuário do banco de dados pelo seu ID.
+     * Deleta (logicamente) um usuário.
+     * (Usado pelo UsuarioController - DELETE /api/usuarios/{id})
      *
      * @param id O ID do usuário a ser deletado.
-     * @throws RuntimeException Se o usuário com o 'id' fornecido não for encontrado.
-     * @implNote Considere usar uma "deleção lógica" (setar {@code usuario.setAtivo(false)})
-     * em vez de uma deleção física ({@code delete}) para manter a
-     * integridade referencial de registros históricos (ex: pedidos antigos).
+     * @throws com.deliverytech.delivery.exception.EntityNotFoundException Se não encontrado.
      */
-    public void deletar(Long id) {
-        Usuario usuario = buscarPorId(id);
-        usuarioRepository.delete(usuario);
-    }
+    void deletar(Long id);
+
 }

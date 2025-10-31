@@ -1,150 +1,134 @@
 package com.deliverytech.delivery.controller.auth;
 
 import com.deliverytech.delivery.dto.auth.UserResponse;
-import com.deliverytech.delivery.entity.Usuario;
+import com.deliverytech.delivery.dto.auth.UsuarioUpdateDTO; 
+import com.deliverytech.delivery.dto.response.ApiResponseWrapper;
+import com.deliverytech.delivery.dto.response.PagedResponseWrapper;
 import com.deliverytech.delivery.service.auth.UsuarioService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Controller para operações de Gerenciamento (CRUD) de Usuários.
- *
- * Este controller lida com listagem, busca, atualização e deleção de usuários.
- *
- * @implNote Todos os endpoints neste controller (sob "/api/usuarios") são protegidos
- * e requerem um token JWT válido, conforme definido no {@link com.deliverytech.delivery.config.SecurityConfig}.
+ * Todos os endpoints aqui são protegidos e requerem autorização granular.
  */
-@Tag(name = "2. Usuários (CRUD)", description = "Endpoints para gerenciamento de usuários. Requer autenticação.")
+@Tag(name = "6. Usuários (Admin)", description = "Gerenciamento de usuários. Requer role ADMIN.") // <-- Tag renomeada
 @RestController
 @RequestMapping("/api/usuarios")
 @CrossOrigin(origins = "*")
-// Adiciona o requisito de segurança em todos os endpoints deste controller
-@SecurityRequirement(name = "bearerAuth")
+@Validated // Adicionado para @Positive
+@SecurityRequirement(name = "bearerAuth") // Segurança aplicada a todos
 public class UsuarioController {
 
-    /**
-     * Serviço que contém a lógica de negócios para operações de Usuário.
-     * (Injetado via @Autowired por campo).
-     */
     @Autowired
     private UsuarioService usuarioService;
 
     /**
-     * Lista todos os usuários cadastrados no sistema.
-     *
-     * @return ResponseEntity 200 (OK) com uma lista de {@link UserResponse}.
+     * Lista todos os usuários cadastrados no sistema (paginado).
+     * Acesso restrito a usuários com a role 'ADMIN'.
      */
-    @Operation(summary = "Lista todos os usuários",
-               description = "Retorna uma lista de todos os usuários cadastrados, formatados como UserResponse.")
+    @Operation(summary = "Lista todos os usuários (ADMIN, Paginado)",
+               description = "Retorna uma lista paginada de todos os usuários. Requer role ADMIN.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Lista de usuários obtida com sucesso",
-                         content = @Content(mediaType = "application/json",
-                                 array = @ArraySchema(schema = @Schema(implementation = UserResponse.class)))),
-            @ApiResponse(responseCode = "401", description = "Token ausente ou inválido")
+            @ApiResponse(responseCode = "200", description = "Lista de usuários obtida com sucesso"),
+            @ApiResponse(responseCode = "401", description = "Token ausente ou inválido"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado (não é ADMIN)")
     })
     @GetMapping
-    public ResponseEntity<List<UserResponse>> listarUsuarios() {
-        List<Usuario> usuarios = usuarioService.buscarTodos();
+    @PreAuthorize("hasRole('ADMIN')") // <-- SEGURANÇA ADICIONADA
+    public ResponseEntity<PagedResponseWrapper<UserResponse>> listarUsuarios(Pageable pageable) {
         
-        // Mapeia a lista de Entidades para uma lista de DTOs seguros
-        List<UserResponse> response = usuarios.stream()
-                .map(UserResponse::new) // Usa o construtor de mapeamento do DTO
-                .collect(Collectors.toList());
+        // Assumindo que o service foi atualizado para aceitar Pageable e retornar Page<UserResponse>
+        Page<UserResponse> usuariosPage = usuarioService.buscarTodos(pageable); 
         
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(new PagedResponseWrapper<>(usuariosPage));
     }
 
     /**
      * Busca um usuário específico pelo seu ID.
-     *
-     * @param id O ID do usuário a ser buscado.
-     * @return ResponseEntity 200 (OK) com o {@link UserResponse} do usuário
-     * ou ResponseEntity 404 (Not Found) se o usuário não for encontrado.
+     * Acesso permitido para 'ADMIN' ou para o próprio usuário.
      */
-    @Operation(summary = "Busca um usuário por ID",
-               description = "Retorna os dados de um usuário específico, formatado como UserResponse.")
+    @Operation(summary = "Busca um usuário por ID (Admin ou Próprio)",
+               description = "Retorna os dados de um usuário. Requer role ADMIN ou ser o próprio usuário.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Usuário encontrado",
-                         content = @Content(mediaType = "application/json",
-                                 schema = @Schema(implementation = UserResponse.class))),
-            @ApiResponse(responseCode = "404", description = "Usuário não encontrado"),
-            @ApiResponse(responseCode = "401", description = "Token ausente ou inválido")
+            @ApiResponse(responseCode = "200", description = "Usuário encontrado"),
+            @ApiResponse(responseCode = "401", description = "Token ausente ou inválido"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado"),
+            @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<?> buscarPorId(@PathVariable Long id) {
-        try {
-            Usuario usuario = usuarioService.buscarPorId(id);
-            return ResponseEntity.ok(new UserResponse(usuario));
-        } catch (Exception e) {
-            // Idealmente, capturar uma exceção específica (ex: EntityNotFoundException)
-            return ResponseEntity.status(404).body("Usuário não encontrado");
-        }
+    @PreAuthorize("hasRole('ADMIN') or #id == principal.id") // <-- SEGURANÇA ADICIONADA
+    public ResponseEntity<ApiResponseWrapper<UserResponse>> buscarPorId(
+            @Parameter(description = "ID do usuário") 
+            @PathVariable @Positive Long id) {
+        
+        // REMOVIDO try-catch: Deixe o @RestControllerAdvice (GlobalExceptionHandler) tratar a exceção
+        UserResponse usuario = usuarioService.buscarPorIdResponse(id); // Assumindo que service retorna DTO
+        
+        return ResponseEntity.ok(new ApiResponseWrapper<>(true, usuario, "Usuário encontrado"));
     }
 
     /**
-     * Atualiza os dados de um usuário existente.
+     * Atualiza os dados de um usuário existente (ex: nome, email).
+     * NÃO use este método para atualizar senha ou role.
+     * Acesso permitido para 'ADMIN' ou para o próprio usuário.
      *
-     * @param id O ID do usuário a ser atualizado.
-     * @param usuarioAtualizado Objeto {@link Usuario} com os novos dados.
-     * @return ResponseEntity 200 (OK) com o {@link UserResponse} do usuário atualizado
-     * ou ResponseEntity 404 (Not Found) se o usuário não for encontrado.
-     *
-     * @implNote **Este método atualmente aceita a
-     * entidade {@link Usuario} completa no corpo da requisição. 
+     * @implNote Recebe um DTO (UsuarioUpdateDTO) e não a Entidade, por segurança.
      */
-    @Operation(summary = "Atualiza um usuário por ID",
-               description = "Atualiza os dados de um usuário existente.")
+    @Operation(summary = "Atualiza um usuário por ID (Admin ou Próprio)",
+               description = "Atualiza os dados de um usuário (ex: nome). Requer role ADMIN ou ser o próprio usuário.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Usuário atualizado com sucesso",
-                         content = @Content(mediaType = "application/json",
-                                 schema = @Schema(implementation = UserResponse.class))),
-            @ApiResponse(responseCode = "404", description = "Erro ao atualizar usuário"),
-            @ApiResponse(responseCode = "401", description = "Token ausente ou inválido")
+            @ApiResponse(responseCode = "200", description = "Usuário atualizado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos"),
+            @ApiResponse(responseCode = "401", description = "Token ausente ou inválido"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado"),
+            @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
     })
     @PutMapping("/{id}")
-    public ResponseEntity<?> atualizar(@PathVariable Long id, @RequestBody Usuario usuarioAtualizado) {
-        try {
-            Usuario usuario = usuarioService.atualizar(id, usuarioAtualizado);
-            return ResponseEntity.ok(new UserResponse(usuario));
-        } catch (Exception e) {
-            return ResponseEntity.status(404).body("Erro ao atualizar usuário: " + e.getMessage());
-        }
+    @PreAuthorize("hasRole('ADMIN') or #id == principal.id") // <-- SEGURANÇA ADICIONADA
+    public ResponseEntity<ApiResponseWrapper<UserResponse>> atualizar(
+            @Parameter(description = "ID do usuário") @PathVariable @Positive Long id, 
+            @Parameter(description = "Dados a serem atualizados") @RequestBody @Valid UsuarioUpdateDTO dto) { // <-- DTO NO LUGAR DA ENTIDADE
+        
+        // REMOVIDO try-catch
+        UserResponse usuario = usuarioService.atualizar(id, dto); // Assumindo que service aceita o DTO
+
+        return ResponseEntity.ok(new ApiResponseWrapper<>(true, usuario, "Usuário atualizado com sucesso"));
     }
 
     /**
-     * Deleta um usuário do sistema.
-     * (Dependendo da regra de negócio, pode ser uma deleção lógica (setar `ativo = false`).)
-     *
-     * @param id O ID do usuário a ser deletado.
-     * @return ResponseEntity 204 (No Content) se a deleção for bem-sucedida
-     * ou ResponseEntity 404 (Not Found) se o usuário não for encontrado.
+     * Deleta um usuário do sistema (soft ou hard delete).
+     * Acesso restrito a usuários com a role 'ADMIN'.
      */
-    @Operation(summary = "Deleta um usuário por ID",
-               description = "Remove um usuário do sistema.")
+    @Operation(summary = "Deleta um usuário por ID (ADMIN)",
+               description = "Remove um usuário do sistema. Requer role ADMIN.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Usuário deletado com sucesso"),
-            @ApiResponse(responseCode = "404", description = "Erro ao deletar usuário"),
-            @ApiResponse(responseCode = "401", description = "Token ausente ou inválido")
+            @ApiResponse(responseCode = "401", description = "Token ausente ou inválido"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado (não é ADMIN)"),
+            @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
     })
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deletar(@PathVariable Long id) {
-        try {
-            usuarioService.deletar(id);
-            return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            return ResponseEntity.status(404).body("Erro ao deletar usuário: " + e.getMessage());
-        }
+    @PreAuthorize("hasRole('ADMIN')") // <-- SEGURANÇA ADICIONADA
+    public ResponseEntity<Void> deletar(
+            @Parameter(description = "ID do usuário") @PathVariable @Positive Long id) {
+        
+        // REMOVIDO try-catch
+        usuarioService.deletar(id);
+        
+        return ResponseEntity.noContent().build(); // Retorna 204 No Content
     }
 }
