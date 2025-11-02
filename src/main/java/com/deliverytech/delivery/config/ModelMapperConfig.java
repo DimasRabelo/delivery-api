@@ -2,8 +2,10 @@ package com.deliverytech.delivery.config;
 
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
+import org.springframework.boot.web.client.RestTemplateBuilder; // 1. IMPORT NOVO
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestTemplate; // 2. IMPORT NOVO
 
 @Configuration
 public class ModelMapperConfig {
@@ -12,7 +14,7 @@ public class ModelMapperConfig {
     public ModelMapper modelMapper() {
         ModelMapper mapper = new ModelMapper();
 
-        // Configurações específicas
+        // Configurações específicas do ModelMapper
         mapper.getConfiguration()
               .setMatchingStrategy(MatchingStrategies.STRICT)
               .setFieldMatchingEnabled(true)
@@ -20,5 +22,20 @@ public class ModelMapperConfig {
 
         return mapper;
     }
-}
 
+   
+    /**
+     * Cria um Bean gerenciado pelo Spring para o RestTemplate.
+     * Isso permite que ele seja injetado em outros componentes
+     * e configurado centralmente.
+     * * @param builder O Spring injeta o RestTemplateBuilder automaticamente.
+     * @return Uma instância de RestTemplate.
+     */
+    @Bean
+    public RestTemplate restTemplate(RestTemplateBuilder builder) {
+        // Usamos o RestTemplateBuilder para construir o RestTemplate
+        // Isso garante que timeouts, interceptors (como o de Tracing)
+        // sejam aplicados corretamente.
+        return builder.build();
+    }
+}

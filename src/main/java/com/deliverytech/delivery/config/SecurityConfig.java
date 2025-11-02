@@ -77,32 +77,25 @@ public class SecurityConfig {
      * @return A cadeia de filtros de segurança construída.
      * @throws Exception Se houver erro na configuração.
      */
-    @Bean
+   @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 // 1. Desabilita o CSRF (Cross-Site Request Forgery)
-                //    Não é necessário para APIs stateless (baseadas em token JWT).
                 .csrf(csrf -> csrf.disable())
 
                 // 2. Habilita o CORS (Cross-Origin Resource Sharing)
-                //    Usa as configurações definidas no bean 'corsConfigurationSource'.
                 .cors(cors -> {
                 })
 
                 // 3. Configura o tratamento de exceções de autenticação (Erro 401)
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint((request, response, authException) -> {
-                            // Define o tipo de resposta como JSON e o encoding
+                            // ... (seu código de tratamento de erro 401 customizado - perfeito, não mude nada) ...
                             response.setContentType("application/json");
                             response.setCharacterEncoding("UTF-8");
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-
-                            // Tenta recuperar a exceção específica (ex: ExpiredJwtException)
-                            // que foi salva no request pelo JwtAuthenticationFilter
                             Exception exception = (Exception) request.getAttribute("JWT_EXCEPTION");
                             String message = "Token ausente ou inválido";
-
-                            // Fornece mensagens de erro claras baseadas no tipo de exceção
                             if (exception != null) {
                                 String exName = exception.getClass().getSimpleName();
                                 switch (exName) {
@@ -116,13 +109,10 @@ public class SecurityConfig {
                                         break;
                                 }
                             }
-
-                            // Monta a resposta JSON de erro customizada
                             String json = String.format(
                                     "{ \"status\": 401, \"error\": \"Unauthorized\", \"message\": \"%s\", \"path\": \"%s\" }",
                                     message, request.getRequestURI()
                             );
-
                             response.getWriter().write(json);
                             response.flushBuffer();
                         })
@@ -130,10 +120,10 @@ public class SecurityConfig {
 
                 // 4. Define as regras de autorização de requisições
                 .authorizeHttpRequests(auth -> auth
-                        // Lista de endpoints públicos que NÃO exigem autenticação
+                        // 4.1. Endpoints PÚBLICOS (não exigem token)
                         .requestMatchers(
                                 
-                               // Endpoints do Swagger 
+                               // Endpoints do Swagger
                                 "/api-docs/**",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
@@ -141,28 +131,41 @@ public class SecurityConfig {
                                 "/swagger-resources/**",
                                 "/webjars/**",
                                 
-                                // Health Check 
-                                "/actuator/health", // Endpoint público para verificação de saúde da aplicação
+                                // Health Check PÚBLICO
+                                "/actuator/health",
+
+                                // Libera a página HTML do Dashboard
+                                 "/dashboard",
+                        // Libera a API de métricas que o HTML chama
+                                "/dashboard/api/metrics",
                                 
                                 // Outros Endpoints Públicos
                                 "/h2-console/**",
                                 "/api/auth/**",
                                 "/api/restaurantes/**",
-                                "/api/produtos/**"  
-                        ).permitAll()
-                        // Todas as outras requisições DEVE ser autenticadas
+                                "/api/produtos/**"
+                        ).permitAll() // Permite todos os listados acima
+
+                        // ==========================================================
+                        // ⬇️ AQUI ESTÁ A NOVA REGRA DA ATIVIDADE ⬇️
+                        // ==========================================================
+                        // 4.2. Endpoints SENSÍVEIS do Actuator (exigem Role ADMIN)
+                        //     Qualquer outra rota /actuator/ (como /info, /metrics, /env)
+                        //     que não foi liberada acima (como /health) vai cair aqui.
+                        .requestMatchers("/actuator/**").hasRole("ADMIN")
+                        // ==========================================================
+                        
+                        // 4.3. Todo o resto (anyRequest) exige autenticação
                         .anyRequest().authenticated()
                 )
 
-                // 5. Configura a política de gerenciamento de sessão
-                //    Define como STATELESS: nenhuma sessão será criada ou usada no servidor.
+                // 5. Configura a política de gerenciamento de sessão (STATELESS)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                // 6. Adiciona nosso filtro JWT customizado na cadeia de filtros
-                //    Ele deve rodar ANTES do filtro padrão 'UsernamePasswordAuthenticationFilter'.
+                // 6. Adiciona nosso filtro JWT
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
-        // Permite que o console do H2 (que usa <iframe>) funcione corretamente
+        // Permite que o console do H2 funcione
         http.headers(headers -> headers.frameOptions(frame -> frame.disable()));
 
         return http.build();
