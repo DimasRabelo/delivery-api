@@ -78,8 +78,6 @@ O projeto agora possui um conjunto completo de ferramentas de monitoramento.
    
 Um dashboard em tempo real (atualizado a cada 5 segundos) foi criado para visualizar as métricas de negócio e performance.
 
-URL do Dashboard: http://localhost:8080/dashboard
-
 2. Endpoints do Actuator (Back-end)
    
 Os endpoints do Actuator fornecem os dados brutos de saúde e métricas. (Nota: Estes endpoints (exceto /health) estão protegidos e requerem um token de ADMIN para acesso).
