@@ -138,6 +138,7 @@ public class SecurityConfig {
                                  "/dashboard",
                         // Libera a API de métricas que o HTML chama
                                 "/dashboard/api/metrics",
+                                "/dashboard/api/set-users/**",
                                 
                                 // Outros Endpoints Públicos
                                 "/h2-console/**",
