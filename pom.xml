@@ -146,20 +146,23 @@
             <artifactId>micrometer-registry-prometheus</artifactId>
         </dependency>
     
+        <!-- Dependência do Micrometer para integração com Prometheus -->
     <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-thymeleaf</artifactId>
     </dependency>
 
-    <dependency>
-        <groupId>io.micrometer</groupId>
-        <artifactId>micrometer-tracing-bridge-brave</artifactId>
-    </dependency>
+    <!-- Integração do Micrometer com o Brave para rastreamento distribuído de aplicações -->
+<dependency>
+    <groupId>io.micrometer</groupId>
+    <artifactId>micrometer-tracing-bridge-brave</artifactId>
+</dependency>
 
-    <dependency>
-        <groupId>io.zipkin.reporter2</groupId>
-        <artifactId>zipkin-reporter-brave</artifactId>
-    </dependency>
+   <!-- Reporter do Zipkin para enviar os traces coletados pelo Brave para o servidor Zipkin -->
+<dependency>
+    <groupId>io.zipkin.reporter2</groupId>
+    <artifactId>zipkin-reporter-brave</artifactId>
+</dependency>
     
      </dependencies>
 

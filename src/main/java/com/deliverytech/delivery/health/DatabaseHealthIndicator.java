@@ -1,4 +1,4 @@
-package com.deliverytech.delivery.health; // Seu pacote
+package com.deliverytech.delivery.health; 
 
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
@@ -15,7 +15,7 @@ import java.sql.SQLException;
  * no endpoint /actuator/health.
  */
 @Component("database")
-public class DatabaseHealthIndicator implements HealthIndicator { // <-- Veja, agora está limpo!
+public class DatabaseHealthIndicator implements HealthIndicator { 
 
     private final DataSource dataSource;
 

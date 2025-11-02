@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
  * Serviço de exemplo para demonstrar a criação de "Spans" customizados
  * com o Micrometer Tracing (substituto do Sleuth).
  *
- * ATENÇÃO: O gabarito usava 'brave.Tracer', que está obsoleto.
+ *ATENÇÃO: brave.Tracer está obsoleto.
  * Usamos 'io.micrometer.tracing.Tracer'. A lógica é a mesma.
  */
 @Service

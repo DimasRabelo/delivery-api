@@ -237,4 +237,6 @@ private String senha;
     public void setRestauranteId(Long restauranteId) {
         this.restauranteId = restauranteId;
     }
+
+   
 }

@@ -1,123 +1,236 @@
 <!DOCTYPE html>
-<html>
-<head>
+<html lang="pt-br" data-bs-theme="dark"> <head>
 <title>Dashboard - Sistema de Delivery</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/darkly/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body { font-family: Arial, sans-serif; margin: 20px; }
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 20px;
-}
-.metric-card {
-  border: 1px solid #ddd;
-  padding: 20px;
-  border-radius: 8px;
-  background: #f9f9f9;
-}
-.metric-value {
-  font-size: 2em;
-  font-weight: bold;
-  color: #2196F3;
-}
-.metric-label {
-  color: #666;
-  margin-top: 5px;
-}
-.chart-container {
-  width: 100%;
-  height: 300px;
-}
+  /* Apenas um pequeno ajuste para o gráfico não estourar */
+  .chart-container {
+    position: relative;
+    height: 300px;
+    width: 100%;
+  }
 </style>
 </head>
 <body>
 
-<h1>Dashboard de Monitoramento - Sistema de Delivery</h1>
+<div class="container-fluid mt-4">
+  <h1><i class="bi bi-speedometer2"></i> Dashboard de Monitoramento</h1>
+  <p class="text-muted">Sistema de Delivery</p>
 
-<div class="dashboard-grid">
-  <div class="metric-card">
-    <div class="metric-value" id="pedidos-total">0</div>
-    <div class="metric-label">Pedidos Processados</div>
-  </div>
+  <div class="row g-3 mb-4">
+    
+    <div class="col-lg-3 col-md-6">
+      <div class="card bg-primary text-white h-100 shadow">
+        <div class="card-body d-flex flex-column">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <h1 class="display-4" id="pedidos-total">0</h1>
+              <span class="card-title">Pedidos Processados</span>
+            </div>
+            <i class="bi bi-box-seam fs-1 opacity-50"></i>
+          </div>
+        </div>
+      </div>
+    </div>
 
-  <div class="metric-card">
-    <div class="metric-value" id="receita-total">R$ 0,00</div>
-    <div class="metric-label">Receita Total</div>
-  </div>
+    <div class="col-lg-3 col-md-6">
+      <div class="card bg-success text-white h-100 shadow">
+        <div class="card-body d-flex flex-column">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <h1 class="display-4" id="receita-total">R$ 0,00</h1>
+              <span class="card-title">Receita Total</span>
+            </div>
+            <i class="bi bi-cash-coin fs-1 opacity-50"></i>
+          </div>
+        </div>
+      </div>
+    </div>
 
-  <div class="metric-card">
-    <div class="metric-value" id="usuarios-ativos">0</div>
-    <div class="metric-label">Usuários Ativos</div>
-  </div>
+    <div class="col-lg-3 col-md-6">
+      <div class="card bg-info text-white h-100 shadow">
+        <div class="card-body d-flex flex-column">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <h1 class="display-4" id="usuarios-ativos">0</h1>
+              <span class="card-title">Usuários Ativos</span>
+            </div>
+            <i class="bi bi-people-fill fs-1 opacity-50"></i>
+          </div>
+        </div>
+      </div>
+    </div>
 
-  <div class="metric-card">
-    <div class="metric-value" id="tempo-medio">0ms</div>
-    <div class="metric-label">Tempo Médio de Resposta</div>
-  </div>
-</div>
-
-<div class="dashboard-grid" style="margin-top: 30px;">
-  <div class="metric-card">
-    <h3>Pedidos por Status</h3>
-    <div class="chart-container">
-      <canvas id="pedidos-chart"></canvas>
+    <div class="col-lg-3 col-md-6">
+      <div class="card bg-warning text-dark h-100 shadow"> <div class="card-body d-flex flex-column">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <h1 class="display-4" id="tempo-medio">0ms</h1>
+              <span class="card-title">Tempo Médio Resposta</span>
+            </div>
+            <i class="bi bi-stopwatch-fill fs-1 opacity-50"></i>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div class="metric-card">
-    <h3>Performance do Sistema</h3>
-    <div class="chart-container">
-      <canvas id="performance-chart"></canvas>
+  <div class="row g-3">
+    
+    <div class="col-lg-6">
+      <div class="card bg-dark shadow">
+        <div class="card-header">
+          <h3><i class="bi bi-pie-chart-fill"></i> Pedidos por Status</h3>
+        </div>
+        <div class="card-body">
+          <div class="chart-container">
+            <canvas id="pedidos-chart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="card bg-dark shadow">
+        <div class="card-header">
+          <h3><i class="bi bi-graph-up"></i> Performance do Sistema (Tempo Médio em ms)</h3>
+        </div>
+        <div class="card-body">
+          <div class="chart-container">
+            <canvas id="performance-chart"></canvas>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
-</div>
 
-<script>
-async function fetchMetrics() {
-  try {
-    const response = await fetch('/dashboard/api/metrics');
-    const data = await response.json();
-    updateDashboard(data);
-  } catch (error) {
-    console.error('Erro ao buscar métricas:', error);
+</div> <script>
+  // Função para buscar métricas (Correta)
+  async function fetchMetrics() {
+    try {
+      const response = await fetch('/dashboard/api/metrics');
+      const data = await response.json();
+      updateDashboard(data);
+    } catch (error) {
+      console.error('Erro ao buscar métricas:', error);
+    }
   }
-}
 
-function updateDashboard(data) {
-  document.getElementById('pedidos-total').textContent = Math.round(data.pedidos_total || 0);
-  document.getElementById('receita-total').textContent = 'R$ ' + (data.receita_total || 0).toFixed(2);
-  document.getElementById('usuarios-ativos').textContent = Math.round(data.usuarios_ativos || 0);
-  document.getElementById('tempo-medio').textContent = Math.round(data.tempo_medio_pedido || 0) + 'ms';
+  // Função para atualizar os cards (Correta)
+  function updateDashboard(data) {
+    document.getElementById('pedidos-total').textContent = Math.round(data.pedidos_total || 0);
+    document.getElementById('receita-total').textContent = 'R$ ' + (data.receita_total || 0).toFixed(2);
+    document.getElementById('usuarios-ativos').textContent = Math.round(data.usuarios_ativos || 0);
+    document.getElementById('tempo-medio').textContent = Math.round(data.tempo_medio_pedido || 0) + 'ms';
 
-  updateCharts(data);
-}
-
-const pedidosChart = new Chart(document.getElementById('pedidos-chart'), {
-  type: 'doughnut',
-  data: {
-    labels: ['Sucesso', 'Erro'],
-    datasets: [{
-      data: [0, 0],
-    }]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false
+    updateCharts(data);
   }
-});
 
-function updateCharts(data) {
-  pedidosChart.data.datasets[0].data = [
-    data.pedidos_sucesso || 0,
-    data.pedidos_erro || 0
-  ];
-  pedidosChart.update();
-}
+  // --- GRÁFICO 1: PEDIDOS (PIZZA) ---
+  const pedidosChart = new Chart(document.getElementById('pedidos-chart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Sucesso', 'Erro'],
+      datasets: [{
+        data: [0, 0],
+        backgroundColor: ['#4CAF50', '#F44336'] // Cores do gabarito
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          labels: {
+            color: '#FFFFFF' // Texto da legenda em branco
+          }
+        }
+      }
+    }
+  });
 
-setInterval(fetchMetrics, 5000);
-fetchMetrics();
+  // --- GRÁFICO 2: PERFORMANCE (LINHA) ---
+  const performanceChart = new Chart(document.getElementById('performance-chart'), {
+      type: 'line', 
+      data: {
+          labels: [], 
+          datasets: [
+          {
+              label: 'Tempo Médio Pedido (ms)',
+              data: [], 
+              borderColor: '#2196F3',
+              fill: false,
+              tension: 0.1
+          },
+          {
+              label: 'Tempo Médio Banco (ms)',
+              data: [], 
+              borderColor: '#FFC107',
+              fill: false,
+              tension: 0.1
+          }
+      ]
+      },
+      options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              labels: {
+                color: '#FFFFFF' // Texto da legenda em branco
+              }
+            }
+          },
+          scales: {
+              y: {
+                  beginAtZero: true,
+                  ticks: { color: '#FFFFFF' }, // Números do eixo Y em branco
+                  grid: { color: 'rgba(255, 255, 255, 0.1)' } // Linhas do grid
+              },
+              x: {
+                  ticks: { color: '#FFFFFF' }, // Rótulos do eixo X em branco
+                  grid: { color: 'rgba(255, 255, 255, 0.1)' } // Linhas do grid
+              }
+          }
+      }
+  });
+
+  // Limite de pontos no gráfico
+  const MAX_DATA_POINTS = 20;
+
+  // --- FUNÇÃO DE ATUALIZAÇÃO (MODIFICADA) ---
+  function updateCharts(data) {
+      
+      // 1. Atualiza o Gráfico de Pizza (como antes)
+      pedidosChart.data.datasets[0].data = [
+          data.pedidos_sucesso || 0,
+          data.pedidos_erro || 0
+      ];
+      pedidosChart.update();
+
+      // 2. Atualiza o Gráfico de Linha (Performance)
+      const now = new Date().toLocaleTimeString(); 
+
+      performanceChart.data.labels.push(now);
+      performanceChart.data.datasets[0].data.push(data.tempo_medio_pedido || 0);
+      performanceChart.data.datasets[1].data.push(data.tempo_medio_banco || 0);
+
+      if (performanceChart.data.labels.length > MAX_DATA_POINTS) {
+          performanceChart.data.labels.shift(); 
+          performanceChart.data.datasets[0].data.shift(); 
+          performanceChart.data.datasets[1].data.shift(); 
+      }
+
+      performanceChart.update();
+  }
+
+  // Inicia os timers (Correto)
+  setInterval(fetchMetrics, 5000);
+  fetchMetrics();
 </script>
 
 </body>
