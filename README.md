@@ -71,6 +71,10 @@ Definição JSON (OpenAPI): http://localhost:8080/api-docs
 O projeto agora possui um conjunto completo de ferramentas de monitoramento.
 
 1. Dashboard Interativo (Front-end)
+
+  * **URL do Dashboard:** **`http://localhost:8080/dashboard`**
+
+![Print do Dashboard de Monitoramento](https://raw.githubusercontent.com/DimasRabelo/imagens/main/dashboard-monitoramento.png)
    
 Um dashboard em tempo real (atualizado a cada 5 segundos) foi criado para visualizar as métricas de negócio e performance.
 
