@@ -66,7 +66,7 @@ Definição JSON (OpenAPI): http://localhost:8080/api-docs
 
 (O seu texto sobre "Como usar a Autenticação no Swagger" estava perfeito e foi mantido)
 
-<h2>🔬 Observabilidade e Monitoramento (Atividade 10)</h2>
+<h2>🔬 Observabilidade e Monitoramento</h2>
 
 O projeto agora possui um conjunto completo de ferramentas de monitoramento.
 
