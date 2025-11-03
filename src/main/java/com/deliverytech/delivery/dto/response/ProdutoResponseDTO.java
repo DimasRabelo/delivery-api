@@ -3,13 +3,16 @@ package com.deliverytech.delivery.dto.response;
 import com.deliverytech.delivery.entity.Produto;
 import io.swagger.v3.oas.annotations.media.Schema; // Importação para documentação OpenAPI/Swagger
 import java.math.BigDecimal;
+import java.io.Serializable;
 
 /**
  * DTO (Data Transfer Object) usado para enviar informações de produtos para o cliente (resposta da API).
  * Documentado no Swagger para facilitar a visualização e entendimento dos dados.
  */
 @Schema(description = "DTO de resposta com dados do produto") // Documentação a nível de classe
-public class ProdutoResponseDTO {
+public class ProdutoResponseDTO implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     @Schema(description = "ID do produto", example = "1") // Documentação Swagger
     private Long id;

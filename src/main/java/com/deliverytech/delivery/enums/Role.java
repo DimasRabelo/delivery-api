@@ -29,5 +29,10 @@ public enum Role {
     /**
      * Usuário responsável por realizar as entregas dos pedidos.
      */
-    ENTREGADOR
+    ENTREGADOR,
+
+     /**
+     * Role para acessar os endpoints do Spring Boot Actuator
+     */
+    ACTUATOR
 }

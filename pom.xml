@@ -163,6 +163,18 @@
     <groupId>io.zipkin.reporter2</groupId>
     <artifactId>zipkin-reporter-brave</artifactId>
 </dependency>
+
+    <!-- Dependência para cache -->
+<dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-cache</artifactId>
+</dependency>
+
+<!-- Dependência de Integração com o Redis-->
+<dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+</dependency>
     
      </dependencies>
 

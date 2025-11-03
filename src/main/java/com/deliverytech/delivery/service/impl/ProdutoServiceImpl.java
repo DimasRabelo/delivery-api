@@ -17,10 +17,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-
-
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
+// ------------------------------------
 
 @Service("produtoService")
 @Transactional
@@ -37,7 +39,7 @@ public class ProdutoServiceImpl implements ProdutoService {
     // ===========================
     @Override
     public ProdutoResponseDTO cadastrarProduto(ProdutoDTO dto) {
-        // Validações do DTO
+        
         if (dto.getCategoria() == null || dto.getCategoria().isEmpty()) {
             throw new IllegalArgumentException("Categoria é obrigatória");
         }
@@ -48,17 +50,14 @@ public class ProdutoServiceImpl implements ProdutoService {
             throw new IllegalArgumentException("Restaurante ID é obrigatório");
         }
 
-        // Busca Restaurante
         Restaurante restaurante = restauranteRepository.findById(dto.getRestauranteId())
                 .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado"));
 
-        // Lógica de Conflito 
         boolean exists = produtoRepository.existsByNomeAndRestauranteId(dto.getNome(), dto.getRestauranteId());
         if (exists) {
             throw new ConflictException("Produto já existe para este restaurante", "nome", dto.getNome());
         }
 
-        // Cria a entidade Produto
         Produto produto = new Produto();
         produto.setNome(dto.getNome());
         produto.setDescricao(dto.getDescricao());
@@ -66,15 +65,11 @@ public class ProdutoServiceImpl implements ProdutoService {
         produto.setCategoria(dto.getCategoria());
         produto.setDisponivel(true); 
         produto.setRestaurante(restaurante);
-        
-        // Adiciona o estoque (a nova lógica)
         produto.setEstoque(dto.getEstoque());
 
-      // Salva no banco e captura a entidade gerenciada (com ID)
-Produto produtoSalvo = produtoRepository.save(produto);
+        Produto produtoSalvo = produtoRepository.save(produto);
 
-// Retorna o DTO de Resposta (que já lê o estoque)
-return new ProdutoResponseDTO(produtoSalvo); // Use a variável 'produtoSalvo'
+        return new ProdutoResponseDTO(produtoSalvo);
     }
 
     // ===========================
@@ -82,7 +77,12 @@ return new ProdutoResponseDTO(produtoSalvo); // Use a variável 'produtoSalvo'
     // ===========================
     @Override
     @Transactional(readOnly = true)
+   
+    @Cacheable(value = "produtos", key = "#id")
+    // ---------------------------------
     public ProdutoResponseDTO buscarProdutoPorId(Long id) {
+
+       
         Produto produto = produtoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado: " + id));
 
@@ -138,7 +138,12 @@ return new ProdutoResponseDTO(produtoSalvo); // Use a variável 'produtoSalvo'
     // ATUALIZAR PRODUTO
     // ===========================
     @Override
+ 
+    @CacheEvict(value = "produtos", key = "#id")
+    // ---------------------------------
     public ProdutoResponseDTO atualizarProduto(Long id, ProdutoDTO dto) {
+          
+      
         Produto produto = produtoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado: " + id));
 
@@ -166,7 +171,13 @@ return new ProdutoResponseDTO(produtoSalvo); // Use a variável 'produtoSalvo'
     // ALTERAR DISPONIBILIDADE
     // ===========================
     @Override
+    
+    @CacheEvict(value = "produtos", key = "#id")
+    // ---------------------------------
     public ProdutoResponseDTO alterarDisponibilidade(Long id) {
+      
+        
+        // Lógica original
         Produto produto = produtoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado"));
 
@@ -182,7 +193,13 @@ return new ProdutoResponseDTO(produtoSalvo); // Use a variável 'produtoSalvo'
     // REMOVER PRODUTO
     // ===========================
     @Override
+  
+    @CacheEvict(value = "produtos", key = "#id")
+    // ---------------------------------
     public void removerProduto(Long id) {
+      
+        
+     
         Produto produto = produtoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado"));
 
@@ -226,11 +243,8 @@ return new ProdutoResponseDTO(produtoSalvo); // Use a variável 'produtoSalvo'
     @Override
     @Transactional(readOnly = true)
     public Page<ProdutoResponseDTO> listarProdutos(Pageable pageable, Long restauranteId, String categoria, Boolean disponivel) {
-        
-        // 1. Cria uma "Specification" base que não filtra nada
         Specification<Produto> spec = Specification.not(null);
 
-        // 2. Adiciona os filtros dinamicamente, se eles existirem
         if (restauranteId != null) {
             spec = spec.and((root, query, cb) -> 
                 cb.equal(root.get("restaurante").get("id"), restauranteId)
@@ -238,7 +252,6 @@ return new ProdutoResponseDTO(produtoSalvo); // Use a variável 'produtoSalvo'
         }
 
         if (categoria != null && !categoria.isBlank()) {
-            // Usando 'like' para busca parcial e case-insensitive
             spec = spec.and((root, query, cb) -> 
                 cb.like(cb.lower(root.get("categoria")), "%" + categoria.toLowerCase() + "%")
             );
@@ -250,11 +263,8 @@ return new ProdutoResponseDTO(produtoSalvo); // Use a variável 'produtoSalvo'
             );
         }
 
-        // 3. Executa a busca no repositório com os filtros e a paginação
         Page<Produto> paginaDeProdutos = produtoRepository.findAll(spec, pageable);
 
-        // 4. Mapeia a Page<Produto> para Page<ProdutoResponseDTO>
-        //    (Replicando seu padrão de setar o restauranteId manualmente)
         return paginaDeProdutos.map(produto -> {
             ProdutoResponseDTO dto = new ProdutoResponseDTO(produto);
             dto.setRestauranteId(produto.getRestaurante() != null ? produto.getRestaurante().getId() : null);
