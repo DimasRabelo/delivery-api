@@ -4,7 +4,7 @@ Sistema de delivery robusto desenvolvido com Spring Boot 3 e Java 21, focado em 
 
 Este projeto implementa uma API REST completa para gerenciar clientes, restaurantes, produtos e pedidos, com uma camada de segurança granular usando Spring Security 6 e autenticação stateless via JSON Web Tokens (JWT).
 
-O sistema agora inclui um conjunto completo de ferramentas de Observabilidade (Atividades 1-4), incluindo:
+O sistema agora inclui um conjunto completo de ferramentas de Observabilidade, incluindo:
 
 Health Checks customizados via Spring Boot Actuator.
 
