@@ -4,7 +4,7 @@ Sistema de delivery robusto desenvolvido com Spring Boot 3 e Java 21, focado em 
 
 Este projeto implementa uma API REST completa para gerenciar clientes, restaurantes, produtos e pedidos, com uma camada de segurança granular usando Spring Security 6 e autenticação stateless via JSON Web Tokens (JWT).
 
-O sistema agora inclui um conjunto completo de ferramentas de Observabilidade (Atividades 1-4), incluindo:
+O sistema agora inclui um conjunto completo de ferramentas de Observabilidade, incluindo:
 
 Health Checks customizados via Spring Boot Actuator.
 
@@ -304,10 +304,239 @@ A estrutura do projeto foi atualizada com os novos pacotes de observabilidade:
  ┃ ┗ 📂resources
  ┃ ┃ ┗ 📜application-test.properties
 ```
-<h2>⚙️ Funcionalidades Implementadas</h2> (Seu texto original sobre Funcionalidades, Segurança, Serviços, DTOs e Endpoints está perfeito. Nenhuma mudança necessária aqui).
+<h2>⚙️ Funcionalidades Implementadas</h2>
 
-... (Mantenha suas seções originais aqui) ...
+<h2>🔐 Segurança (Spring Security + JWT)</h2>
 
+Autenticação Stateless: Autenticação via Bearer Token (JWT).
+
+Autorização Granular: Uso de @PreAuthorize para controle de acesso em nível de método, diferenciando ADMIN, RESTAURANTE e CLIENTE.
+
+Verificação de Propriedade: Lógica de serviço (ex: @produtoService.isOwner(#id)) que garante que um usuário RESTAURANTE só possa editar seus próprios recursos.
+
+Endpoints de Autenticação: POST /api/auth/login, POST /api/auth/register e GET /api/auth/me.
+
+Hashing de Senhas: Senhas são armazenadas usando BCryptPasswordEncoder.
+
+Tratamento de Exceções: Respostas 401 (Unauthorized) e 403 (Forbidden) customizadas e padronizadas.
+
+<h2>🛠️ Services (Regras de Negócio)</h2>
+
+AuthService: Implementa UserDetailsService para carregar usuários e gerencia o registro.
+
+RestauranteService: Cadastro, filtros, cálculo de taxa de entrega e verificação de propriedade (isOwner).
+
+ProdutoService: Gerenciamento de cardápio e verificação de propriedade (isOwner).
+
+PedidoService: Lógica complexa para criação de pedidos, cálculo de total, atualização de status e verificação de acesso (canAccess).
+
+RelatorioService: Geração de relatórios de vendas, produtos, clientes, etc.
+
+(Novo) MetricsService: Centraliza a criação e incremento de métricas de negócio (pedidos, receita).
+
+(Novo) AuditService: Centraliza o registro de logs de auditoria (quem fez o quê).
+
+(Novo) AlertService: Monitora métricas e saúde em tempo real para disparar alertas.
+
+<h2>📦 DTOs e Validações</h2>
+
+Auth DTOs: LoginRequest, LoginResponse (com token), RegisterRequest, UserResponse (DTO seguro, sem senha).
+
+Request DTOs: ClienteDTO, RestauranteDTO, ProdutoDTO, PedidoDTO, ItemPedidoDTO.
+
+Response DTOs: ClienteResponseDTO, RestauranteResponseDTO, ProdutoResponseDTO, PedidoResponseDTO, e wrappers de resposta (ApiResponseWrapper, PagedResponseWrapper).
+
+Validações: @Valid, @NotNull, @NotBlank, @Email, @Size, e validações customizadas.
+
+<h2>📋 Endpoints REST (Principais)</h2>
+
+A API é dividida em endpoints públicos (para consulta) e protegidos (que exigem autenticação e autorização). Para uma lista completa e interativa, acesse o Swagger UI.
+
+Base URL: http://localhost:8080/api
+
+<h3>🔑 Autenticação (Público)</h3>
+
+POST /auth/login: Autentica um usuário e retorna um token JWT.
+
+POST /auth/register: Registra um novo usuário (CLIENTE ou RESTAURANTE).
+
+<h3>🍽️ Endpoints Públicos (Consulta)</h3>
+
+GET /restaurantes: Lista restaurantes (com filtros).
+
+GET /restaurantes/{id}: Busca um restaurante por ID.
+
+GET /restaurantes/{id}/produtos: Lista o cardápio (produtos) de um restaurante.
+
+GET /produtos/{id}: Busca um produto por ID.
+
+POST /pedidos/calcular: Calcula o total de um pedido (sem salvar).
+
+GET /actuator/health: (Novo) Endpoint de saúde da aplicação.
+
+GET /dashboard: (Novo) Página web do dashboard de monitoramento.
+
+GET /dashboard/api/metrics: (Novo) API de métricas para o dashboard.
+
+<h3>🛡️ Endpoints Protegidos (Requerem Token)</h3>
+
+GET /auth/me: Retorna os dados do usuário logado.
+
+POST /restaurantes: Cadastra um novo restaurante (ADMIN).
+
+PUT /restaurantes/{id}: Atualiza um restaurante (ADMIN ou RESTAURANTE dono).
+
+POST /produtos: Cadastra um novo produto (ADMIN ou RESTAURANTE dono).
+
+PUT /produtos/{id}: Atualiza um produto (ADMIN ou RESTAURANTE dono).
+
+DELETE /produtos/{id}: Remove um produto (ADMIN ou RESTAURANTE dono).
+
+POST /pedidos: Cria um novo pedido (CLIENTE).
+
+GET /pedidos/{id}: Busca um pedido (ADMIN ou envolvidos no pedido).
+
+GET /pedidos/cliente/{clienteId}: Histórico de pedidos do cliente (ADMIN ou o próprio CLIENTE).
+
+GET /pedidos/restaurante/{restauranteId}: Pedidos recebidos pelo restaurante (ADMIN ou o próprio RESTAURANTE).
+
+PATCH /pedidos/{id}/status: Atualiza o status de um pedido.
+
+GET /relatorios/...: Endpoints de relatórios (ADMIN ou RESTAURANTE dono).
+
+GET /actuator/info (e outros): (Novo) Endpoints sensíveis do Actuator (ADMIN).
+
+<h2>🌟 Padronização de Respostas</h2>
+
+(Sua seção original foi mantida intacta)
+
+Sucesso (2xx) e Paginação
+Respostas de sucesso seguem um wrapper padrão (ApiResponseWrapper) e as respostas paginadas (PagedResponseWrapper) incluem metadados de paginação.
+
+Erros (4xx / 5xx)
+Erros de validação, autenticação e autorização seguem um padrão (ErrorResponse).
+
+Erro 401 (Unauthorized) - (Token ausente, inválido ou expirado)
+
+Erro 403 (Forbidden) - (Usuário não tem permissão)
+
+Erro 400 (Bad Request) - (Validação de DTO)
+
+<h2>🔐 Segurança (Spring Security + JWT)</h2>
+
+Autenticação Stateless: Autenticação via Bearer Token (JWT).
+
+Autorização Granular: Uso de @PreAuthorize para controle de acesso em nível de método, diferenciando ADMIN, RESTAURANTE e CLIENTE.
+
+Verificação de Propriedade: Lógica de serviço (ex: @produtoService.isOwner(#id)) que garante que um usuário RESTAURANTE só possa editar seus próprios recursos.
+
+Endpoints de Autenticação: POST /api/auth/login, POST /api/auth/register e GET /api/auth/me.
+
+Hashing de Senhas: Senhas são armazenadas usando BCryptPasswordEncoder.
+
+Tratamento de Exceções: Respostas 401 (Unauthorized) e 403 (Forbidden) customizadas e padronizadas.
+
+<h2>🛠️ Services (Regras de Negócio)</h2>
+
+AuthService: Implementa UserDetailsService para carregar usuários e gerencia o registro.
+
+RestauranteService: Cadastro, filtros, cálculo de taxa de entrega e verificação de propriedade (isOwner).
+
+ProdutoService: Gerenciamento de cardápio e verificação de propriedade (isOwner).
+
+PedidoService: Lógica complexa para criação de pedidos, cálculo de total, atualização de status e verificação de acesso (canAccess).
+
+RelatorioService: Geração de relatórios de vendas, produtos, clientes, etc.
+
+(Novo) MetricsService: Centraliza a criação e incremento de métricas de negócio (pedidos, receita).
+
+(Novo) AuditService: Centraliza o registro de logs de auditoria (quem fez o quê).
+
+(Novo) AlertService: Monitora métricas e saúde em tempo real para disparar alertas.
+
+<h2>📦 DTOs e Validações</h2>
+
+Auth DTOs: LoginRequest, LoginResponse (com token), RegisterRequest, UserResponse (DTO seguro, sem senha).
+
+Request DTOs: ClienteDTO, RestauranteDTO, ProdutoDTO, PedidoDTO, ItemPedidoDTO.
+
+Response DTOs: ClienteResponseDTO, RestauranteResponseDTO, ProdutoResponseDTO, PedidoResponseDTO, e wrappers de resposta (ApiResponseWrapper, PagedResponseWrapper).
+
+Validações: @Valid, @NotNull, @NotBlank, @Email, @Size, e validações customizadas.
+
+<h2>📋 Endpoints REST (Principais)</h2>
+
+A API é dividida em endpoints públicos (para consulta) e protegidos (que exigem autenticação e autorização). Para uma lista completa e interativa, acesse o Swagger UI.
+
+Base URL: http://localhost:8080/api
+
+<h3>🔑 Autenticação (Público)</h3>
+
+POST /auth/login: Autentica um usuário e retorna um token JWT.
+
+POST /auth/register: Registra um novo usuário (CLIENTE ou RESTAURANTE).
+
+<h3>🍽️ Endpoints Públicos (Consulta)</h3>
+
+GET /restaurantes: Lista restaurantes (com filtros).
+
+GET /restaurantes/{id}: Busca um restaurante por ID.
+
+GET /restaurantes/{id}/produtos: Lista o cardápio (produtos) de um restaurante.
+
+GET /produtos/{id}: Busca um produto por ID.
+
+POST /pedidos/calcular: Calcula o total de um pedido (sem salvar).
+
+GET /actuator/health: (Novo) Endpoint de saúde da aplicação.
+
+GET /dashboard: (Novo) Página web do dashboard de monitoramento.
+
+GET /dashboard/api/metrics: (Novo) API de métricas para o dashboard.
+
+<h3>🛡️ Endpoints Protegidos (Requerem Token)</h3>
+
+GET /auth/me: Retorna os dados do usuário logado.
+
+POST /restaurantes: Cadastra um novo restaurante (ADMIN).
+
+PUT /restaurantes/{id}: Atualiza um restaurante (ADMIN ou RESTAURANTE dono).
+
+POST /produtos: Cadastra um novo produto (ADMIN ou RESTAURANTE dono).
+
+PUT /produtos/{id}: Atualiza um produto (ADMIN ou RESTAURANTE dono).
+
+DELETE /produtos/{id}: Remove um produto (ADMIN ou RESTAURANTE dono).
+
+POST /pedidos: Cria um novo pedido (CLIENTE).
+
+GET /pedidos/{id}: Busca um pedido (ADMIN ou envolvidos no pedido).
+
+GET /pedidos/cliente/{clienteId}: Histórico de pedidos do cliente (ADMIN ou o próprio CLIENTE).
+
+GET /pedidos/restaurante/{restauranteId}: Pedidos recebidos pelo restaurante (ADMIN ou o próprio RESTAURANTE).
+
+PATCH /pedidos/{id}/status: Atualiza o status de um pedido.
+
+GET /relatorios/...: Endpoints de relatórios (ADMIN ou RESTAURANTE dono).
+
+GET /actuator/info (e outros): (Novo) Endpoints sensíveis do Actuator (ADMIN).
+
+<h2>🌟 Padronização de Respostas</h2>
+
+(Sua seção original foi mantida intacta)
+
+Sucesso (2xx) e Paginação
+Respostas de sucesso seguem um wrapper padrão (ApiResponseWrapper) e as respostas paginadas (PagedResponseWrapper) incluem metadados de paginação.
+
+Erros (4xx / 5xx)
+Erros de validação, autenticação e autorização seguem um padrão (ErrorResponse).
+
+Erro 401 (Unauthorized) - (Token ausente, inválido ou expirado)
+
+Erro 403 (Forbidden) - (Usuário não tem permissão)
+
+Erro 400 (Bad Request) - (Validação de DTO)
 <h2>🧪 Testes Automatizados</h2>
 
 Este projeto possui uma suíte robusta de testes automatizados (agora com 108+ testes) para garantir a qualidade e estabilidade do código, cobrindo:
