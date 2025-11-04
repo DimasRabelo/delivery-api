@@ -308,7 +308,13 @@ A estrutura do projeto foi atualizada com os novos pacotes de observabilidade:
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜CpfValidatorTest.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜HorarioFuncionamentoValidatorTest.java
  ┃ ┗ 📂resources
- ┃ ┃ ┗ 📜application-test.properties
+ ┃ ┣ 📂templates
+ ┃ ┃ ┗ 📜dashboard.html
+ ┃ ┣ 📜application.properties
+ ┃ ┣ 📜application.yml
+ ┃ ┣ 📜data.sql
+ ┃ ┗ 📜logback-spring.xml
+ ┃ ┃ ┗
 ```
 <h2>⚙️ Funcionalidades Implementadas</h2>
 
