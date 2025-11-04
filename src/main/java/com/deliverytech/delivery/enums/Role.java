@@ -31,8 +31,5 @@ public enum Role {
      */
     ENTREGADOR,
 
-     /**
-     * Role para acessar os endpoints do Spring Boot Actuator
-     */
-    ACTUATOR
+    
 }
