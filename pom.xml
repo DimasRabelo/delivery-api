@@ -63,7 +63,13 @@
             <version>0.11.5</version>
             <scope>runtime</scope>
         </dependency>
-
+        
+<!-- Banco MySQL -->
+         <dependency>
+          <groupId>com.mysql</groupId>
+          <artifactId>mysql-connector-j</artifactId>
+       </dependency>
+       
         <!-- Banco em memória para desenvolvimento/testes -->
         <dependency>
             <groupId>com.h2database</groupId>
@@ -221,23 +227,22 @@
             </plugin>
 
             <!-- Metadata do Git no build -->
-            <plugin>
-                <groupId>pl.project13.maven</groupId>
+           <plugin>
+            <groupId>pl.project13.maven</groupId>
                 <artifactId>git-commit-id-plugin</artifactId>
-                <version>4.9.10</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>revision</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <generateGitPropertiesFile>true</generateGitPropertiesFile>
-                    <generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename>
-                </configuration>
-            </plugin>
-
+                    <version>4.9.10</version>
+            <executions>
+                 <execution>
+             <goals>
+                <goal>revision</goal>
+             </goals>
+         </execution>
+            </executions>
+        <configuration>
+        <skip>true</skip> <generateGitPropertiesFile>true</generateGitPropertiesFile>
+        <generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename>
+        </configuration>
+    </plugin>       
             <!-- Plugin de testes -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
