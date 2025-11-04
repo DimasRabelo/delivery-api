@@ -265,12 +265,13 @@ A estrutura do projeto foi atualizada com os novos pacotes de observabilidade:
  ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜ValidTelefone.java
  ┃ ┃ ┃ ┃ ┃ ┣ 📜DeliveryApiApplication.java
  ┃ ┃ ┃ ┃ ┃ ┗ 📜GerarSenha.java
- ┃ ┗ 📂resources
- ┃ ┃ ┣ 📂templates
- ┃ ┃ ┃ ┗ 📜dashboard.html
- ┃ ┃ ┣ 📜application.properties
- ┃ ┃ ┣ 📜data.sql
- ┃ ┃ ┗ 📜logback-spring.xml
+ ┃ 📂resources
+ ┃ ┣ 📂templates
+ ┃ ┃ ┗ 📜dashboard.html
+ ┃ ┣ 📜application.properties
+ ┃ ┣ 📜application.yml
+ ┃ ┣ 📜data.sql
+ ┃ ┗ 📜logback-spring.xml
  ┣ 📂postman
  ┃ ┣ 📜DeliveryApi.postman_collection.json
  ┃ ┣ 📜DeliveryApiLogin.postman_collection.json
@@ -307,7 +308,7 @@ A estrutura do projeto foi atualizada com os novos pacotes de observabilidade:
  ┃ ┃ ┃ ┃ ┃ ┗ 📂validation
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜CpfValidatorTest.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜HorarioFuncionamentoValidatorTest.java
- ┃ ┗ 📂resources
+ ┃ ┗📂resources
  ┃ ┃ ┗ 📜application-test.properties
 ```
 <h2>⚙️ Funcionalidades Implementadas</h2>
