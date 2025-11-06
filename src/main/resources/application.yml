@@ -51,8 +51,7 @@ info:
     version: "1.0.0"
     encoding: "UTF-8"
   java:
-    version: "17"
+    version: "21.0.5"
   team:
     name: "Equipe de Desenvolvimento"
     email: "dev@delivery.com"
-

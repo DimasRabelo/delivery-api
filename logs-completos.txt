@@ -1,0 +1,710 @@
+Attaching to delivery-api-app, delivery-db, delivery-cache
+delivery-cache | 1:C 05 Nov 2025 23:56:16.156 # WARNING Memory overcommit must be enabled! Without it, a background save or replication may fail under low memory condition. Being disabled, it can also cause failures without low memory condition, see https://github.com/jemalloc/jemalloc/issues/1328. To fix this issue add 'vm.overcommit_memory = 1' to /etc/sysctl.conf and then reboot or run the command 'sysctl vm.overcommit_memory=1' for this to take effect.
+delivery-cache | 1:C 05 Nov 2025 23:56:16.157 * oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+delivery-cache | 1:C 05 Nov 2025 23:56:16.157 * Redis version=7.4.7, bits=64, commit=00000000, modified=0, pid=1, just started
+delivery-cache | 1:C 05 Nov 2025 23:56:16.157 # Warning: no config file specified, using the default config. In order to specify a config file use redis-server /path/to/redis.conf
+delivery-cache | 1:M 05 Nov 2025 23:56:16.157 * monotonic clock: POSIX clock_gettime
+delivery-cache | 1:M 05 Nov 2025 23:56:16.158 * Running mode=standalone, port=6379.
+delivery-cache | 1:M 05 Nov 2025 23:56:16.158 * Server initialized
+delivery-cache | 1:M 05 Nov 2025 23:56:16.159 * Ready to accept connections tcp
+delivery-api-app | 
+delivery-api-app |   .   ____          _            __ _ _
+delivery-api-app |  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+delivery-api-app | ( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+delivery-api-app |  \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+delivery-api-app |   '  |____| .__|_| |_|_| |_\__, | / / / /
+delivery-api-app |  =========|_|==============|___/=/_/_/_/
+delivery-api-app | 
+delivery-api-app |  :: Spring Boot ::                (v3.5.6)
+delivery-api-app | 
+delivery-api-app | 2025-11-06 00:03:05.365 [main] INFO  [] c.d.delivery.DeliveryApiApplication - Starting DeliveryApiApplication v0.0.1-SNAPSHOT using Java 21.0.8 with PID 1 (/app/app.jar started by root in /app)
+delivery-api-app | 2025-11-06 00:03:05.369 [main] DEBUG [] c.d.delivery.DeliveryApiApplication - Running with Spring Boot v3.5.6, Spring v6.2.11
+delivery-api-app | 2025-11-06 00:03:05.371 [main] INFO  [] c.d.delivery.DeliveryApiApplication - The following 1 profile is active: "docker"
+delivery-api-app | 2025-11-06 00:03:09.995 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+delivery-api-app | 2025-11-06 00:03:09.998 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+delivery-api-app | 2025-11-06 00:03:10.689 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 589 ms. Found 5 JPA repository interfaces.
+delivery-api-app | 2025-11-06 00:03:10.739 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+delivery-api-app | 2025-11-06 00:03:10.742 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+delivery-api-app | 2025-11-06 00:03:10.787 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.deliverytech.delivery.repository.ClienteRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+delivery-api-app | 2025-11-06 00:03:10.789 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.deliverytech.delivery.repository.PedidoRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+delivery-api-app | 2025-11-06 00:03:10.790 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.deliverytech.delivery.repository.ProdutoRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+delivery-api-app | 2025-11-06 00:03:10.792 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.deliverytech.delivery.repository.RestauranteRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+delivery-api-app | 2025-11-06 00:03:10.795 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.deliverytech.delivery.repository.auth.UsuarioRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+delivery-api-app | 2025-11-06 00:03:10.796 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 25 ms. Found 0 Redis repository interfaces.
+delivery-api-app | 2025-11-06 00:03:13.117 [main] INFO  [] o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8080 (http)
+delivery-api-app | 2025-11-06 00:03:13.174 [main] INFO  [] o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8080"]
+delivery-api-app | 2025-11-06 00:03:13.183 [main] INFO  [] o.a.catalina.core.StandardService - Starting service [Tomcat]
+delivery-api-app | 2025-11-06 00:03:13.184 [main] INFO  [] o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.46]
+delivery-api-app | 2025-11-06 00:03:13.299 [main] INFO  [] o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+delivery-api-app | 2025-11-06 00:03:13.300 [main] INFO  [] o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 7737 ms
+delivery-api-app | 2025-11-06 00:03:15.947 [main] DEBUG [] c.d.d.s.jwt.JwtAuthenticationFilter - Filter 'jwtAuthenticationFilter' configured for use
+delivery-api-app | 2025-11-06 00:03:15.950 [main] DEBUG [] o.s.w.f.ServerHttpObservationFilter - Filter 'webMvcObservationFilter' configured for use
+delivery-api-app | 2025-11-06 00:03:15.950 [main] DEBUG [] o.s.w.s.r.ResourceUrlEncodingFilter - Filter 'resourceUrlEncodingFilter' configured for use
+delivery-api-app | 2025-11-06 00:03:18.087 [main] INFO  [] o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+delivery-api-app | 2025-11-06 00:03:18.167 [main] INFO  [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+delivery-api-app | 2025-11-06 00:03:18.823 [main] INFO  [] com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@372e972d
+delivery-api-app | 2025-11-06 00:03:18.826 [main] INFO  [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+delivery-api-app | 2025-11-06 00:03:18.997 [main] WARN  [] org.hibernate.orm.deprecation - HHH90000025: MySQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+delivery-api-app | 2025-11-06 00:03:21.571 [main] DEBUG [] org.hibernate.SQL - 
+delivery-api-app |     create table cliente (
+delivery-api-app |         id bigint not null auto_increment,
+delivery-api-app |         ativo bit not null,
+delivery-api-app |         cpf varchar(11) not null,
+delivery-api-app |         data_cadastro datetime(6) not null,
+delivery-api-app |         email varchar(100) not null,
+delivery-api-app |         endereco varchar(255),
+delivery-api-app |         nome varchar(100) not null,
+delivery-api-app |         telefone varchar(15),
+delivery-api-app |         primary key (id)
+delivery-api-app |     ) engine=InnoDB
+delivery-api-app | Hibernate: 
+delivery-api-app |     create table cliente (
+delivery-api-app |         id bigint not null auto_increment,
+delivery-api-app |         ativo bit not null,
+delivery-api-app |         cpf varchar(11) not null,
+delivery-api-app |         data_cadastro datetime(6) not null,
+delivery-api-app |         email varchar(100) not null,
+delivery-api-app |         endereco varchar(255),
+delivery-api-app |         nome varchar(100) not null,
+delivery-api-app |         telefone varchar(15),
+delivery-api-app |         primary key (id)
+delivery-api-app |     ) engine=InnoDB
+delivery-api-app | 2025-11-06 00:03:23.818 [main] DEBUG [] org.hibernate.SQL - 
+delivery-api-app |     create table itens_pedido (
+delivery-api-app |         id bigint not null auto_increment,
+delivery-api-app |         preco_unitario decimal(38,2) not null,
+delivery-api-app |         quantidade integer not null check (quantidade>=1),
+delivery-api-app |         subtotal decimal(38,2) not null,
+delivery-api-app |         pedido_id bigint not null,
+delivery-api-app |         produto_id bigint not null,
+delivery-api-app |         primary key (id)
+delivery-api-app |     ) engine=InnoDB
+delivery-api-app | Hibernate: 
+delivery-api-app |     create table itens_pedido (
+delivery-api-app |         id bigint not null auto_increment,
+delivery-api-app |         preco_unitario decimal(38,2) not null,
+delivery-api-app |         quantidade integer not null check (quantidade>=1),
+delivery-api-app |         subtotal decimal(38,2) not null,
+delivery-api-app |         pedido_id bigint not null,
+delivery-db | 2025-11-05 23:56:16+00:00 [Note] [Entrypoint]: Entrypoint script for MySQL Server 8.0.44-1.el9 started.
+delivery-db | 2025-11-05 23:56:16+00:00 [Note] [Entrypoint]: Switching to dedicated user 'mysql'
+delivery-db | 2025-11-05 23:56:16+00:00 [Note] [Entrypoint]: Entrypoint script for MySQL Server 8.0.44-1.el9 started.
+delivery-db | 2025-11-05 23:56:16+00:00 [Note] [Entrypoint]: Initializing database files
+delivery-db | 2025-11-05T23:56:16.642889Z 0 [Warning] [MY-011068] [Server] The syntax '--skip-host-cache' is deprecated and will be removed in a future release. Please use SET GLOBAL host_cache_size=0 instead.
+delivery-db | 2025-11-05T23:56:16.643017Z 0 [System] [MY-013169] [Server] /usr/sbin/mysqld (mysqld 8.0.44) initializing of server in progress as process 80
+delivery-db | 2025-11-05T23:56:16.742797Z 1 [System] [MY-013576] [InnoDB] InnoDB initialization has started.
+delivery-db | 2025-11-05T23:56:31.055637Z 1 [System] [MY-013577] [InnoDB] InnoDB initialization has ended.
+delivery-db | 2025-11-05T23:57:01.228642Z 6 [Warning] [MY-010453] [Server] root@localhost is created with an empty password ! Please consider switching off the --initialize-insecure option.
+delivery-db | 2025-11-05 23:57:59+00:00 [Note] [Entrypoint]: Database files initialized
+delivery-db | 2025-11-05 23:57:59+00:00 [Note] [Entrypoint]: Starting temporary server
+delivery-db | 2025-11-05T23:57:59.824232Z 0 [Warning] [MY-011068] [Server] The syntax '--skip-host-cache' is deprecated and will be removed in a future release. Please use SET GLOBAL host_cache_size=0 instead.
+delivery-db | 2025-11-05T23:57:59.825869Z 0 [System] [MY-010116] [Server] /usr/sbin/mysqld (mysqld 8.0.44) starting as process 185
+delivery-db | 2025-11-05T23:57:59.869698Z 1 [System] [MY-013576] [InnoDB] InnoDB initialization has started.
+delivery-db | 2025-11-05T23:58:02.649719Z 1 [System] [MY-013577] [InnoDB] InnoDB initialization has ended.
+delivery-db | 2025-11-05T23:58:05.198613Z 0 [Warning] [MY-010068] [Server] CA certificate ca.pem is self signed.
+delivery-db | 2025-11-05T23:58:05.198660Z 0 [System] [MY-013602] [Server] Channel mysql_main configured to support TLS. Encrypted connections are now supported for this channel.
+delivery-db | 2025-11-05T23:58:05.415825Z 0 [Warning] [MY-011810] [Server] Insecure configuration for --pid-file: Location '/var/run/mysqld' in the path is accessible to all OS users. Consider choosing a different directory.
+delivery-api-app |         produto_id bigint not null,
+delivery-api-app |         primary key (id)
+delivery-api-app |     ) engine=InnoDB
+delivery-api-app | 2025-11-06 00:03:25.020 [main] DEBUG [] org.hibernate.SQL - 
+delivery-api-app |     create table pedido (
+delivery-api-app |         id bigint not null auto_increment,
+delivery-api-app |         data_pedido datetime(6),
+delivery-api-app |         endereco_entrega varchar(255),
+delivery-api-app |         numero_pedido varchar(255) not null,
+delivery-api-app |         observacoes TEXT,
+delivery-api-app |         status enum ('CANCELADO','CONFIRMADO','ENTREGUE','PENDENTE','PREPARANDO','SAIU_PARA_ENTREGA'),
+delivery-api-app |         subtotal decimal(38,2),
+delivery-api-app |         taxa_entrega decimal(38,2),
+delivery-api-app |         valor_total decimal(38,2),
+delivery-api-app |         cliente_id bigint not null,
+delivery-api-app |         restaurante_id bigint not null,
+delivery-api-app |         primary key (id)
+delivery-api-app |     ) engine=InnoDB
+delivery-api-app | Hibernate: 
+delivery-api-app |     create table pedido (
+delivery-api-app |         id bigint not null auto_increment,
+delivery-api-app |         data_pedido datetime(6),
+delivery-api-app |         endereco_entrega varchar(255),
+delivery-api-app |         numero_pedido varchar(255) not null,
+delivery-api-app |         observacoes TEXT,
+delivery-api-app |         status enum ('CANCELADO','CONFIRMADO','ENTREGUE','PENDENTE','PREPARANDO','SAIU_PARA_ENTREGA'),
+delivery-api-app |         subtotal decimal(38,2),
+delivery-api-app |         taxa_entrega decimal(38,2),
+delivery-api-app |         valor_total decimal(38,2),
+delivery-api-app |         cliente_id bigint not null,
+delivery-api-app |         restaurante_id bigint not null,
+delivery-api-app |         primary key (id)
+delivery-api-app |     ) engine=InnoDB
+delivery-api-app | 2025-11-06 00:03:25.777 [main] DEBUG [] org.hibernate.SQL - 
+delivery-api-app |     create table produto (
+delivery-api-app |         id bigint not null auto_increment,
+delivery-api-app |         categoria varchar(255),
+delivery-api-app |         descricao varchar(255),
+delivery-api-app |         disponivel bit,
+delivery-api-app |         estoque integer not null,
+delivery-api-app |         nome varchar(100) not null,
+delivery-api-app |         preco decimal(38,2) not null,
+delivery-api-app |         restaurante_id bigint,
+delivery-api-app |         primary key (id)
+delivery-api-app |     ) engine=InnoDB
+delivery-api-app | Hibernate: 
+delivery-api-app |     create table produto (
+delivery-api-app |         id bigint not null auto_increment,
+delivery-api-app |         categoria varchar(255),
+delivery-api-app |         descricao varchar(255),
+delivery-api-app |         disponivel bit,
+delivery-api-app |         estoque integer not null,
+delivery-api-app |         nome varchar(100) not null,
+delivery-api-app |         preco decimal(38,2) not null,
+delivery-api-app |         restaurante_id bigint,
+delivery-api-app |         primary key (id)
+delivery-api-app |     ) engine=InnoDB
+delivery-api-app | 2025-11-06 00:03:26.624 [main] DEBUG [] org.hibernate.SQL - 
+delivery-api-app |     create table restaurante (
+delivery-api-app |         id bigint not null auto_increment,
+delivery-api-app |         ativo bit,
+delivery-api-app |         avaliacao decimal(3,2),
+delivery-api-app |         categoria varchar(255) not null,
+delivery-api-app |         endereco varchar(255) not null,
+delivery-api-app |         horario_funcionamento varchar(255),
+delivery-api-app |         nome varchar(100) not null,
+delivery-api-app |         taxa_entrega decimal(38,2),
+delivery-api-app |         telefone varchar(255) not null,
+delivery-api-app |         tempo_entrega integer,
+delivery-api-app |         primary key (id)
+delivery-api-app |     ) engine=InnoDB
+delivery-api-app | Hibernate: 
+delivery-api-app |     create table restaurante (
+delivery-api-app |         id bigint not null auto_increment,
+delivery-api-app |         ativo bit,
+delivery-api-app |         avaliacao decimal(3,2),
+delivery-api-app |         categoria varchar(255) not null,
+delivery-api-app |         endereco varchar(255) not null,
+delivery-api-app |         horario_funcionamento varchar(255),
+delivery-api-app |         nome varchar(100) not null,
+delivery-api-app |         taxa_entrega decimal(38,2),
+delivery-api-app |         telefone varchar(255) not null,
+delivery-api-app |         tempo_entrega integer,
+delivery-api-app |         primary key (id)
+delivery-api-app |     ) engine=InnoDB
+delivery-api-app | 2025-11-06 00:03:27.337 [main] DEBUG [] org.hibernate.SQL - 
+delivery-api-app |     create table usuario (
+delivery-api-app |         id bigint not null auto_increment,
+delivery-api-app |         ativo bit not null,
+delivery-api-app |         data_criacao datetime(6) not null,
+delivery-api-app |         email varchar(100) not null,
+delivery-api-app |         nome varchar(100) not null,
+delivery-api-app |         restaurante_id bigint,
+delivery-api-app |         role enum ('ADMIN','CLIENTE','ENTREGADOR','RESTAURANTE') not null,
+delivery-api-app |         senha varchar(255) not null,
+delivery-api-app |         primary key (id)
+delivery-api-app |     ) engine=InnoDB
+delivery-api-app | Hibernate: 
+delivery-api-app |     create table usuario (
+delivery-api-app |         id bigint not null auto_increment,
+delivery-api-app |         ativo bit not null,
+delivery-api-app |         data_criacao datetime(6) not null,
+delivery-api-app |         email varchar(100) not null,
+delivery-api-app |         nome varchar(100) not null,
+delivery-api-app |         restaurante_id bigint,
+delivery-api-app |         role enum ('ADMIN','CLIENTE','ENTREGADOR','RESTAURANTE') not null,
+delivery-api-app |         senha varchar(255) not null,
+delivery-api-app |         primary key (id)
+delivery-api-app |     ) engine=InnoDB
+delivery-api-app | 2025-11-06 00:03:28.273 [main] DEBUG [] org.hibernate.SQL - 
+delivery-api-app |     alter table cliente 
+delivery-api-app |        drop index UKr1u8010d60num5vc8fp0q1j2a
+delivery-api-app | Hibernate: 
+delivery-api-app |     alter table cliente 
+delivery-api-app |        drop index UKr1u8010d60num5vc8fp0q1j2a
+delivery-api-app | 2025-11-06 00:03:28.783 [main] DEBUG [] org.hibernate.SQL - 
+delivery-api-app |     alter table cliente 
+delivery-api-app |        add constraint UKr1u8010d60num5vc8fp0q1j2a unique (cpf)
+delivery-api-app | Hibernate: 
+delivery-api-app |     alter table cliente 
+delivery-api-app |        add constraint UKr1u8010d60num5vc8fp0q1j2a unique (cpf)
+delivery-api-app | 2025-11-06 00:03:29.564 [main] DEBUG [] org.hibernate.SQL - 
+delivery-api-app |     alter table cliente 
+delivery-api-app |        drop index UKcmxo70m08n43599l3h0h07cc6
+delivery-api-app | Hibernate: 
+delivery-api-app |     alter table cliente 
+delivery-api-app |        drop index UKcmxo70m08n43599l3h0h07cc6
+delivery-api-app | 2025-11-06 00:03:29.567 [main] DEBUG [] org.hibernate.SQL - 
+delivery-api-app |     alter table cliente 
+delivery-api-app |        add constraint UKcmxo70m08n43599l3h0h07cc6 unique (email)
+delivery-api-app | Hibernate: 
+delivery-api-app |     alter table cliente 
+delivery-api-app |        add constraint UKcmxo70m08n43599l3h0h07cc6 unique (email)
+delivery-api-app | 2025-11-06 00:03:30.232 [main] DEBUG [] org.hibernate.SQL - 
+delivery-api-app |     alter table pedido 
+delivery-api-app |        drop index UKj0l80ge0fmklge54qlnx8ovur
+delivery-api-app | Hibernate: 
+delivery-api-app |     alter table pedido 
+delivery-api-app |        drop index UKj0l80ge0fmklge54qlnx8ovur
+delivery-api-app | 2025-11-06 00:03:30.236 [main] DEBUG [] org.hibernate.SQL - 
+delivery-api-app |     alter table pedido 
+delivery-api-app |        add constraint UKj0l80ge0fmklge54qlnx8ovur unique (numero_pedido)
+delivery-api-app | Hibernate: 
+delivery-api-app |     alter table pedido 
+delivery-api-app |        add constraint UKj0l80ge0fmklge54qlnx8ovur unique (numero_pedido)
+delivery-api-app | 2025-11-06 00:03:30.723 [main] DEBUG [] org.hibernate.SQL - 
+delivery-api-app |     alter table usuario 
+delivery-api-app |        drop index UK5171l57faosmj8myawaucatdw
+delivery-api-app | Hibernate: 
+delivery-api-app |     alter table usuario 
+delivery-api-app |        drop index UK5171l57faosmj8myawaucatdw
+delivery-api-app | 2025-11-06 00:03:30.732 [main] DEBUG [] org.hibernate.SQL - 
+delivery-api-app |     alter table usuario 
+delivery-api-app |        add constraint UK5171l57faosmj8myawaucatdw unique (email)
+delivery-api-app | Hibernate: 
+delivery-api-app |     alter table usuario 
+delivery-api-app |        add constraint UK5171l57faosmj8myawaucatdw unique (email)
+delivery-api-app | 2025-11-06 00:03:31.290 [main] DEBUG [] org.hibernate.SQL - 
+delivery-api-app |     alter table itens_pedido 
+delivery-api-app |        add constraint FKdrlbqwi9u15b2nnaj826e229x 
+delivery-api-app |        foreign key (pedido_id) 
+delivery-api-app |        references pedido (id)
+delivery-api-app | Hibernate: 
+delivery-api-app |     alter table itens_pedido 
+delivery-api-app |        add constraint FKdrlbqwi9u15b2nnaj826e229x 
+delivery-api-app |        foreign key (pedido_id) 
+delivery-api-app |        references pedido (id)
+delivery-api-app | 2025-11-06 00:03:33.653 [main] DEBUG [] org.hibernate.SQL - 
+delivery-api-app |     alter table itens_pedido 
+delivery-api-app |        add constraint FK3uo2duj20r2i4mwplv4vb26u6 
+delivery-api-app |        foreign key (produto_id) 
+delivery-api-app |        references produto (id)
+delivery-api-app | Hibernate: 
+delivery-api-app |     alter table itens_pedido 
+delivery-api-app |        add constraint FK3uo2duj20r2i4mwplv4vb26u6 
+delivery-api-app |        foreign key (produto_id) 
+delivery-api-app |        references produto (id)
+delivery-api-app | 2025-11-06 00:03:36.714 [main] DEBUG [] org.hibernate.SQL - 
+delivery-api-app |     alter table pedido 
+delivery-api-app |        add constraint FK30s8j2ktpay6of18lbyqn3632 
+delivery-api-app |        foreign key (cliente_id) 
+delivery-api-app |        references cliente (id)
+delivery-api-app | Hibernate: 
+delivery-api-app |     alter table pedido 
+delivery-api-app |        add constraint FK30s8j2ktpay6of18lbyqn3632 
+delivery-api-app |        foreign key (cliente_id) 
+delivery-api-app |        references cliente (id)
+delivery-api-app | 2025-11-06 00:03:39.620 [main] DEBUG [] org.hibernate.SQL - 
+delivery-api-app |     alter table pedido 
+delivery-api-app |        add constraint FK3eud5cqmgsnltyk704hu3qj71 
+delivery-api-app |        foreign key (restaurante_id) 
+delivery-api-app |        references restaurante (id)
+delivery-api-app | Hibernate: 
+delivery-api-app |     alter table pedido 
+delivery-api-app |        add constraint FK3eud5cqmgsnltyk704hu3qj71 
+delivery-api-app |        foreign key (restaurante_id) 
+delivery-api-app |        references restaurante (id)
+delivery-api-app | 2025-11-06 00:03:42.237 [main] DEBUG [] org.hibernate.SQL - 
+delivery-api-app |     alter table produto 
+delivery-api-app |        add constraint FKb9jhjyghjcn25guim7q4pt8qx 
+delivery-api-app |        foreign key (restaurante_id) 
+delivery-api-app |        references restaurante (id)
+delivery-api-app | Hibernate: 
+delivery-api-app |     alter table produto 
+delivery-api-app |        add constraint FKb9jhjyghjcn25guim7q4pt8qx 
+delivery-api-app |        foreign key (restaurante_id) 
+delivery-api-app |        references restaurante (id)
+delivery-api-app | 2025-11-06 00:03:45.138 [main] INFO  [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+delivery-api-app | 2025-11-06 00:03:45.829 [main] INFO  [] o.s.d.j.r.query.QueryEnhancerFactory - Hibernate is in classpath; If applicable, HQL parser will be used.
+delivery-api-app | 2025-11-06 00:03:48.713 [main] INFO  [] o.s.s.c.a.a.c.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer - Global AuthenticationManager configured with UserDetailsService bean with name authService
+delivery-api-app | 2025-11-06 00:03:49.944 [main] DEBUG [] o.s.w.s.m.m.a.RequestMappingHandlerMapping - 52 mappings in 'requestMappingHandlerMapping'
+delivery-api-app | 2025-11-06 00:03:50.116 [main] DEBUG [] o.s.w.s.h.SimpleUrlHandlerMapping - Patterns [/webjars/**, /**, /swagger-ui*/*swagger-initializer.js, /swagger-ui*/**] in 'resourceHandlerMapping'
+delivery-api-app | 2025-11-06 00:03:50.577 [main] INFO  [] o.s.b.a.e.web.EndpointLinksResolver - Exposing 6 endpoints beneath base path '/actuator'
+delivery-api-app | 2025-11-06 00:03:50.850 [main] DEBUG [] o.s.s.web.DefaultSecurityFilterChain - Will secure any request with filters: DisableEncodeUrlFilter, WebAsyncManagerIntegrationFilter, SecurityContextHolderFilter, HeaderWriterFilter, CorsFilter, LogoutFilter, JwtAuthenticationFilter, RequestCacheAwareFilter, SecurityContextHolderAwareRequestFilter, AnonymousAuthenticationFilter, SessionManagementFilter, ExceptionTranslationFilter, AuthorizationFilter
+delivery-api-app | 2025-11-06 00:03:51.002 [main] DEBUG [] o.s.w.s.m.m.a.RequestMappingHandlerAdapter - ControllerAdvice beans: 0 @ModelAttribute, 0 @InitBinder, 1 RequestBodyAdvice, 1 ResponseBodyAdvice
+delivery-api-app | 2025-11-06 00:03:51.475 [main] DEBUG [] o.s.w.s.m.m.a.ExceptionHandlerExceptionResolver - ControllerAdvice beans: 2 @ExceptionHandler, 1 ResponseBodyAdvice
+delivery-api-app | 2025-11-06 00:03:53.438 [main] INFO  [] o.s.b.a.h.H2ConsoleAutoConfiguration - H2 console available at '/h2-console'. Database available at 'jdbc:mysql://db:3306/deliverydb?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC'
+delivery-api-app | 2025-11-06 00:03:54.599 [main] INFO  [] o.a.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8080"]
+delivery-api-app | 2025-11-06 00:03:54.629 [main] INFO  [] o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 8080 (http) with context path '/'
+delivery-api-app | 2025-11-06 00:03:54.683 [main] INFO  [] c.d.delivery.DeliveryApiApplication - Started DeliveryApiApplication in 52.235 seconds (process running for 57.157)
+delivery-api-app | 2025-11-06 00:03:54.719 [scheduling-1] INFO  [] c.d.d.service.alert.AlertService - [ALERTS] Verificando métricas e saúde do sistema...
+delivery-api-app | 2025-11-06 00:03:54.771 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - HTTP GET https://httpbin.org/status/200
+delivery-api-app | 2025-11-06 00:03:54.837 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Accept=[text/plain, application/json, application/yaml, application/*+json, */*]
+delivery-api-app | 2025-11-06 00:03:57.052 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Response 200 OK
+delivery-api-app | 2025-11-06 00:03:58.097 [AsyncReporter{ZipkinHttpClientSender{http://localhost:9411/api/v2/spans}}] WARN  [] z.r.i.AsyncReporter$BoundedAsyncReporter - Spans were dropped due to exceptions. All subsequent errors will be logged at FINE level.
+delivery-api-app | 2025-11-06 00:03:58.098 [AsyncReporter{ZipkinHttpClientSender{http://localhost:9411/api/v2/spans}}] WARN  [] z.r.i.AsyncReporter$BoundedAsyncReporter - Dropped 2 spans due to ConnectException()
+delivery-api-app | java.net.ConnectException: null
+delivery-api-app | 	at java.net.http/jdk.internal.net.http.HttpClientImpl.send(Unknown Source)
+delivery-api-app | 	at java.net.http/jdk.internal.net.http.HttpClientFacade.send(Unknown Source)
+delivery-api-app | 	at org.springframework.boot.actuate.autoconfigure.tracing.zipkin.ZipkinHttpClientSender.postSpans(ZipkinHttpClientSender.java:60)
+delivery-api-app | 	at org.springframework.boot.actuate.autoconfigure.tracing.zipkin.HttpSender.postSpans(HttpSender.java:69)
+delivery-api-app | 	at org.springframework.boot.actuate.autoconfigure.tracing.zipkin.HttpSender.postSpans(HttpSender.java:41)
+delivery-api-app | 	at zipkin2.reporter.BaseHttpSender.send(BaseHttpSender.java:123)
+delivery-api-app | 	at zipkin2.reporter.internal.AsyncReporter$BoundedAsyncReporter.flush(AsyncReporter.java:266)
+delivery-api-app | 	at zipkin2.reporter.internal.AsyncReporter$Flusher.run(AsyncReporter.java:352)
+delivery-api-app | 	at java.base/java.lang.Thread.run(Unknown Source)
+delivery-api-app | Caused by: java.net.ConnectException: null
+delivery-api-app | 	at java.net.http/jdk.internal.net.http.common.Utils.toConnectException(Unknown Source)
+delivery-api-app | 	at java.net.http/jdk.internal.net.http.PlainHttpConnection.connectAsync(Unknown Source)
+delivery-api-app | 	at java.net.http/jdk.internal.net.http.PlainHttpConnection.checkRetryConnect(Unknown Source)
+delivery-api-app | 	at java.net.http/jdk.internal.net.http.PlainHttpConnection.lambda$connectAsync$2(Unknown Source)
+delivery-api-app | 	at java.base/java.util.concurrent.CompletableFuture.uniHandle(Unknown Source)
+delivery-api-app | 	at java.base/java.util.concurrent.CompletableFuture$UniHandle.tryFire(Unknown Source)
+delivery-api-app | 	at java.base/java.util.concurrent.CompletableFuture.postComplete(Unknown Source)
+delivery-api-app | 	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.run(Unknown Source)
+delivery-api-app | 	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+delivery-api-app | 	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+delivery-api-app | 	... 1 common frames omitted
+delivery-api-app | Caused by: java.nio.channels.ClosedChannelException: null
+delivery-api-app | 	at java.base/sun.nio.ch.SocketChannelImpl.ensureOpen(Unknown Source)
+delivery-api-app | 	at java.base/sun.nio.ch.SocketChannelImpl.beginConnect(Unknown Source)
+delivery-api-app | 	at java.base/sun.nio.ch.SocketChannelImpl.connect(Unknown Source)
+delivery-api-app | 	at java.net.http/jdk.internal.net.http.PlainHttpConnection.lambda$connectAsync$1(Unknown Source)
+delivery-api-app | 	at java.base/java.security.AccessController.doPrivileged(Unknown Source)
+delivery-api-app | 	... 10 common frames omitted
+delivery-api-app | 2025-11-06 00:04:24.679 [scheduling-1] INFO  [] c.d.d.service.alert.AlertService - [ALERTS] Verificando métricas e saúde do sistema...
+delivery-api-app | 2025-11-06 00:04:24.681 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - HTTP GET https://httpbin.org/status/200
+delivery-api-app | 2025-11-06 00:04:24.683 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Accept=[text/plain, application/json, application/yaml, application/*+json, */*]
+delivery-api-app | 2025-11-06 00:04:26.897 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Response 200 OK
+delivery-api-app | 2025-11-06 00:04:40.121 [http-nio-8080-exec-2] INFO  [] o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+delivery-api-app | 2025-11-06 00:04:40.122 [http-nio-8080-exec-2] INFO  [] o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+delivery-api-app | 2025-11-06 00:04:40.122 [http-nio-8080-exec-2] DEBUG [] o.s.web.servlet.DispatcherServlet - Detected StandardServletMultipartResolver
+delivery-api-app | 2025-11-06 00:04:40.122 [http-nio-8080-exec-2] DEBUG [] o.s.web.servlet.DispatcherServlet - Detected AcceptHeaderLocaleResolver
+delivery-api-app | 2025-11-06 00:04:40.123 [http-nio-8080-exec-2] DEBUG [] o.s.web.servlet.DispatcherServlet - Detected FixedThemeResolver
+delivery-api-app | 2025-11-06 00:04:40.125 [http-nio-8080-exec-2] DEBUG [] o.s.web.servlet.DispatcherServlet - Detected org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator@5c25207
+delivery-api-app | 2025-11-06 00:04:40.127 [http-nio-8080-exec-2] DEBUG [] o.s.web.servlet.DispatcherServlet - Detected org.springframework.web.servlet.support.SessionFlashMapManager@41758fc9
+delivery-api-app | 2025-11-06 00:04:40.139 [http-nio-8080-exec-2] DEBUG [] o.s.web.servlet.DispatcherServlet - enableLoggingRequestDetails='false': request parameters and headers will be masked to prevent unsafe logging of potentially sensitive data
+delivery-api-app | 2025-11-06 00:04:40.140 [http-nio-8080-exec-2] INFO  [] o.s.web.servlet.DispatcherServlet - Completed initialization in 18 ms
+delivery-api-app | 2025-11-06 00:04:40.229 [http-nio-8080-exec-2] DEBUG [] o.s.security.web.FilterChainProxy - Securing GET /actuator/health
+delivery-api-app | 2025-11-06 00:04:40.316 [http-nio-8080-exec-2] WARN  [] c.d.d.s.jwt.JwtAuthenticationFilter - Header 'Authorization' ausente ou mal formatado
+delivery-api-app | 2025-11-06 00:04:40.326 [http-nio-8080-exec-2] DEBUG [] o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+delivery-api-app | 2025-11-06 00:04:40.369 [http-nio-8080-exec-2] DEBUG [] o.s.security.web.FilterChainProxy - Secured GET /actuator/health
+delivery-api-app | 2025-11-06 00:04:40.378 [http-nio-8080-exec-2] DEBUG [2acc63a5035d447e] o.s.web.servlet.DispatcherServlet - GET "/actuator/health", parameters={}
+delivery-api-app | 2025-11-06 00:04:40.507 [http-nio-8080-exec-2] DEBUG [2acc63a5035d447e] o.s.w.s.m.m.a.RequestResponseBodyMethodProcessor - Read "application/json;charset=UTF-8" to [{email=admin@delivery.com, senha=123456}]
+delivery-api-app | 2025-11-06 00:04:40.579 [http-nio-8080-exec-2] DEBUG [2acc63a5035d447e] o.s.web.client.RestTemplate - HTTP GET https://httpbin.org/status/200
+delivery-api-app | 2025-11-06 00:04:40.580 [http-nio-8080-exec-2] DEBUG [2acc63a5035d447e] o.s.web.client.RestTemplate - Accept=[text/plain, application/json, application/yaml, application/*+json, */*]
+delivery-api-app | 2025-11-06 00:04:43.106 [http-nio-8080-exec-2] DEBUG [2acc63a5035d447e] o.s.web.client.RestTemplate - Response 200 OK
+delivery-api-app | 2025-11-06 00:04:43.181 [http-nio-8080-exec-2] DEBUG [2acc63a5035d447e] o.s.w.s.m.m.a.HttpEntityMethodProcessor - Using 'application/vnd.spring-boot.actuator.v3+json', given [*/*] and supported [application/vnd.spring-boot.actuator.v3+json, application/vnd.spring-boot.actuator.v2+json, application/json]
+delivery-api-app | 2025-11-06 00:04:43.409 [http-nio-8080-exec-2] DEBUG [2acc63a5035d447e] o.s.w.s.m.m.a.HttpEntityMethodProcessor - Writing [org.springframework.boot.actuate.health.SystemHealth@51c26111]
+delivery-api-app | 2025-11-06 00:04:43.509 [http-nio-8080-exec-2] DEBUG [2acc63a5035d447e] o.s.web.servlet.DispatcherServlet - Completed 200 OK
+delivery-api-app | 2025-11-06 00:04:54.679 [scheduling-1] INFO  [] c.d.d.service.alert.AlertService - [ALERTS] Verificando métricas e saúde do sistema...
+delivery-api-app | 2025-11-06 00:04:54.683 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - HTTP GET https://httpbin.org/status/200
+delivery-api-app | 2025-11-06 00:04:54.685 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Accept=[text/plain, application/json, application/yaml, application/*+json, */*]
+delivery-api-app | 2025-11-06 00:04:56.325 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Response 200 OK
+delivery-api-app | 2025-11-06 00:05:23.481 [http-nio-8080-exec-3] DEBUG [] o.s.security.web.FilterChainProxy - Securing GET /actuator/health
+delivery-api-app | 2025-11-06 00:05:23.483 [http-nio-8080-exec-3] WARN  [] c.d.d.s.jwt.JwtAuthenticationFilter - Header 'Authorization' ausente ou mal formatado
+delivery-api-app | 2025-11-06 00:05:23.484 [http-nio-8080-exec-3] DEBUG [] o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+delivery-api-app | 2025-11-06 00:05:23.486 [http-nio-8080-exec-3] DEBUG [] o.s.security.web.FilterChainProxy - Secured GET /actuator/health
+delivery-api-app | 2025-11-06 00:05:23.487 [http-nio-8080-exec-3] DEBUG [f4777b517c5e407c] o.s.web.servlet.DispatcherServlet - GET "/actuator/health", parameters={}
+delivery-api-app | 2025-11-06 00:05:23.490 [http-nio-8080-exec-3] DEBUG [f4777b517c5e407c] o.s.w.s.m.m.a.RequestResponseBodyMethodProcessor - Read "application/octet-stream" to []
+delivery-api-app | 2025-11-06 00:05:23.493 [http-nio-8080-exec-3] DEBUG [f4777b517c5e407c] o.s.web.client.RestTemplate - HTTP GET https://httpbin.org/status/200
+delivery-api-app | 2025-11-06 00:05:23.494 [http-nio-8080-exec-3] DEBUG [f4777b517c5e407c] o.s.web.client.RestTemplate - Accept=[text/plain, application/json, application/yaml, application/*+json, */*]
+delivery-api-app | 2025-11-06 00:05:24.679 [scheduling-1] INFO  [] c.d.d.service.alert.AlertService - [ALERTS] Verificando métricas e saúde do sistema...
+delivery-api-app | 2025-11-06 00:05:24.681 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - HTTP GET https://httpbin.org/status/200
+delivery-api-app | 2025-11-06 00:05:24.682 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Accept=[text/plain, application/json, application/yaml, application/*+json, */*]
+delivery-api-app | 2025-11-06 00:05:26.495 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Response 200 OK
+delivery-api-app | 2025-11-06 00:05:32.713 [http-nio-8080-exec-3] DEBUG [f4777b517c5e407c] o.s.web.client.RestTemplate - Response 200 OK
+delivery-api-app | 2025-11-06 00:05:32.716 [http-nio-8080-exec-3] DEBUG [f4777b517c5e407c] o.s.w.s.m.m.a.HttpEntityMethodProcessor - Using 'application/vnd.spring-boot.actuator.v3+json', given [*/*] and supported [application/vnd.spring-boot.actuator.v3+json, application/vnd.spring-boot.actuator.v2+json, application/json]
+delivery-api-app | 2025-11-06 00:05:32.716 [http-nio-8080-exec-3] DEBUG [f4777b517c5e407c] o.s.w.s.m.m.a.HttpEntityMethodProcessor - Writing [org.springframework.boot.actuate.health.SystemHealth@5338fe48]
+delivery-api-app | 2025-11-06 00:05:32.718 [http-nio-8080-exec-3] DEBUG [f4777b517c5e407c] o.s.web.servlet.DispatcherServlet - Completed 200 OK
+delivery-api-app | 2025-11-06 00:05:54.679 [scheduling-1] INFO  [] c.d.d.service.alert.AlertService - [ALERTS] Verificando métricas e saúde do sistema...
+delivery-api-app | 2025-11-06 00:05:54.681 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - HTTP GET https://httpbin.org/status/200
+delivery-api-app | 2025-11-06 00:05:54.682 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Accept=[text/plain, application/json, application/yaml, application/*+json, */*]
+delivery-api-app | 2025-11-06 00:05:54.871 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Response 200 OK
+delivery-api-app | 2025-11-06 00:06:24.679 [scheduling-1] INFO  [] c.d.d.service.alert.AlertService - [ALERTS] Verificando métricas e saúde do sistema...
+delivery-api-app | 2025-11-06 00:06:24.681 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - HTTP GET https://httpbin.org/status/200
+delivery-api-app | 2025-11-06 00:06:24.682 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Accept=[text/plain, application/json, application/yaml, application/*+json, */*]
+delivery-api-app | 2025-11-06 00:06:26.240 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Response 200 OK
+delivery-api-app | 2025-11-06 00:06:54.679 [scheduling-1] INFO  [] c.d.d.service.alert.AlertService - [ALERTS] Verificando métricas e saúde do sistema...
+delivery-api-app | 2025-11-06 00:06:54.687 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - HTTP GET https://httpbin.org/status/200
+delivery-api-app | 2025-11-06 00:06:54.688 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Accept=[text/plain, application/json, application/yaml, application/*+json, */*]
+delivery-api-app | 2025-11-06 00:06:57.008 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Response 200 OK
+delivery-api-app | 2025-11-06 00:07:24.679 [scheduling-1] INFO  [] c.d.d.service.alert.AlertService - [ALERTS] Verificando métricas e saúde do sistema...
+delivery-api-app | 2025-11-06 00:07:24.681 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - HTTP GET https://httpbin.org/status/200
+delivery-api-app | 2025-11-06 00:07:24.682 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Accept=[text/plain, application/json, application/yaml, application/*+json, */*]
+delivery-api-app | 2025-11-06 00:07:26.767 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Response 200 OK
+delivery-api-app | 2025-11-06 00:07:54.679 [scheduling-1] INFO  [] c.d.d.service.alert.AlertService - [ALERTS] Verificando métricas e saúde do sistema...
+delivery-api-app | 2025-11-06 00:07:54.681 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - HTTP GET https://httpbin.org/status/200
+delivery-api-app | 2025-11-06 00:07:54.682 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Accept=[text/plain, application/json, application/yaml, application/*+json, */*]
+delivery-api-app | 2025-11-06 00:08:09.679 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Response 200 OK
+delivery-api-app | 2025-11-06 00:08:24.679 [scheduling-1] INFO  [] c.d.d.service.alert.AlertService - [ALERTS] Verificando métricas e saúde do sistema...
+delivery-api-app | 2025-11-06 00:08:24.683 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - HTTP GET https://httpbin.org/status/200
+delivery-api-app | 2025-11-06 00:08:24.685 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Accept=[text/plain, application/json, application/yaml, application/*+json, */*]
+delivery-api-app | 2025-11-06 00:08:26.379 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Response 200 OK
+delivery-api-app | 2025-11-06 00:08:54.679 [scheduling-1] INFO  [] c.d.d.service.alert.AlertService - [ALERTS] Verificando métricas e saúde do sistema...
+delivery-api-app | 2025-11-06 00:08:54.682 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - HTTP GET https://httpbin.org/status/200
+delivery-api-app | 2025-11-06 00:08:54.684 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Accept=[text/plain, application/json, application/yaml, application/*+json, */*]
+delivery-api-app | 2025-11-06 00:08:56.335 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Response 200 OK
+delivery-api-app | 2025-11-06 00:09:24.679 [scheduling-1] INFO  [] c.d.d.service.alert.AlertService - [ALERTS] Verificando métricas e saúde do sistema...
+delivery-api-app | 2025-11-06 00:09:24.681 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - HTTP GET https://httpbin.org/status/200
+delivery-api-app | 2025-11-06 00:09:24.682 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Accept=[text/plain, application/json, application/yaml, application/*+json, */*]
+delivery-api-app | 2025-11-06 00:09:25.281 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Response 200 OK
+delivery-api-app | 2025-11-06 00:09:54.679 [scheduling-1] INFO  [] c.d.d.service.alert.AlertService - [ALERTS] Verificando métricas e saúde do sistema...
+delivery-api-app | 2025-11-06 00:09:54.682 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - HTTP GET https://httpbin.org/status/200
+delivery-api-app | 2025-11-06 00:09:54.683 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Accept=[text/plain, application/json, application/yaml, application/*+json, */*]
+delivery-api-app | 2025-11-06 00:09:55.792 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Response 200 OK
+delivery-api-app | 2025-11-06 00:10:24.679 [scheduling-1] INFO  [] c.d.d.service.alert.AlertService - [ALERTS] Verificando métricas e saúde do sistema...
+delivery-api-app | 2025-11-06 00:10:24.682 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - HTTP GET https://httpbin.org/status/200
+delivery-api-app | 2025-11-06 00:10:24.684 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Accept=[text/plain, application/json, application/yaml, application/*+json, */*]
+delivery-api-app | 2025-11-06 00:10:25.592 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Response 200 OK
+delivery-api-app | 2025-11-06 00:10:54.679 [scheduling-1] INFO  [] c.d.d.service.alert.AlertService - [ALERTS] Verificando métricas e saúde do sistema...
+delivery-api-app | 2025-11-06 00:10:54.682 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - HTTP GET https://httpbin.org/status/200
+delivery-api-app | 2025-11-06 00:10:54.683 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Accept=[text/plain, application/json, application/yaml, application/*+json, */*]
+delivery-api-app | 2025-11-06 00:11:02.011 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Response 200 OK
+delivery-api-app | 2025-11-06 00:11:24.679 [scheduling-1] INFO  [] c.d.d.service.alert.AlertService - [ALERTS] Verificando métricas e saúde do sistema...
+delivery-api-app | 2025-11-06 00:11:24.682 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - HTTP GET https://httpbin.org/status/200
+delivery-api-app | 2025-11-06 00:11:24.684 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Accept=[text/plain, application/json, application/yaml, application/*+json, */*]
+delivery-api-app | 2025-11-06 00:11:26.901 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Response 200 OK
+delivery-api-app | 2025-11-06 00:11:54.679 [scheduling-1] INFO  [] c.d.d.service.alert.AlertService - [ALERTS] Verificando métricas e saúde do sistema...
+delivery-api-app | 2025-11-06 00:11:54.681 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - HTTP GET https://httpbin.org/status/200
+delivery-api-app | 2025-11-06 00:11:54.682 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Accept=[text/plain, application/json, application/yaml, application/*+json, */*]
+delivery-api-app | 2025-11-06 00:11:58.976 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Response 200 OK
+delivery-api-app | 2025-11-06 00:12:24.679 [scheduling-1] INFO  [] c.d.d.service.alert.AlertService - [ALERTS] Verificando métricas e saúde do sistema...
+delivery-api-app | 2025-11-06 00:12:24.682 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - HTTP GET https://httpbin.org/status/200
+delivery-api-app | 2025-11-06 00:12:24.684 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Accept=[text/plain, application/json, application/yaml, application/*+json, */*]
+delivery-api-app | 2025-11-06 00:12:27.070 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Response 200 OK
+delivery-api-app | 2025-11-06 00:12:36.918 [http-nio-8080-exec-7] DEBUG [] o.s.security.web.FilterChainProxy - Securing GET /api/produtos
+delivery-api-app | 2025-11-06 00:12:36.992 [http-nio-8080-exec-7] WARN  [] c.d.d.s.jwt.JwtAuthenticationFilter - Token JWT expirado: JWT expired at 2025-11-05T22:40:58Z. Current time: 2025-11-06T00:12:36Z, a difference of 5498989 milliseconds.  Allowed clock skew: 0 milliseconds.
+delivery-api-app | 2025-11-06 00:12:36.993 [http-nio-8080-exec-7] DEBUG [] o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+delivery-api-app | 2025-11-06 00:12:36.997 [http-nio-8080-exec-7] DEBUG [] o.s.security.web.FilterChainProxy - Secured GET /api/produtos
+delivery-api-app | 2025-11-06 00:12:36.998 [http-nio-8080-exec-7] DEBUG [5b4b4ce27ad74b8e] o.s.web.servlet.DispatcherServlet - GET "/api/produtos", parameters={}
+delivery-api-app | 2025-11-06 00:12:36.999 [http-nio-8080-exec-7] DEBUG [5b4b4ce27ad74b8e] o.s.w.s.m.m.a.RequestMappingHandlerMapping - Mapped to com.deliverytech.delivery.controller.ProdutoController#listar(Long, String, Boolean, Pageable)
+delivery-api-app | 2025-11-06 00:12:37.343 [http-nio-8080-exec-7] DEBUG [5b4b4ce27ad74b8e] org.hibernate.SQL - 
+delivery-api-app |     /* <criteria> */ select
+delivery-api-app |         p1_0.id,
+delivery-api-app |         p1_0.categoria,
+delivery-api-app |         p1_0.descricao,
+delivery-api-app |         p1_0.disponivel,
+delivery-api-app |         p1_0.estoque,
+delivery-api-app |         p1_0.nome,
+delivery-api-app |         p1_0.preco,
+delivery-api-app |         p1_0.restaurante_id 
+delivery-api-app |     from
+delivery-api-app |         produto p1_0 
+delivery-api-app |     limit
+delivery-api-app |         ?, ?
+delivery-api-app | Hibernate: 
+delivery-api-app |     /* <criteria> */ select
+delivery-api-app |         p1_0.id,
+delivery-api-app |         p1_0.categoria,
+delivery-api-app |         p1_0.descricao,
+delivery-api-app |         p1_0.disponivel,
+delivery-api-app |         p1_0.estoque,
+delivery-api-app |         p1_0.nome,
+delivery-api-app |         p1_0.preco,
+delivery-api-app |         p1_0.restaurante_id 
+delivery-api-app |     from
+delivery-api-app |         produto p1_0 
+delivery-api-app |     limit
+delivery-api-app |         ?, ?
+delivery-api-app | 2025-11-06 00:12:37.412 [http-nio-8080-exec-7] DEBUG [5b4b4ce27ad74b8e] org.hibernate.SQL - 
+delivery-api-app |     select
+delivery-api-app |         r1_0.id,
+delivery-api-app |         r1_0.ativo,
+delivery-api-app |         r1_0.avaliacao,
+delivery-api-app |         r1_0.categoria,
+delivery-api-app |         r1_0.endereco,
+delivery-api-app |         r1_0.horario_funcionamento,
+delivery-api-app |         r1_0.nome,
+delivery-api-app |         r1_0.taxa_entrega,
+delivery-api-app |         r1_0.telefone,
+delivery-api-app |         r1_0.tempo_entrega 
+delivery-api-app |     from
+delivery-api-app |         restaurante r1_0 
+delivery-api-app |     where
+delivery-api-app |         r1_0.id=?
+delivery-api-app | Hibernate: 
+delivery-api-app |     select
+delivery-api-app |         r1_0.id,
+delivery-api-app |         r1_0.ativo,
+delivery-api-app |         r1_0.avaliacao,
+delivery-api-app |         r1_0.categoria,
+delivery-api-app |         r1_0.endereco,
+delivery-api-app |         r1_0.horario_funcionamento,
+delivery-api-app |         r1_0.nome,
+delivery-api-app |         r1_0.taxa_entrega,
+delivery-api-app |         r1_0.telefone,
+delivery-api-app |         r1_0.tempo_entrega 
+delivery-api-app |     from
+delivery-api-app |         restaurante r1_0 
+delivery-api-app |     where
+delivery-api-app |         r1_0.id=?
+delivery-api-app | 2025-11-06 00:12:37.434 [http-nio-8080-exec-7] DEBUG [5b4b4ce27ad74b8e] org.hibernate.SQL - 
+delivery-api-app |     select
+delivery-api-app |         r1_0.id,
+delivery-api-app |         r1_0.ativo,
+delivery-api-app |         r1_0.avaliacao,
+delivery-api-app |         r1_0.categoria,
+delivery-api-app |         r1_0.endereco,
+delivery-api-app |         r1_0.horario_funcionamento,
+delivery-api-app |         r1_0.nome,
+delivery-api-app |         r1_0.taxa_entrega,
+delivery-api-app |         r1_0.telefone,
+delivery-api-app |         r1_0.tempo_entrega 
+delivery-api-app |     from
+delivery-api-app |         restaurante r1_0 
+delivery-api-app |     where
+delivery-api-app |         r1_0.id=?
+delivery-api-app | Hibernate: 
+delivery-api-app |     select
+delivery-api-app |         r1_0.id,
+delivery-api-app |         r1_0.ativo,
+delivery-api-app |         r1_0.avaliacao,
+delivery-api-app |         r1_0.categoria,
+delivery-api-app |         r1_0.endereco,
+delivery-api-app |         r1_0.horario_funcionamento,
+delivery-api-app |         r1_0.nome,
+delivery-api-app |         r1_0.taxa_entrega,
+delivery-api-app |         r1_0.telefone,
+delivery-api-app |         r1_0.tempo_entrega 
+delivery-api-app |     from
+delivery-api-app |         restaurante r1_0 
+delivery-api-app |     where
+delivery-api-app |         r1_0.id=?
+delivery-api-app | 2025-11-06 00:12:37.479 [http-nio-8080-exec-7] DEBUG [5b4b4ce27ad74b8e] o.s.w.s.m.m.a.HttpEntityMethodProcessor - Using 'application/json', given [*/*] and supported [application/json, application/*+json, application/yaml]
+delivery-api-app | 2025-11-06 00:12:37.480 [http-nio-8080-exec-7] DEBUG [5b4b4ce27ad74b8e] o.s.w.s.m.m.a.HttpEntityMethodProcessor - Writing [com.deliverytech.delivery.dto.response.PagedResponseWrapper@a819fc9]
+delivery-api-app | 2025-11-06 00:12:37.498 [http-nio-8080-exec-7] DEBUG [5b4b4ce27ad74b8e] o.s.web.servlet.DispatcherServlet - Completed 200 OK
+delivery-api-app | 2025-11-06 00:12:54.679 [scheduling-1] INFO  [] c.d.d.service.alert.AlertService - [ALERTS] Verificando métricas e saúde do sistema...
+delivery-api-app | 2025-11-06 00:12:54.681 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - HTTP GET https://httpbin.org/status/200
+delivery-api-app | 2025-11-06 00:12:54.682 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Accept=[text/plain, application/json, application/yaml, application/*+json, */*]
+delivery-api-app | 2025-11-06 00:12:58.274 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Response 200 OK
+delivery-api-app | 2025-11-06 00:13:24.679 [scheduling-1] INFO  [] c.d.d.service.alert.AlertService - [ALERTS] Verificando métricas e saúde do sistema...
+delivery-api-app | 2025-11-06 00:13:24.681 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - HTTP GET https://httpbin.org/status/200
+delivery-api-app | 2025-11-06 00:13:24.681 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Accept=[text/plain, application/json, application/yaml, application/*+json, */*]
+delivery-api-app | 2025-11-06 00:13:31.462 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Response 200 OK
+delivery-api-app | 2025-11-06 00:13:54.679 [scheduling-1] INFO  [] c.d.d.service.alert.AlertService - [ALERTS] Verificando métricas e saúde do sistema...
+delivery-api-app | 2025-11-06 00:13:54.682 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - HTTP GET https://httpbin.org/status/200
+delivery-api-app | 2025-11-06 00:13:54.683 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Accept=[text/plain, application/json, application/yaml, application/*+json, */*]
+delivery-api-app | 2025-11-06 00:14:03.110 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Response 200 OK
+delivery-api-app | 2025-11-06 00:14:24.679 [scheduling-1] INFO  [] c.d.d.service.alert.AlertService - [ALERTS] Verificando métricas e saúde do sistema...
+delivery-api-app | 2025-11-06 00:14:24.682 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - HTTP GET https://httpbin.org/status/200
+delivery-api-app | 2025-11-06 00:14:24.683 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Accept=[text/plain, application/json, application/yaml, application/*+json, */*]
+delivery-api-app | 2025-11-06 00:14:26.948 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Response 200 OK
+delivery-db | 2025-11-05T23:58:05.468144Z 0 [System] [MY-011323] [Server] X Plugin ready for connections. Socket: /var/run/mysqld/mysqlx.sock
+delivery-db | 2025-11-05T23:58:05.468216Z 0 [System] [MY-010931] [Server] /usr/sbin/mysqld: ready for connections. Version: '8.0.44'  socket: '/var/run/mysqld/mysqld.sock'  port: 0  MySQL Community Server - GPL.
+delivery-db | 2025-11-05 23:58:05+00:00 [Note] [Entrypoint]: Temporary server started.
+delivery-db | '/var/lib/mysql/mysql.sock' -> '/var/run/mysqld/mysqld.sock'
+delivery-db | Warning: Unable to load '/usr/share/zoneinfo/iso3166.tab' as time zone. Skipping it.
+delivery-db | Warning: Unable to load '/usr/share/zoneinfo/leap-seconds.list' as time zone. Skipping it.
+delivery-db | Warning: Unable to load '/usr/share/zoneinfo/leapseconds' as time zone. Skipping it.
+delivery-db | Warning: Unable to load '/usr/share/zoneinfo/tzdata.zi' as time zone. Skipping it.
+delivery-db | Warning: Unable to load '/usr/share/zoneinfo/zone.tab' as time zone. Skipping it.
+delivery-db | Warning: Unable to load '/usr/share/zoneinfo/zone1970.tab' as time zone. Skipping it.
+delivery-db | 2025-11-05 23:58:14+00:00 [Note] [Entrypoint]: Creating database deliverydb
+delivery-db | 2025-11-05 23:58:15+00:00 [Note] [Entrypoint]: Creating user user
+delivery-db | 2025-11-05 23:58:15+00:00 [Note] [Entrypoint]: Giving user user access to schema deliverydb
+delivery-db | 
+delivery-db | 2025-11-05 23:58:16+00:00 [Note] [Entrypoint]: Stopping temporary server
+delivery-db | 2025-11-05T23:58:16.070444Z 14 [System] [MY-013172] [Server] Received SHUTDOWN from user root. Shutting down mysqld (Version: 8.0.44).
+delivery-db | 2025-11-05T23:58:36.165443Z 0 [System] [MY-010910] [Server] /usr/sbin/mysqld: Shutdown complete (mysqld 8.0.44)  MySQL Community Server - GPL.
+delivery-db | 2025-11-05 23:58:37+00:00 [Note] [Entrypoint]: Temporary server stopped
+delivery-db | 
+delivery-db | 2025-11-05 23:58:37+00:00 [Note] [Entrypoint]: MySQL init process done. Ready for start up.
+delivery-db | 
+delivery-db | 2025-11-05T23:58:37.357345Z 0 [Warning] [MY-011068] [Server] The syntax '--skip-host-cache' is deprecated and will be removed in a future release. Please use SET GLOBAL host_cache_size=0 instead.
+delivery-db | 2025-11-05T23:58:37.359075Z 0 [System] [MY-010116] [Server] /usr/sbin/mysqld (mysqld 8.0.44) starting as process 1
+delivery-db | 2025-11-05T23:58:37.366700Z 1 [System] [MY-013576] [InnoDB] InnoDB initialization has started.
+delivery-db | 2025-11-05T23:58:41.418338Z 1 [System] [MY-013577] [InnoDB] InnoDB initialization has ended.
+delivery-db | 2025-11-05T23:58:43.827249Z 0 [Warning] [MY-010068] [Server] CA certificate ca.pem is self signed.
+delivery-db | 2025-11-05T23:58:43.827293Z 0 [System] [MY-013602] [Server] Channel mysql_main configured to support TLS. Encrypted connections are now supported for this channel.
+delivery-api-app | 2025-11-06 00:14:54.679 [scheduling-1] INFO  [] c.d.d.service.alert.AlertService - [ALERTS] Verificando métricas e saúde do sistema...
+delivery-api-app | 2025-11-06 00:14:54.682 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - HTTP GET https://httpbin.org/status/200
+delivery-api-app | 2025-11-06 00:14:54.683 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Accept=[text/plain, application/json, application/yaml, application/*+json, */*]
+delivery-api-app | 2025-11-06 00:14:57.631 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Response 200 OK
+delivery-api-app | 2025-11-06 00:15:24.679 [scheduling-1] INFO  [] c.d.d.service.alert.AlertService - [ALERTS] Verificando métricas e saúde do sistema...
+delivery-api-app | 2025-11-06 00:15:24.681 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - HTTP GET https://httpbin.org/status/200
+delivery-api-app | 2025-11-06 00:15:24.682 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Accept=[text/plain, application/json, application/yaml, application/*+json, */*]
+delivery-api-app | 2025-11-06 00:15:36.703 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Response 200 OK
+delivery-api-app | 2025-11-06 00:15:54.679 [scheduling-1] INFO  [] c.d.d.service.alert.AlertService - [ALERTS] Verificando métricas e saúde do sistema...
+delivery-api-app | 2025-11-06 00:15:54.681 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - HTTP GET https://httpbin.org/status/200
+delivery-api-app | 2025-11-06 00:15:54.683 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Accept=[text/plain, application/json, application/yaml, application/*+json, */*]
+delivery-api-app | 2025-11-06 00:15:56.767 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Response 200 OK
+delivery-api-app | 2025-11-06 00:16:06.875 [http-nio-8080-exec-10] DEBUG [] o.s.security.web.FilterChainProxy - Securing POST /api/auth/login
+delivery-api-app | 2025-11-06 00:16:06.880 [http-nio-8080-exec-10] WARN  [] c.d.d.s.jwt.JwtAuthenticationFilter - Token JWT expirado: JWT expired at 2025-11-05T22:40:58Z. Current time: 2025-11-06T00:16:06Z, a difference of 5708880 milliseconds.  Allowed clock skew: 0 milliseconds.
+delivery-api-app | 2025-11-06 00:16:06.881 [http-nio-8080-exec-10] DEBUG [] o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+delivery-api-app | 2025-11-06 00:16:06.883 [http-nio-8080-exec-10] DEBUG [] o.s.security.web.FilterChainProxy - Secured POST /api/auth/login
+delivery-api-app | 2025-11-06 00:16:06.884 [http-nio-8080-exec-10] DEBUG [fb8e9440a654490d] o.s.web.servlet.DispatcherServlet - POST "/api/auth/login", parameters={}
+delivery-api-app | 2025-11-06 00:16:06.885 [http-nio-8080-exec-10] DEBUG [fb8e9440a654490d] o.s.w.s.m.m.a.RequestMappingHandlerMapping - Mapped to com.deliverytech.delivery.controller.auth.AuthController#login(LoginRequest)
+delivery-api-app | 2025-11-06 00:16:06.925 [http-nio-8080-exec-10] DEBUG [fb8e9440a654490d] o.s.w.s.m.m.a.RequestResponseBodyMethodProcessor - Read "application/json;charset=UTF-8" to [com.deliverytech.delivery.dto.auth.LoginRequest@29d2d494]
+delivery-api-app | 2025-11-06 00:16:07.222 [http-nio-8080-exec-10] DEBUG [fb8e9440a654490d] org.hibernate.SQL - 
+delivery-api-app |     /* <criteria> */ select
+delivery-api-app |         u1_0.id,
+delivery-api-app |         u1_0.ativo,
+delivery-api-app |         u1_0.data_criacao,
+delivery-api-app |         u1_0.email,
+delivery-api-app |         u1_0.nome,
+delivery-api-app |         u1_0.restaurante_id,
+delivery-api-app |         u1_0.role,
+delivery-api-app |         u1_0.senha 
+delivery-api-app |     from
+delivery-api-app |         usuario u1_0 
+delivery-api-app |     where
+delivery-api-app |         u1_0.email=? 
+delivery-api-app |         and u1_0.ativo=?
+delivery-api-app | Hibernate: 
+delivery-api-app |     /* <criteria> */ select
+delivery-api-app |         u1_0.id,
+delivery-api-app |         u1_0.ativo,
+delivery-api-app |         u1_0.data_criacao,
+delivery-api-app |         u1_0.email,
+delivery-api-app |         u1_0.nome,
+delivery-api-app |         u1_0.restaurante_id,
+delivery-api-app |         u1_0.role,
+delivery-api-app |         u1_0.senha 
+delivery-api-app |     from
+delivery-api-app |         usuario u1_0 
+delivery-api-app |     where
+delivery-api-app |         u1_0.email=? 
+delivery-api-app |         and u1_0.ativo=?
+delivery-api-app | 2025-11-06 00:16:07.339 [http-nio-8080-exec-10] DEBUG [fb8e9440a654490d] o.s.s.a.d.DaoAuthenticationProvider - Authenticated user
+delivery-api-app | 2025-11-06 00:16:07.379 [http-nio-8080-exec-10] DEBUG [fb8e9440a654490d] o.s.w.s.m.m.a.HttpEntityMethodProcessor - Using 'application/json', given [*/*] and supported [application/json, application/*+json, application/yaml]
+delivery-api-app | 2025-11-06 00:16:07.380 [http-nio-8080-exec-10] DEBUG [fb8e9440a654490d] o.s.w.s.m.m.a.HttpEntityMethodProcessor - Writing [com.deliverytech.delivery.dto.auth.LoginResponse@2cbd3ecb]
+delivery-api-app | 2025-11-06 00:16:07.392 [http-nio-8080-exec-10] DEBUG [fb8e9440a654490d] o.s.web.servlet.DispatcherServlet - Completed 200 OK
+delivery-api-app | 2025-11-06 00:16:24.679 [scheduling-1] INFO  [] c.d.d.service.alert.AlertService - [ALERTS] Verificando métricas e saúde do sistema...
+delivery-api-app | 2025-11-06 00:16:24.682 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - HTTP GET https://httpbin.org/status/200
+delivery-api-app | 2025-11-06 00:16:24.683 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Accept=[text/plain, application/json, application/yaml, application/*+json, */*]
+delivery-api-app | 2025-11-06 00:16:24.844 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Response 200 OK
+delivery-api-app | 2025-11-06 00:16:54.679 [scheduling-1] INFO  [] c.d.d.service.alert.AlertService - [ALERTS] Verificando métricas e saúde do sistema...
+delivery-api-app | 2025-11-06 00:16:54.682 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - HTTP GET https://httpbin.org/status/200
+delivery-api-app | 2025-11-06 00:16:54.683 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Accept=[text/plain, application/json, application/yaml, application/*+json, */*]
+delivery-api-app | 2025-11-06 00:17:05.361 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Response 200 OK
+delivery-api-app | 2025-11-06 00:17:24.679 [scheduling-1] INFO  [] c.d.d.service.alert.AlertService - [ALERTS] Verificando métricas e saúde do sistema...
+delivery-api-app | 2025-11-06 00:17:24.681 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - HTTP GET https://httpbin.org/status/200
+delivery-api-app | 2025-11-06 00:17:24.683 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Accept=[text/plain, application/json, application/yaml, application/*+json, */*]
+delivery-api-app | 2025-11-06 00:17:34.927 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Response 200 OK
+delivery-api-app | 2025-11-06 00:17:54.679 [scheduling-1] INFO  [] c.d.d.service.alert.AlertService - [ALERTS] Verificando métricas e saúde do sistema...
+delivery-api-app | 2025-11-06 00:17:54.681 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - HTTP GET https://httpbin.org/status/200
+delivery-api-app | 2025-11-06 00:17:54.683 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Accept=[text/plain, application/json, application/yaml, application/*+json, */*]
+delivery-api-app | 2025-11-06 00:17:57.143 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Response 200 OK
+delivery-api-app | 2025-11-06 00:18:24.679 [scheduling-1] INFO  [] c.d.d.service.alert.AlertService - [ALERTS] Verificando métricas e saúde do sistema...
+delivery-api-app | 2025-11-06 00:18:24.683 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - HTTP GET https://httpbin.org/status/200
+delivery-api-app | 2025-11-06 00:18:24.687 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Accept=[text/plain, application/json, application/yaml, application/*+json, */*]
+delivery-api-app | 2025-11-06 00:18:27.433 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Response 200 OK
+delivery-api-app | 2025-11-06 00:18:54.679 [scheduling-1] INFO  [] c.d.d.service.alert.AlertService - [ALERTS] Verificando métricas e saúde do sistema...
+delivery-api-app | 2025-11-06 00:18:54.682 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - HTTP GET https://httpbin.org/status/200
+delivery-api-app | 2025-11-06 00:18:54.683 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Accept=[text/plain, application/json, application/yaml, application/*+json, */*]
+delivery-api-app | 2025-11-06 00:18:55.154 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Response 200 OK
+delivery-api-app | 2025-11-06 00:19:24.679 [scheduling-1] INFO  [] c.d.d.service.alert.AlertService - [ALERTS] Verificando métricas e saúde do sistema...
+delivery-api-app | 2025-11-06 00:19:24.681 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - HTTP GET https://httpbin.org/status/200
+delivery-api-app | 2025-11-06 00:19:24.682 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Accept=[text/plain, application/json, application/yaml, application/*+json, */*]
+delivery-api-app | 2025-11-06 00:19:25.128 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Response 200 OK
+delivery-api-app | 2025-11-06 00:19:54.679 [scheduling-1] INFO  [] c.d.d.service.alert.AlertService - [ALERTS] Verificando métricas e saúde do sistema...
+delivery-api-app | 2025-11-06 00:19:54.683 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - HTTP GET https://httpbin.org/status/200
+delivery-api-app | 2025-11-06 00:19:54.686 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Accept=[text/plain, application/json, application/yaml, application/*+json, */*]
+delivery-api-app | 2025-11-06 00:19:56.921 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Response 200 OK
+delivery-api-app | 2025-11-06 00:20:24.679 [scheduling-1] INFO  [] c.d.d.service.alert.AlertService - [ALERTS] Verificando métricas e saúde do sistema...
+delivery-api-app | 2025-11-06 00:20:24.682 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - HTTP GET https://httpbin.org/status/200
+delivery-api-app | 2025-11-06 00:20:24.683 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Accept=[text/plain, application/json, application/yaml, application/*+json, */*]
+delivery-api-app | 2025-11-06 00:20:25.611 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Response 200 OK
+delivery-api-app | 2025-11-06 00:20:54.679 [scheduling-1] INFO  [] c.d.d.service.alert.AlertService - [ALERTS] Verificando métricas e saúde do sistema...
+delivery-api-app | 2025-11-06 00:20:54.684 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - HTTP GET https://httpbin.org/status/200
+delivery-api-app | 2025-11-06 00:20:54.686 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Accept=[text/plain, application/json, application/yaml, application/*+json, */*]
+delivery-api-app | 2025-11-06 00:20:56.464 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Response 200 OK
+delivery-api-app | 2025-11-06 00:21:24.679 [scheduling-1] INFO  [] c.d.d.service.alert.AlertService - [ALERTS] Verificando métricas e saúde do sistema...
+delivery-api-app | 2025-11-06 00:21:24.681 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - HTTP GET https://httpbin.org/status/200
+delivery-api-app | 2025-11-06 00:21:24.683 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Accept=[text/plain, application/json, application/yaml, application/*+json, */*]
+delivery-api-app | 2025-11-06 00:21:25.052 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Response 200 OK
+delivery-api-app | 2025-11-06 00:21:54.679 [scheduling-1] INFO  [] c.d.d.service.alert.AlertService - [ALERTS] Verificando métricas e saúde do sistema...
+delivery-api-app | 2025-11-06 00:21:54.681 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - HTTP GET https://httpbin.org/status/200
+delivery-api-app | 2025-11-06 00:21:54.682 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Accept=[text/plain, application/json, application/yaml, application/*+json, */*]
+delivery-api-app | 2025-11-06 00:21:56.023 [scheduling-1] DEBUG [] o.s.web.client.RestTemplate - Response 200 OK
+delivery-db | 2025-11-05T23:58:43.922051Z 0 [Warning] [MY-011810] [Server] Insecure configuration for --pid-file: Location '/var/run/mysqld' in the path is accessible to all OS users. Consider choosing a different directory.
+delivery-db | 2025-11-05T23:58:43.959287Z 0 [System] [MY-011323] [Server] X Plugin ready for connections. Bind-address: '::' port: 33060, socket: /var/run/mysqld/mysqlx.sock
+delivery-db | 2025-11-05T23:58:43.959569Z 0 [System] [MY-010931] [Server] /usr/sbin/mysqld: ready for connections. Version: '8.0.44'  socket: '/var/run/mysqld/mysqld.sock'  port: 3306  MySQL Community Server - GPL.
