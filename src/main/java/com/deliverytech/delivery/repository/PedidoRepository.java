@@ -1,6 +1,7 @@
 package com.deliverytech.delivery.repository;
 
 import com.deliverytech.delivery.entity.Pedido;
+import com.deliverytech.delivery.entity.Usuario;
 import com.deliverytech.delivery.enums.StatusPedido;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -68,4 +69,11 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long>, JpaSpecif
             @Param("inicio") LocalDateTime inicio,
             @Param("fim") LocalDateTime fim,
             @Param("status") StatusPedido status);
+
+           
+    /**
+     * Verifica se existe algum pedido atribuído a este entregador
+     * que esteja ATUALMENTE em rota (SAIU_PARA_ENTREGA).
+     */
+    boolean existsByEntregadorAndStatus(Usuario entregador, StatusPedido status);
 }

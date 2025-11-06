@@ -1,50 +1,35 @@
 package com.deliverytech.delivery.config;
 
-// --- IMPORTS ADICIONADOS ---
-import com.deliverytech.delivery.entity.Usuario;
-import com.deliverytech.delivery.entity.Endereco;
+// (Imports... OK)
+import com.deliverytech.delivery.entity.*;
 import com.deliverytech.delivery.enums.Role;
-import com.deliverytech.delivery.repository.EnderecoRepository;
+import com.deliverytech.delivery.repository.*;
 import com.deliverytech.delivery.repository.auth.UsuarioRepository;
-import org.springframework.security.crypto.password.PasswordEncoder;
-// --- FIM DOS IMPORTS ADICIONADOS ---
-
-import com.deliverytech.delivery.entity.Cliente;
-import com.deliverytech.delivery.entity.Produto;
-import com.deliverytech.delivery.entity.Restaurante;
-import com.deliverytech.delivery.repository.ClienteRepository;
-import com.deliverytech.delivery.repository.ProdutoRepository;
-import com.deliverytech.delivery.repository.RestauranteRepository;
-import jakarta.annotation.PostConstruct;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import jakarta.annotation.PostConstruct;
 import java.math.BigDecimal;
 
 @Configuration
 @Profile("test")
 public class TestDataConfiguration {
 
-    // --- REPOSITÓRIOS ANTIGOS (OK) ---
+    // (Repositórios e Construtor... OK)
     private final ClienteRepository clienteRepository;
     private final ProdutoRepository produtoRepository;
     private final RestauranteRepository restauranteRepository;
-
-    // --- NOVOS REPOSITÓRIOS (NECESSÁRIOS) ---
     private final UsuarioRepository usuarioRepository;
     private final EnderecoRepository enderecoRepository;
     private final PasswordEncoder passwordEncoder;
 
-    /**
-     * Injeção de dependência via construtor (ATUALIZADO).
-     */
     public TestDataConfiguration(
             ClienteRepository clienteRepository,
             ProdutoRepository produtoRepository,
             RestauranteRepository restauranteRepository,
-            UsuarioRepository usuarioRepository, // <-- ADICIONADO
-            EnderecoRepository enderecoRepository, // <-- ADICIONADO
-            PasswordEncoder passwordEncoder // <-- ADICIONADO
+            UsuarioRepository usuarioRepository,
+            EnderecoRepository enderecoRepository,
+            PasswordEncoder passwordEncoder
     ) {
         this.clienteRepository = clienteRepository;
         this.produtoRepository = produtoRepository;
@@ -54,101 +39,102 @@ public class TestDataConfiguration {
         this.passwordEncoder = passwordEncoder;
     }
 
-    /**
-     * Método de setup (VERSÃO REFATORADA).
-     * Cria os dados de teste seguindo a nova arquitetura (Gargalos 1, 2 e 4).
-     */
     @PostConstruct
-    @Transactional
     public void setupTestData() {
-        
-        // 1. Limpa os dados na ordem correta
+
+        // 1️⃣ Limpa os dados na ordem correta
         produtoRepository.deleteAll();
-        restauranteRepository.deleteAll(); // (O cascade deve limpar o Endereco do restaurante)
-        // (O cascade deve limpar Cliente e Enderecos do cliente)
-        usuarioRepository.deleteAll(); 
-        
-        // (Limpa explicitamente Endereco e Cliente caso cascade não funcione nos testes)
-        enderecoRepository.deleteAll(); 
+        restauranteRepository.deleteAll();
+        enderecoRepository.deleteAll();
         clienteRepository.deleteAll();
+        usuarioRepository.deleteAll();
 
+        // ----------------------------------------------------
+        // CRIAÇÃO DO CLIENTE (MÉTODO CASCADE - FUNCIONOU)
+        // ----------------------------------------------------
 
-        // --- 2. Cria e salva um Cliente (Gargalos 1 e 4 CORRIGIDOS) ---
-        
-        // 2a. Cria o Usuário (Autenticação)
-        Usuario usuario = new Usuario();
-        usuario.setEmail("joao.teste@email.com");
-        usuario.setSenha(passwordEncoder.encode("123456")); // Senha deve ser criptografada
-        usuario.setRole(Role.CLIENTE);
-        usuario.setAtivo(true);
-        
-        // 2b. Cria o Cliente (Perfil)
+        // 2️⃣ Cria o USUÁRIO CLIENTE (em memória)
+        Usuario usuarioCliente = new Usuario();
+        usuarioCliente.setEmail("joao.teste@email.com");
+        usuarioCliente.setSenha(passwordEncoder.encode("123456"));
+        usuarioCliente.setRole(Role.CLIENTE);
+        usuarioCliente.setAtivo(true);
+
+        // 3️⃣ Cria o CLIENTE (em memória)
         Cliente cliente = new Cliente();
-        cliente.setNome("João Teste");
+        cliente.setNome("João Cliente");
         cliente.setCpf("12345678901");
         cliente.setTelefone("11999999999");
-        
-        // 2c. Cria o Endereço (Entrega)
-        Endereco endCliente = new Endereco();
-        endCliente.setApelido("Casa");
-        endCliente.setCep("01001000");
-        endCliente.setRua("Praça da Sé");
-        endCliente.setNumero("100");
-        endCliente.setBairro("Sé");
-        endCliente.setCidade("São Paulo");
-        endCliente.setEstado("SP");
 
-        // 2d. Conecta todos eles
-        cliente.setUsuario(usuario);
-        cliente.setId(usuario.getId()); // (Necessário se não houver @MapsId)
-        
-        endCliente.setUsuario(usuario);
-        
-        // (Assume que @OneToOne e @OneToMany em Usuario têm cascade = ALL)
-        usuario.setCliente(cliente); 
-        usuario.getEnderecos().add(endCliente);
-        
-        // 2e. Salva o Usuário (o Cascade deve salvar Cliente e Endereco juntos)
-        usuarioRepository.save(usuario);
+        // 4️⃣ Cria o ENDEREÇO (em memória, COM VALIDAÇÃO)
+        Endereco enderecoCliente = new Endereco();
+        enderecoCliente.setApelido("Casa Teste");
+        enderecoCliente.setRua("Rua dos Testes");
+        enderecoCliente.setNumero("123");
+        enderecoCliente.setCep("01001000");
+        enderecoCliente.setBairro("Centro");
+        enderecoCliente.setCidade("Cidade Teste");
+        enderecoCliente.setEstado("SP");
 
+        // 5️⃣ CONECTA TUDO (Bidirecional)
+        cliente.setUsuario(usuarioCliente);
+        enderecoCliente.setUsuario(usuarioCliente);
+        usuarioCliente.setCliente(cliente);
+        usuarioCliente.getEnderecos().add(enderecoCliente);
 
-        // --- 3. Cria e salva um Restaurante (Gargalo 1 CORRIGIDO) ---
-        
-        // 3a. Cria o Endereço do Restaurante
+        // 6️⃣ SALVA SÓ O PAI (USUÁRIO)
+        usuarioRepository.save(usuarioCliente); // 🔥 Salva o usuário e seus filhos (Cliente e Endereco)
+
+        // ----------------------------------------------------
+        // CRIAÇÃO DO RESTAURANTE (MÉTODO HÍBRIDO - V15)
+        // (Isso corrige o 'TransientPropertyValueException' E o 'Telefone é obrigatório')
+        // ----------------------------------------------------
+
+        // 7A 🚀 Cria e SALVA o USUÁRIO DONO (para que ele não seja "transient")
+        Usuario usuarioRestaurante = new Usuario();
+        usuarioRestaurante.setEmail("restaurante.dono@email.com");
+        usuarioRestaurante.setSenha(passwordEncoder.encode("123456"));
+        usuarioRestaurante.setRole(Role.RESTAURANTE);
+        usuarioRestaurante.setAtivo(true);
+        Usuario donoSalvo = usuarioRepository.save(usuarioRestaurante); // Salva e pega a instância
+
+        // 7B 🚀 Cria o ENDEREÇO (em memória, COM VALIDAÇÃO)
         Endereco endRestaurante = new Endereco();
+        endRestaurante.setApelido("Restaurante Teste");
+        endRestaurante.setRua("Rua Fictícia");
+        endRestaurante.setNumero("456");
         endRestaurante.setCep("02002000");
-        endRestaurante.setRua("Rua Fictícia de Teste");
-        endRestaurante.setNumero("123");
-        endRestaurante.setBairro("Bairro Teste");
+        endRestaurante.setBairro("Bairro Central");
         endRestaurante.setCidade("São Paulo");
         endRestaurante.setEstado("SP");
         
-        // 3b. Cria o Restaurante
+        // 7C 🚀 Cria o RESTAURANTE (em memória, COM VALIDAÇÃO)
         Restaurante restaurante = new Restaurante();
         restaurante.setNome("Restaurante Teste");
-        restaurante.setTaxaEntrega(BigDecimal.valueOf(10.00));
-        restaurante.setAtivo(true);
-        restaurante.setTelefone("999999999");
         restaurante.setCategoria("Pizzaria");
-        
-        // 3c. Conecta o Restaurante ao seu Endereço
-        restaurante.setEndereco(endRestaurante);
-        
-        // 3d. Salva o Restaurante (o Cascade deve salvar o Endereço junto)
-        restauranteRepository.save(restaurante);
+        restaurante.setAtivo(true);
+        restaurante.setTaxaEntrega(BigDecimal.valueOf(10.00));
+        restaurante.setTelefone("11888889999"); // <-- 🔥 CORREÇÃO FINAL (Telefone obrigatório)
 
+        // 7D 🚀 CONECTA TUDO (Restaurante)
+        endRestaurante.setUsuario(donoSalvo); // Endereço aponta para o Dono (que já está salvo)
+        restaurante.setEndereco(endRestaurante); // Restaurante aponta para o Endereço (que é novo/transient)
 
-        // --- 4. Cria e salva um Produto (Gargalo 2 CORRIGIDO) ---
+        // 7E 🚀 SALVA SÓ O RESTAURANTE
+        // O cascade do Restaurante deve salvar o endRestaurante.
+        // O endRestaurante será salvo com o link para donoSalvo (que já existe no BD).
+        Restaurante restauranteSalvo = restauranteRepository.save(restaurante); // 🔥 Salva Restaurante -> Endereco
+
+        // 7F 🚀 Cria o PRODUTO
         Produto produto = new Produto();
         produto.setNome("Pizza Teste");
-        produto.setDescricao("Pizza para testes");
-        produto.setEstoque(50);
-        produto.setDisponivel(true);
-        produto.setRestaurante(restaurante); 
-        
-        // 4a. CORREÇÃO: Usa 'setPrecoBase'
+        produto.setDescricao("Pizza de calabresa de teste");
         produto.setPrecoBase(BigDecimal.valueOf(29.90));
-        
+        produto.setEstoque(20);
+        produto.setDisponivel(true);
+		produto.setRestaurante(restauranteSalvo); // Usa a instância salva pelo cascade
         produtoRepository.save(produto);
+
+        System.out.println("✅ Dados de teste (VERSÃO V15 - FINAL) criados com sucesso!");
     }
 }

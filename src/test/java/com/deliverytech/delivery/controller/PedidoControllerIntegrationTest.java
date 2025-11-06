@@ -176,6 +176,7 @@ class PedidoControllerIntegrationTest {
             Endereco endOutro = new Endereco();
             endOutro.setCep("11111111");
             endOutro.setRua("Rua do Outro");
+            endOutro.setApelido("Restaurante 2");
             endOutro.setNumero("456");
             endOutro.setBairro("Bairro");
             endOutro.setCidade("Cidade");
