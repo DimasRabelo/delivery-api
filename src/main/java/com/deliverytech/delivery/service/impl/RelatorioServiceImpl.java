@@ -22,6 +22,7 @@ public class RelatorioServiceImpl implements RelatorioService {
 
     // ======================================================
     // RELATÓRIO DE VENDAS POR RESTAURANTE
+    // (Este método estava OK)
     // ======================================================
     @Override
     @Transactional(readOnly = true)
@@ -37,7 +38,7 @@ public class RelatorioServiceImpl implements RelatorioService {
                 .collect(Collectors.toList());
 
         if (pedidos.isEmpty()) {
-            return Collections.emptyList(); // Nenhum pedido → retorna lista vazia
+            return Collections.emptyList();
         }
 
         Map<Restaurante, List<Pedido>> pedidosPorRestaurante =
@@ -60,7 +61,7 @@ public class RelatorioServiceImpl implements RelatorioService {
     }
 
     // ======================================================
-    // RELATÓRIO DE PRODUTOS MAIS VENDIDOS
+    // RELATÓRIO DE PRODUTOS MAIS VENDIDOS (MÉTODO REFATORADO)
     // ======================================================
     @Override
     @Transactional(readOnly = true)
@@ -76,18 +77,26 @@ public class RelatorioServiceImpl implements RelatorioService {
                 .collect(Collectors.toList());
 
         if (pedidos.isEmpty()) {
-            return Collections.emptyList(); // Nenhum pedido → retorna lista vazia
+            return Collections.emptyList();
         }
 
-        Map<Long, Integer> contagemProdutos = new HashMap<>();
-        Map<Long, Produto> produtosMap = new HashMap<>();
+        // --- LÓGICA REFATORADA ---
+        Map<Long, Integer> contagemProdutos = new HashMap<>(); // (ID do Produto -> Qtd Total)
+        Map<Long, BigDecimal> receitaProdutos = new HashMap<>(); // (ID do Produto -> Receita Total)
+        Map<Long, Produto> produtosMap = new HashMap<>(); // (ID do Produto -> Objeto Produto)
 
         for (Pedido pedido : pedidos) {
             if (pedido.getItens() != null) {
                 for (ItemPedido item : pedido.getItens()) {
                     if (item != null && item.getProduto() != null && item.getQuantidade() != null) {
                         Long produtoId = item.getProduto().getId();
+                        
+                        // 1. Soma a quantidade vendida (como antes)
                         contagemProdutos.merge(produtoId, item.getQuantidade(), Integer::sum);
+                        
+                        // 2. SOMA A RECEITA REAL (do ItemPedido, que inclui opcionais)
+                        receitaProdutos.merge(produtoId, item.getSubtotal(), BigDecimal::add);
+                        
                         produtosMap.put(produtoId, item.getProduto());
                     }
                 }
@@ -95,20 +104,26 @@ public class RelatorioServiceImpl implements RelatorioService {
         }
 
         if (contagemProdutos.isEmpty()) {
-            return Collections.emptyList(); // Nenhum produto vendido
+            return Collections.emptyList();
         }
 
+        // 3. Monta a resposta usando a RECEITA REAL (não o preço base)
         return contagemProdutos.entrySet().stream()
                 .map(entry -> {
-                    Produto produto = produtosMap.get(entry.getKey());
+                    Long produtoId = entry.getKey();
+                    Produto produto = produtosMap.get(produtoId);
                     Integer totalVendido = entry.getValue();
-                    BigDecimal preco = produto.getPreco() != null ? produto.getPreco() : BigDecimal.ZERO;
-                    BigDecimal receitaTotal = preco.multiply(BigDecimal.valueOf(totalVendido));
+                    
+                    // CORREÇÃO: Pega a receita total somada (que já inclui os opcionais)
+                    BigDecimal receitaTotal = receitaProdutos.getOrDefault(produtoId, BigDecimal.ZERO);
+                    
+                    // (A linha 'produto.getPreco()' foi removida, corrigindo o erro)
+
                     return new RelatorioProdutosDTO(
                             produto.getNome(),
                             produto.getCategoria(),
                             totalVendido,
-                            receitaTotal
+                            receitaTotal // <-- Usa a receita correta
                     );
                 })
                 .sorted(Comparator.comparing(RelatorioProdutosDTO::getTotalVendido).reversed())
@@ -117,6 +132,7 @@ public class RelatorioServiceImpl implements RelatorioService {
 
     // ======================================================
     // RELATÓRIO DE CLIENTES COM MAIS PEDIDOS
+    // (Este método estava OK - 'c.getNome()' está correto na Decisão 1)
     // ======================================================
     @Override
     @Transactional(readOnly = true)
@@ -132,7 +148,7 @@ public class RelatorioServiceImpl implements RelatorioService {
                 .collect(Collectors.toList());
 
         if (pedidos.isEmpty()) {
-            return Collections.emptyList(); // Nenhum pedido → retorna lista vazia
+            return Collections.emptyList();
         }
 
         Map<Cliente, List<Pedido>> pedidosPorCliente =
@@ -146,7 +162,7 @@ public class RelatorioServiceImpl implements RelatorioService {
                             .map(Pedido::getValorTotal)
                             .reduce(BigDecimal.ZERO, BigDecimal::add);
                     return new RelatorioClientesDTO(
-                            c.getNome(),
+                            c.getNome(), // <-- Está CORRETO (Nome está em Cliente)
                             pedidosCliente.size(),
                             totalGasto
                     );
@@ -157,6 +173,7 @@ public class RelatorioServiceImpl implements RelatorioService {
 
     // ======================================================
     // RELATÓRIO DE PEDIDOS (GERAL)
+    // (Este método estava OK - 'p.getCliente().getNome()' está correto na Decisão 1)
     // ======================================================
     @Override
     @Transactional(readOnly = true)
@@ -173,7 +190,7 @@ public class RelatorioServiceImpl implements RelatorioService {
                 .collect(Collectors.toList());
 
         if (pedidos.isEmpty()) {
-            return Collections.emptyList(); // Nenhum pedido → retorna lista vazia
+            return Collections.emptyList();
         }
 
         return pedidos.stream()
@@ -181,7 +198,7 @@ public class RelatorioServiceImpl implements RelatorioService {
                         p.getId(),
                         p.getNumeroPedido(),
                         p.getRestaurante().getNome(),
-                        p.getCliente().getNome(),
+                        p.getCliente().getNome(), // <-- Está CORRETO
                         p.getValorTotal(),
                         p.getStatus(),
                         p.getDataPedido()

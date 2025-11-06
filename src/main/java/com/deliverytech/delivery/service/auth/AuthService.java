@@ -1,6 +1,18 @@
 package com.deliverytech.delivery.service.auth;
 
-import com.deliverytech.delivery.dto.auth.RegisterRequest;
+// --- IMPORTS ADICIONADOS ---
+import com.deliverytech.delivery.dto.auth.RegisterRequest; // (O DTO refatorado)
+import com.deliverytech.delivery.dto.EnderecoDTO;
+import com.deliverytech.delivery.entity.Cliente;
+import com.deliverytech.delivery.entity.Endereco;
+import com.deliverytech.delivery.enums.Role;
+import com.deliverytech.delivery.repository.ClienteRepository;
+import com.deliverytech.delivery.repository.EnderecoRepository;
+import com.deliverytech.delivery.exception.ConflictException; // (Para validar e-mail)
+import org.modelmapper.ModelMapper; // (Para mapear o EnderecoDTO)
+import org.springframework.transaction.annotation.Transactional; // (Para o @Transactional)
+// --- FIM DOS IMPORTS ADICIONADOS ---
+
 import com.deliverytech.delivery.entity.Usuario;
 import com.deliverytech.delivery.repository.auth.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
@@ -10,93 +22,99 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-/**
- * Serviço responsável pela lógica de negócios de autenticação e gerenciamento de usuários.
- *
- * Esta classe tem duas responsabilidades principais:
- * 1. Implementa {@link UserDetailsService}: a interface central do Spring Security
- * para carregar dados do usuário (pelo email) durante o processo de login.
- * 2. Expõe métodos de negócio para o {@link com.deliverytech.delivery.controller.auth.AuthController},
- * como a criação de novos usuários (criptografando a senha) e verificações.
- */
 @Service
-@RequiredArgsConstructor // Injeta as dependências 'final' via construtor (Lombok)
+@RequiredArgsConstructor // O Lombok injeta todos os campos 'final'
 public class AuthService implements UserDetailsService {
 
-    /**
-     * Repositório para acesso aos dados da entidade {@link Usuario}.
-     */
+    // --- DEPENDÊNCIAS ANTIGAS (OK) ---
     private final UsuarioRepository usuarioRepository;
-
-    /**
-     * Codificador de senhas (BCrypt) injetado pelo {@link com.deliverytech.delivery.config.SecurityConfig}.
-     * Usado para criptografar senhas no registro.
-     */
     private final PasswordEncoder passwordEncoder;
 
-    // -------------------------------------------------------------------------
-    // Implementação do UserDetailsService (Spring Security)
-    // -------------------------------------------------------------------------
+    // --- NOVAS DEPENDÊNCIAS (NECESSÁRIAS) ---
+    private final ClienteRepository clienteRepository;
+    private final EnderecoRepository enderecoRepository;
+    private final ModelMapper modelMapper; // (Certifique-se que este Bean está configurado)
 
+    
     /**
-     * Método principal do {@link UserDetailsService}, chamado pelo Spring Security
-     * (via AuthenticationManager) quando um usuário tenta se logar.
-     *
-     * @param email O email (username) fornecido na tentativa de login.
-     * @return Um objeto {@link UserDetails} (a nossa própria entidade {@link Usuario})
-     * se o usuário for encontrado e estiver ativo.
-     * @throws UsernameNotFoundException Se o usuário não for encontrado ou
-     * não estiver ativo ({@code ativo = false}).
+     * (Seu método original - Está OK)
+     * Carrega o usuário pelo email para o Spring Security.
      */
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        // Busca o usuário pelo email E garante que ele esteja ativo
         return usuarioRepository.findByEmailAndAtivo(email, true)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado: " + email));
     }
 
-    // -------------------------------------------------------------------------
-    // Métodos de Negócio (usados pelo AuthController)
-    // -------------------------------------------------------------------------
-
+    
     /**
-     * Verifica de forma otimizada se um email já existe no banco de dados.
-     * Usado pelo `AuthController` para validar o registro de novos usuários.
-     *
-     * @param email O email a ser verificado.
-     * @return 'true' se o email já estiver em uso, 'false' caso contrário.
+     * (Seu método original - Está OK)
+     * Verifica se um e-mail já existe.
      */
     public boolean existsByEmail(String email) {
         return usuarioRepository.existsByEmail(email);
     }
 
     /**
-     * Cria e persiste uma nova entidade {@link Usuario} a partir de um DTO de registro.
+     * Registra um novo CLIENTE no sistema (VERSÃO REFATORADA).
+     * Cria o Usuário (autenticação), o Cliente (perfil) e o Endereço (entrega)
+     * e os conecta corretamente usando @OneToOne e @ManyToOne.
      *
-     * @param request O DTO {@link RegisterRequest} vindo do controller.
-     * @return A entidade {@link Usuario} recém-salva (já com ID).
+     * @param dto O DTO 'RegisterRequest' refatorado (com dados de perfil e endereço).
+     * @return A entidade 'Usuario' que foi salva.
      */
-    public Usuario criarUsuario(RegisterRequest request) {
+    @Transactional // Garante que tudo (Usuário, Cliente, Endereço) seja salvo, ou nada.
+    public Usuario registrarCliente(RegisterRequest dto) {
+        
+        // 1. Validação de E-mail
+        if (existsByEmail(dto.getEmail())) {
+            throw new ConflictException("Email já está em uso", "email", dto.getEmail());
+        }
+
+        // 2. Criar a entidade de Autenticação (Usuario)
         Usuario usuario = new Usuario();
-        usuario.setNome(request.getNome());
-        usuario.setEmail(request.getEmail());
+        usuario.setEmail(dto.getEmail());
+        usuario.setSenha(passwordEncoder.encode(dto.getSenha()));
+        usuario.setRole(Role.CLIENTE); // Define a Role direto (este método é só para clientes)
+        usuario.setAtivo(true);
+        // (O campo 'nome' FOI REMOVIDO daqui - CORRIGE O ERRO `setNome`)
         
-        // Etapa de segurança crucial: criptografa a senha antes de salvar
-        usuario.setSenha(passwordEncoder.encode(request.getSenha()));
+        Usuario usuarioSalvo = usuarioRepository.save(usuario);
+
+        // 3. Criar a entidade de Perfil (Cliente)
+        Cliente cliente = new Cliente();
+        cliente.setUsuario(usuarioSalvo); // <-- Conecta ao Usuário
+        cliente.setId(usuarioSalvo.getId()); // <-- Define a PK/FK (@MapsId)
         
-        usuario.setRole(request.getRole());
-        usuario.setRestauranteId(request.getRestauranteId());
-        usuario.setAtivo(true); // Novos usuários são ativos por padrão
+        cliente.setNome(dto.getNome()); // <-- 'nome' agora fica no Cliente
+        cliente.setCpf(dto.getCpf());
+        cliente.setTelefone(dto.getTelefone());
         
-        return usuarioRepository.save(usuario);
+        // (Não setamos email/ativo aqui - CORRIGE OS ERROS `setEmail`/`setAtivo`)
+        
+        clienteRepository.save(cliente);
+
+        // 4. Criar a entidade de Endereço (Gargalo 1)
+        EnderecoDTO enderecoDTO = dto.getEndereco();
+        Endereco endereco = modelMapper.map(enderecoDTO, Endereco.class);
+        endereco.setUsuario(usuarioSalvo); // <-- Conecta o endereço ao Usuário
+        endereco.setApelido("Principal"); // Define o primeiro endereço como 'Principal'
+        
+        enderecoRepository.save(endereco);
+
+        // Retorna o Usuário salvo (agora completo com perfil e endereço)
+        return usuarioSalvo;
     }
 
+    // O método 'criarUsuario(RegisterRequest)' antigo (que recebia Role) 
+    // foi substituído por 'registrarCliente(RegisterRequest)'.
+    // Se você precisar de um método para criar ADMIN/RESTAURANTE, 
+    // ele deve ser um método separado.
+
+    
     /**
+     * (Seu método original - Está OK)
      * Busca um usuário pelo seu ID.
-     *
-     * @param id O ID do usuário.
-     * @return A entidade {@link Usuario} correspondente.
-     * @throws RuntimeException (ou idealmente, uma exceção customizada) se o usuário não for encontrado.
      */
     public Usuario buscarPorId(Long id) {
         return usuarioRepository.findById(id)
@@ -104,11 +122,8 @@ public class AuthService implements UserDetailsService {
     }
 
     /**
+     * (Seu método original - Está OK)
      * Busca um usuário pelo seu email.
-     *
-     * @param email O email do usuário.
-     * @return A entidade {@link Usuario} correspondente.
-     * @throws RuntimeException (ou idealmente, uma exceção customizada) se o usuário não for encontrado.
      */
     public Usuario buscarPorEmail(String email) {
         return usuarioRepository.findByEmail(email)

@@ -1,145 +1,90 @@
 package com.deliverytech.delivery.dto.auth;
 
 import com.deliverytech.delivery.entity.Usuario;
+import com.deliverytech.delivery.entity.Cliente; // IMPORT ADICIONADO
 import com.deliverytech.delivery.enums.Role;
+import io.swagger.v3.oas.annotations.media.Schema; // IMPORT ADICIONADO
 
 import java.time.LocalDateTime;
 
 /**
  * DTO (Data Transfer Object) para representar os dados de um Usuário
  * de forma segura em respostas de API.
- *
- * Esta classe é uma "visão" pública da entidade {@link Usuario},
- * omitindo intencionalmente campos sensíveis como a senha (`senha`).
- *
- * É usado como parte da {@link LoginResponse} e em endpoints
- * que retornam informações do usuário (ex: GET /api/auth/me).
+ * (Refatorado para a arquitetura 'Decisão 1')
  */
+@Schema(description = "Dados de resposta segura do usuário")
 public class UserResponse {
 
-    /**
-     * O ID único do usuário.
-     */
+    @Schema(description = "ID único do usuário", example = "1")
     private Long id;
 
-    /**
-     * O nome completo do usuário.
-     */
-    private String nome;
+    @Schema(description = "Nome completo do usuário (buscado do perfil Cliente, se existir)", example = "João Silva")
+    private String nome; // O nome ainda existe no DTO
 
-    /**
-     * O email (username) do usuário.
-     */
+    @Schema(description = "Email (login) do usuário", example = "joao.silva@email.com")
     private String email;
 
-    /**
-     * O nível de permissão (role) do usuário (ex: CLIENTE, RESTAURANTE).
-     */
+    @Schema(description = "Nível de permissão", example = "CLIENTE")
     private Role role;
 
-    /**
-     * Indica se a conta do usuário está ativa ('true') ou desativada ('false').
-     */
+    @Schema(description = "Conta está ativa?", example = "true")
     private Boolean ativo;
 
-    /**
-     * A data e hora em que a conta do usuário foi criada.
-     */
+    @Schema(description = "Data de criação da conta")
     private LocalDateTime dataCriacao;
 
-    /**
-     * O ID do restaurante associado a este usuário (se aplicável).
-     * Será 'null' para usuários que não são do tipo RESTAURANTE.
-     */
+    @Schema(description = "ID do restaurante associado (se role=RESTAURANTE)", example = "5")
     private Long restauranteId;
 
     // -------------------------------------------------------------------------
     // Construtores
     // -------------------------------------------------------------------------
 
-    /**
-     * Construtor padrão.
-     * Necessário para a desserialização/serialização do JSON pelo Jackson.
-     */
     public UserResponse() {
     }
 
     /**
-     * Construtor de "Mapeamento" (Mapping Constructor).
+     * Construtor de "Mapeamento" (Mapping Constructor)
+     * (Refatorado para buscar o 'nome' do perfil Cliente)
      *
-     * Cria uma instância de {@link UserResponse} a partir de uma entidade
-     * {@link Usuario}. Este é o local onde os dados são filtrados,
-     * copiando apenas os campos seguros para o DTO.
-     *
-     * @param usuario A entidade {@link Usuario} vinda do banco de dados.
+     * @param usuario A entidade 'Usuario' vinda do banco de dados.
      */
     public UserResponse(Usuario usuario) {
         this.id = usuario.getId();
-        this.nome = usuario.getNome();
         this.email = usuario.getEmail();
         this.role = usuario.getRole();
         this.ativo = usuario.getAtivo();
         this.dataCriacao = usuario.getDataCriacao();
         this.restauranteId = usuario.getRestauranteId();
+
+        // --- CORREÇÃO (GARGALO 4 / DECISÃO 1) ---
+        // O 'nome' agora é buscado do perfil 'Cliente' associado
+        Cliente cliente = usuario.getCliente();
+        if (cliente != null) {
+            this.nome = cliente.getNome(); // <-- CORRIGIDO
+        } else {
+            // Se for um Admin ou Restaurante (sem perfil Cliente), o nome será nulo
+            // (Ou podemos definir um padrão, ex: "Usuário Admin")
+            this.nome = null; 
+        }
     }
 
     // -------------------------------------------------------------------------
-    // Getters e Setters
+    // Getters e Setters (Seu código original - Está OK)
     // -------------------------------------------------------------------------
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getNome() {
-        return nome;
-    }
-
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public Role getRole() {
-        return role;
-    }
-
-    public void setRole(Role role) {
-        this.role = role;
-    }
-
-    public Boolean getAtivo() {
-        return ativo;
-    }
-
-    public void setAtivo(Boolean ativo) {
-        this.ativo = ativo;
-    }
-
-    public LocalDateTime getDataCriacao() {
-        return dataCriacao;
-    }
-
-    public void setDataCriacao(LocalDateTime dataCriacao) {
-        this.dataCriacao = dataCriacao;
-    }
-
-    public Long getRestauranteId() {
-        return restauranteId;
-    }
-
-    public void setRestauranteId(Long restauranteId) {
-        this.restauranteId = restauranteId;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public String getNome() { return nome; }
+    public void setNome(String nome) { this.nome = nome; }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+    public Role getRole() { return role; }
+    public void setRole(Role role) { this.role = role; }
+    public Boolean getAtivo() { return ativo; }
+    public void setAtivo(Boolean ativo) { this.ativo = ativo; }
+    public LocalDateTime getDataCriacao() { return dataCriacao; }
+    public void setDataCriacao(LocalDateTime dataCriacao) { this.dataCriacao = dataCriacao; }
+    public Long getRestauranteId() { return restauranteId; }
+    public void setRestauranteId(Long restauranteId) { this.restauranteId = restauranteId; }
 }

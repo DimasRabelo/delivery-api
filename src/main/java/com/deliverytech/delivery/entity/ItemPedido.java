@@ -1,62 +1,78 @@
 package com.deliverytech.delivery.entity;
 
-import io.swagger.v3.oas.annotations.media.Schema; // Importação para documentação OpenAPI/Swagger
-import jakarta.persistence.*; // Importações para JPA (Persistência de Dados)
-import jakarta.validation.constraints.Min; // Importações para Validação de dados
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
-import lombok.Data; // Lombok: Gera getters, setters, toString, equals, hashCode
-import lombok.ToString; // Importação para usar o @ToString.Exclude
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Representa a entidade ItemPedido (tabela associativa).
- * Esta é a "linha" de um pedido, conectando um Pedido a um Produto
- * e armazenando a quantidade e o preço daquele momento.
+ * Representa a "linha" de um pedido.
+ * Agora armazena o 'precoUnitario' calculado (base + opcionais) e a lista de
+ * opcionais que foram selecionados para este item.
  */
 @Entity
-@Data // Lombok: Gera getters, setters, toString, equals, hashCode.
-@Table(name = "itens_pedido") // JPA: Define o nome da tabela no banco
-@Schema(description = "Entidade que representa um item dentro de um pedido (produto, quantidade, preço)")
+@Getter
+@Setter
+@ToString(exclude = {"pedido", "produto", "opcionaisSelecionados"})
+@EqualsAndHashCode(of = "id")
+@Table(name = "itens_pedido")
+@Schema(description = "Entidade que representa um item dentro de um pedido")
 public class ItemPedido {
 
-    @Id // Define como chave primária
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto-incremento
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Schema(description = "Identificador único do item no pedido", example = "501")
     private Long id;
 
-    @NotNull(message = "Quantidade é obrigatória") // Validação: Não pode ser nula
-    @Min(value = 1, message = "A quantidade deve ser de pelo menos 1") // Validação: Deve ser no mínimo 1
+    @NotNull(message = "Quantidade é obrigatória")
+    @Min(value = 1, message = "A quantidade deve ser de pelo menos 1")
     @Schema(description = "Quantidade deste produto no pedido", example = "2", required = true, minimum = "1")
     private Integer quantidade;
 
-    @NotNull(message = "Preço unitário é obrigatório") // Validação
-    @PositiveOrZero(message = "Preço unitário não pode ser negativo") // Validação
-    @Schema(description = "Preço do produto no momento da compra (snapshot)", example = "35.50", required = true, minimum = "0")
-    private BigDecimal precoUnitario; // Este é o preço "congelado" no momento da compra
+    // --- MUDANÇA CRÍTICA ---
+    // Este preço não vem mais direto do Produto. Ele deve ser CALCULADO 
+    // (precoBase + precoAdicional dos opcionais) pelo seu Service.
+    @NotNull(message = "Preço unitário é obrigatório")
+    @PositiveOrZero(message = "Preço unitário não pode ser negativo")
+    @Schema(description = "Preço unitário JÁ CALCULADO (com opcionais) no momento da compra (snapshot)", example = "63.00", required = true, minimum = "0")
+    private BigDecimal precoUnitario; 
 
-    @NotNull(message = "Subtotal é obrigatório") // Validação
-    @PositiveOrZero(message = "Subtotal não pode ser negativo") // Validação
-    @Schema(description = "Subtotal (quantidade * precoUnitario) deste item", example = "71.00", required = true, minimum = "0")
+    @NotNull(message = "Subtotal é obrigatório")
+    @PositiveOrZero(message = "Subtotal não pode ser negativo")
+    @Schema(description = "Subtotal (quantidade * precoUnitario)", example = "126.00", required = true, minimum = "0")
     private BigDecimal subtotal; // (quantidade * precoUnitario)
 
-    // --- Relacionamentos ---
+    // --- Relacionamentos (Seu código original) ---
 
-    // Relacionamento JPA: Muitos Itens pertencem a Um Pedido
-    @ManyToOne(fetch = FetchType.LAZY) // 'FetchType.LAZY' é uma boa prática para performance
-    @JoinColumn(name = "pedido_id") // Define o nome da coluna de chave estrangeira (FK)
-    @NotNull(message = "O item deve estar associado a um pedido") // Validação: Um item não existe sem um pedido
-    @ToString.Exclude // IMPORTANTE: Evita loop infinito no toString() gerado pelo Lombok
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "pedido_id")
+    @NotNull(message = "O item deve estar associado a um pedido")
     @Schema(description = "O Pedido ao qual este item pertence")
     private Pedido pedido;
 
-    // Relacionamento JPA: Muitos Itens podem se referir ao Mesmo Produto
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "produto_id") // Define o nome da coluna de chave estrangeira (FK)
-    @NotNull(message = "O item deve estar associado a um produto") // Validação: Um item não existe sem um produto
+    @JoinColumn(name = "produto_id")
+    @NotNull(message = "O item deve estar associado a um produto")
     @Schema(description = "O Produto que está sendo comprado")
     private Produto produto;
+
+    // --- MUDANÇA 2: LINK PARA OS OPCIONAIS ESCOLHIDOS ---
+    /**
+     * Registra quais 'ItemOpcional' foram selecionados pelo cliente
+     * para ESTE 'ItemPedido' específico.
+     */
+    @OneToMany(mappedBy = "itemPedido", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Schema(description = "Lista de opcionais que foram selecionados para este item")
+    private List<ItemPedidoOpcional> opcionaisSelecionados = new ArrayList<>();
 
     // --- Construtores ---
 
@@ -64,35 +80,14 @@ public class ItemPedido {
      * Construtor padrão (vazio).
      * Necessário para o funcionamento da JPA.
      */
-    public ItemPedido() {}
-
-    /**
-     * Construtor de conveniência para criar um novo item.
-     * Ele "congela" o preço do produto (precoUnitario) no momento da criação.
-     *
-     * @param produto O produto a ser adicionado
-     * @param quantidade A quantidade desejada
-     */
-    public ItemPedido(Produto produto, int quantidade) {
-        this.produto = produto;
-        this.quantidade = quantidade;
-        
-        // Lógica de negócio: "Congela" o preço do produto no item
-        if (produto != null && produto.getPreco() != null) {
-            this.precoUnitario = produto.getPreco(); 
-        } else {
-            this.precoUnitario = BigDecimal.ZERO;
-        }
-        
-        // Calcula o subtotal inicial
-        calcularSubtotal();
+    public ItemPedido() {
     }
 
     // --- Lógica de Negócio ---
 
     /**
      * Lógica de Negócio: Calcula (ou recalcula) o subtotal deste item.
-     * Garante que o subtotal seja (precoUnitario * quantidade).
+     * Deve ser chamado pelo Service DEPOIS de definir o 'precoUnitario' calculado.
      */
     public void calcularSubtotal() {
         if (precoUnitario != null && quantidade != null && quantidade > 0) {

@@ -12,35 +12,29 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Implementação dos serviços de gerenciamento (CRUD) da entidade Usuario.
- * Implementa a interface UsuarioService.
- */
 @Service
 @Transactional
 public class UsuarioServiceImpl implements UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
 
-    // Injeção de dependência via construtor
     public UsuarioServiceImpl(UsuarioRepository usuarioRepository) {
         this.usuarioRepository = usuarioRepository;
     }
 
     /**
-     * Busca todos os usuários de forma paginada e os converte para UserResponse.
+     * (Seu método original - Está OK)
+     * O 'UserResponse::new' funciona porque já corrigimos o UserResponse.java
      */
     @Override
     @Transactional(readOnly = true)
     public Page<UserResponse> buscarTodos(Pageable pageable) {
         Page<Usuario> paginaUsuarios = usuarioRepository.findAll(pageable);
-        // Converte Page<Usuario> para Page<UserResponse> usando o construtor do DTO
         return paginaUsuarios.map(UserResponse::new);
     }
 
     /**
-     * Busca um usuário pelo seu ID.
-     * Lança uma exceção customizada se não encontrar.
+     * (Seu método original - Está OK)
      */
     @Override
     @Transactional(readOnly = true)
@@ -50,48 +44,48 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     /**
-     * Busca um usuário pelo ID e já o converte para o DTO UserResponse.
+     * (Seu método original - Está OK)
      */
     @Override
     @Transactional(readOnly = true)
     public UserResponse buscarPorIdResponse(Long id) {
-        // Reutiliza o método buscarPorId para evitar duplicação
         Usuario usuario = this.buscarPorId(id);
         return new UserResponse(usuario);
     }
 
     /**
-     * Atualiza um usuário de forma segura, usando um DTO.
-     * Apenas 'nome' e 'email' são atualizados.
+     * Atualiza os dados de autenticação de um usuário (VERSÃO REFATORADA).
+     * Agora atualiza APENAS os campos que pertencem ao 'Usuario' (email).
+     * A atualização do 'nome' é feita pelo ClienteService.
      */
     @Override
     public UserResponse atualizar(Long id, UsuarioUpdateDTO dto) {
-        // 1. Busca o usuário existente no banco
+        // 1. Busca o usuário existente
         Usuario usuario = this.buscarPorId(id);
 
-        // 2. Validação: Verifica se o novo email já está em uso por OUTRO usuário
+        // 2. Validação: Verifica se o novo email já está em uso
         if (!dto.getEmail().equalsIgnoreCase(usuario.getEmail()) && 
              usuarioRepository.existsByEmail(dto.getEmail())) {
             
             throw new ConflictException("Email já está em uso por outro usuário");
         }
 
-        // 3. Copia os campos permitidos do DTO para a entidade
-        usuario.setNome(dto.getNome());
+        // 3. --- CORREÇÃO (GARGALO 4 / DECISÃO 1) ---
+        // A linha 'usuario.setNome(dto.getNome());' FOI REMOVIDA.
+        // Este serviço só atualiza o 'email'.
         usuario.setEmail(dto.getEmail());
         
-        // (Não mexemos em senha, role ou status aqui por segurança)
-
         // 4. Salva o usuário atualizado
         Usuario usuarioSalvo = usuarioRepository.save(usuario);
 
         // 5. Retorna o DTO de resposta
+        // (O construtor do UserResponse já sabe buscar o 'nome' no Cliente)
         return new UserResponse(usuarioSalvo);
     }
 
     /**
+     * (Seu método original - Está OK)
      * Realiza a "exclusão lógica" (soft delete) de um usuário.
-     * O usuário não é removido do banco, apenas marcado como inativo.
      */
     @Override
     public void deletar(Long id) {

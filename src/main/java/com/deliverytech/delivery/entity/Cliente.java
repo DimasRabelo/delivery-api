@@ -1,110 +1,88 @@
 package com.deliverytech.delivery.entity;
 
-import io.swagger.v3.oas.annotations.media.Schema; // Importação para documentação OpenAPI/Swagger
-import jakarta.persistence.*; // Importações para JPA (Persistência de Dados)
-import jakarta.validation.constraints.Email; // Importações para Validação de dados
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
-import lombok.EqualsAndHashCode; // Imports do Lombok
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.time.LocalDateTime;
+// Importações de campos duplicados (Email, LocalDateTime) foram removidas
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Representa a entidade Cliente no banco de dados.
- * Armazena informações pessoais e de contato do usuário que realiza os pedidos.
+ * Representa o perfil cadastral de um Cliente.
+ * Armazena informações pessoais (nome, cpf, telefone) ligadas a um Usuário.
  */
-@Entity // Marca esta classe como uma entidade gerenciada pela JPA
-@Getter // Lombok: Gera getters para todos os campos
-@Setter // Lombok: Gera setters para todos os campos
-@ToString // Lombok: Gera o método toString()
-@EqualsAndHashCode(of = "id") // Lombok: Gera equals() e hashCode() baseados APENAS no 'id'
-@Schema(description = "Entidade que representa um cliente do serviço de delivery")
+@Entity
+@Getter
+@Setter
+@ToString
+@EqualsAndHashCode(of = "id")
+@Schema(description = "Entidade com os dados cadastrais (perfil) de um Cliente")
 public class Cliente {
 
-    @Id // Define este campo como a chave primária
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // Configura a geração automática do ID (auto-incremento)
-    @Schema(description = "Identificador único do cliente", example = "1")
-    private Long id;
+    // --- CHAVE PRIMÁRIA (MESMO ID DO USUÁRIO) ---
+    @Id
+    @Schema(description = "Identificador único (Chave Primária e Estrangeira, mesmo ID do Usuário)", example = "1")
+    private Long id; // NÃO é @GeneratedValue
 
-    @NotBlank(message = "Nome é obrigatório") // Validação: Não pode ser nulo ou vazio
-    @Size(min = 2, max = 100, message = "Nome deve ter entre 2 e 100 caracteres") // Validação: Tamanho
+    // --- LINK COM A ENTIDADE DE AUTENTICAÇÃO ---
+    @OneToOne(fetch = FetchType.LAZY)
+    @MapsId // Diz ao JPA: "O ID desta entidade (Cliente) é mapeado pelo 'usuario'"
+    @JoinColumn(name = "id") // A coluna 'id' é a PK e a FK
+    @ToString.Exclude
+    @Schema(description = "O usuário (de autenticação) ao qual este perfil pertence")
+    private Usuario usuario;
+
+    // --- CAMPOS DE PERFIL (DADOS CADASTRAIS) ---
+
+    @NotBlank(message = "Nome é obrigatório")
+    @Size(min = 2, max = 100, message = "Nome deve ter entre 2 e 100 caracteres")
     @Schema(description = "Nome completo do cliente", example = "João da Silva", required = true)
-    private String nome;
+    private String nome; // O 'nome' agora fica aqui
 
-    @Column(unique = true, nullable = false) // JPA: Garante que o email seja único e não nulo no banco
-    @NotBlank(message = "Email é obrigatório") // Validação
-    @Email(message = "Email deve ter um formato válido") // Validação: Verifica o formato de email
-    @Size(max = 100) // Validação: Tamanho máximo
-    @Schema(description = "Email do cliente (usado para login e comunicação)", example = "joao.silva@email.com", required = true)
-    private String email;
-
-    @Size(min = 10, max = 15, message = "Telefone deve ter entre 10 e 15 caracteres") // Validação: Permite formatos (11)91234-5678
-    @Schema(description = "Telefone de contato do cliente (com DDD)", example = "11912345678")
-    private String telefone;
-
-    @Size(max = 255) // Validação: Tamanho máximo
-    @Schema(description = "Endereço principal do cliente", example = "Rua das Flores, 123, Apto 45, Bairro, Cidade - UF")
-    private String endereco;
-
-    @Column(nullable = false) // JPA: Garante que não seja nulo no banco
-    @Schema(description = "Indica se o cliente está ativo no sistema", example = "true", defaultValue = "true")
-    private boolean ativo = true; // Valor padrão para novos clientes
-
-    @Column(name = "data_cadastro", nullable = false, updatable = false) // JPA: Não nulo e não pode ser atualizado após a criação
-    @Schema(description = "Data e hora do cadastro do cliente", example = "2024-10-30T10:00:00", readOnly = true)
-    private LocalDateTime dataCadastro = LocalDateTime.now(); // Valor padrão
-
-    @Column(unique = true, nullable = false, length = 11) // JPA: Único, não nulo e com tamanho fixo de 11
-    @NotBlank(message = "CPF é obrigatório") // Validação
-    @Size(min = 11, max = 11, message = "CPF deve ter 11 dígitos") // Validação: Tamanho exato
-    @Pattern(regexp = "\\d{11}", message = "CPF deve conter apenas números") // Validação: Garante que são apenas dígitos
+    @Column(unique = true, nullable = false, length = 11)
+    @NotBlank(message = "CPF é obrigatório")
+    @Size(min = 11, max = 11, message = "CPF deve ter 11 dígitos")
+    @Pattern(regexp = "\\d{11}", message = "CPF deve conter apenas números")
     @Schema(description = "CPF do cliente (apenas números)", example = "12345678901", required = true)
     private String cpf;
 
-    // Relacionamento JPA: Um Cliente pode ter Muitos Pedidos
+    @Size(min = 10, max = 15, message = "Telefone deve ter entre 10 e 15 caracteres")
+    @Schema(description = "Telefone de contato do cliente (com DDD)", example = "11912345678")
+    private String telefone;
+
+    // --- CAMPO 'endereco' (STRING) REMOVIDO ---
+    // Os endereços agora estão em 'usuario.getEnderecos()'
+
+    // --- RELACIONAMENTO COM PEDIDOS ---
     @OneToMany(
-            mappedBy = "cliente", // 'mappedBy' indica que a entidade 'Pedido' gerencia este relacionamento
-            cascade = CascadeType.ALL, // 'Cascade.ALL': Ações no Cliente (salvar, remover) afetam seus Pedidos
-            orphanRemoval = true, // 'orphanRemoval': Pedidos removidos da lista são excluídos do banco
-            fetch = FetchType.LAZY // 'FetchType.LAZY': Boa prática. Não carrega os pedidos do banco a menos que seja solicitado
+            mappedBy = "cliente",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
     )
-    @ToString.Exclude // Lombok: Exclui este campo do 'toString()' para evitar loops infinitos
+    @ToString.Exclude
     @Schema(description = "Lista de pedidos realizados pelo cliente")
     private List<Pedido> pedidos = new ArrayList<>();
 
-    // --- Métodos de Negócio ---
-
-    /**
-     * Método utilitário para "desativar" um cliente.
-     */
-    public void inativar() {
-        this.ativo = false;
-    }
-
     // --- Construtores ---
-
-    /**
-     * Construtor padrão.
-     * Necessário para o funcionamento da JPA.
-     */
     public Cliente() {
     }
 
     /**
-     * Construtor de conveniência para criar novos clientes.
-     * Os campos 'ativo' e 'dataCadastro' são definidos por padrão.
+     * Construtor de conveniência para criar o perfil do cliente.
      */
-    public Cliente(String nome, String email, String telefone, String endereco, String cpf) {
+    public Cliente(Usuario usuario, String nome, String cpf, String telefone) {
+        this.usuario = usuario;
+        this.id = usuario.getId(); // Seta a PK/FK
         this.nome = nome;
-        this.email = email;
-        this.telefone = telefone;
-        this.endereco = endereco;
         this.cpf = cpf;
+        this.telefone = telefone;
     }
 }

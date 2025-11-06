@@ -1,129 +1,85 @@
 package com.deliverytech.delivery.dto.auth;
 
-import com.deliverytech.delivery.enums.Role;
+// --- IMPORTS ADICIONADOS ---
+import com.deliverytech.delivery.dto.EnderecoDTO; 
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
+import org.hibernate.validator.constraints.br.CPF;
+import jakarta.validation.constraints.Pattern;
+// --- FIM DOS IMPORTS ---
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+// import jakarta.validation.constraints.NotNull; // (Não precisamos mais de NotNull para 'role')
 import jakarta.validation.constraints.Size;
+// import com.deliverytech.delivery.enums.Role; // (Não precisamos mais de 'Role' no DTO)
 
 /**
- * DTO (Data Transfer Object) que representa o corpo (body) da requisição de registro.
- *
- * Esta classe é usada pelo Spring (via Jackson) para desserializar o JSON enviado
- * pelo cliente no endpoint de criação de novos usuários (ex: POST /api/auth/register).
- *
- * Contém as validações (Bean Validation) para garantir que os dados de
- * registro sejam coesos e corretos antes de serem processados pelo serviço.
+ * DTO (Data Transfer Object) para o registro de um novo CLIENTE.
+ * (Refatorado para incluir dados de Perfil e Endereço)
  */
+@Schema(description = "DTO completo para registro de um novo Cliente")
 public class RegisterRequest {
 
-    /**
-     * Nome do usuário.
-     * Não pode ser nulo/vazio e deve ter entre 2 e 100 caracteres.
-     */
+    // --- Dados do Perfil (vão para a entidade Cliente) ---
+    @Schema(description = "Nome completo do cliente", required = true)
     @NotBlank(message = "Nome é obrigatório")
     @Size(min = 2, max = 100, message = "Nome deve ter entre 2 e 100 caracteres")
     private String nome;
 
-    /**
-     * Email do usuário. Será usado para login.
-     * Não pode ser nulo/vazio e deve ter um formato de email válido.
-     */
+    @Schema(description = "CPF do cliente", required = true)
+    @NotBlank(message = "CPF é obrigatório")
+    @CPF(message = "CPF inválido") // Valida o formato e os dígitos do CPF
+    private String cpf;
+
+    @Schema(description = "Telefone do cliente", example = "11999999999", required = true)
+    @NotBlank(message = "Telefone é obrigatório")
+    @Pattern(regexp = "^(\\(\\d{2}\\)\\s?\\d{4,5}-?\\d{4}|\\d{10,11})$", message = "Telefone inválido")
+    private String telefone;
+
+    // --- Dados de Autenticação (vão para a entidade Usuario) ---
+    @Schema(description = "Email (será o login)", required = true)
     @NotBlank(message = "Email é obrigatório")
     @Email(message = "Email deve ter formato válido")
     private String email;
 
-    /**
-     * Senha (plana) do usuário.
-     * Não pode ser nula/vazia e deve ter no mínimo 6 caracteres.
-     * O {@link com.deliverytech.delivery.service.auth.AuthService} será 
-     * responsável por criptografar (hash) esta senha antes de salvar.
-     */
+    @Schema(description = "Senha (mínimo 6 caracteres)", required = true)
     @NotBlank(message = "Senha é obrigatória")
     @Size(min = 6, message = "Senha deve ter pelo menos 6 caracteres")
     private String senha;
 
-    /**
-     * O nível de permissão (role) a ser atribuído ao novo usuário.
-     * Não pode ser nulo (ex: "CLIENTE", "RESTAURANTE").
-     */
-    @NotNull(message = "Role é obrigatória")
-    private Role role;
+    // --- Dados de Endereço (vão para a entidade Endereco - Gargalo 1) ---
+    @Schema(description = "Endereço principal (obrigatório no cadastro)", required = true)
+    @NotNull(message = "Endereço principal é obrigatório")
+    @Valid // Instrui o Spring a validar os campos dentro do EnderecoDTO
+    private EnderecoDTO endereco;
 
-    /**
-     * O ID do restaurante ao qual este usuário será associado.
-     * Este campo é opcional e usado apenas se a {@link #role} for RESTAURANTE.
-     */
-    private Long restauranteId;
+    // --- CAMPOS ANTIGOS REMOVIDOS ---
+    // private Role role; (Será 'CLIENTE' por padrão no serviço)
+    // private Long restauranteId; (Não se aplica ao cadastro de cliente)
 
     // -------------------------------------------------------------------------
     // Construtores
     // -------------------------------------------------------------------------
-
-    /**
-     * Construtor padrão.
-     * Necessário para a desserialização do JSON pelo Jackson.
-     */
+    
     public RegisterRequest() {
-    }
-
-    /**
-     * Construtor completo (sem restauranteId).
-     * Útil para a criação de instâncias, especialmente em testes.
-     *
-     * @param nome  Nome do usuário.
-     * @param email Email do usuário.
-     * @param senha Senha do usuário.
-     * @param role  Role do usuário.
-     */
-    public RegisterRequest(String nome, String email, String senha, Role role) {
-        this.nome = nome;
-        this.email = email;
-        this.senha = senha;
-        this.role = role;
     }
 
     // -------------------------------------------------------------------------
     // Getters e Setters
     // -------------------------------------------------------------------------
 
-    public String getNome() {
-        return nome;
-    }
-
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getSenha() {
-        return senha;
-    }
-
-    public void setSenha(String senha) {
-        this.senha = senha;
-    }
-
-    public Role getRole() {
-        return role;
-    }
-
-    public void setRole(Role role) {
-        this.role = role;
-    }
-
-    public Long getRestauranteId() {
-        return restauranteId;
-    }
-
-    public void setRestauranteId(Long restauranteId) {
-        this.restauranteId = restauranteId;
-    }
+    public String getNome() { return nome; }
+    public void setNome(String nome) { this.nome = nome; }
+    public String getCpf() { return cpf; }
+    public void setCpf(String cpf) { this.cpf = cpf; }
+    public String getTelefone() { return telefone; }
+    public void setTelefone(String telefone) { this.telefone = telefone; }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+    public String getSenha() { return senha; }
+    public void setSenha(String senha) { this.senha = senha; }
+    public EnderecoDTO getEndereco() { return endereco; }
+    public void setEndereco(EnderecoDTO endereco) { this.endereco = endereco; }
 }
