@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pt"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RelatorioServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">delivery-api</a> &gt; <a href="index.source.html" class="el_package">com.deliverytech.delivery.service.impl</a> &gt; <span class="el_source">RelatorioServiceImpl.java</span></div><h1>RelatorioServiceImpl.java</h1><pre class="source lang-java linenums">package com.deliverytech.delivery.service.impl;
+
+import com.deliverytech.delivery.dto.relatorio.*;
+import com.deliverytech.delivery.entity.*;
+import com.deliverytech.delivery.repository.PedidoRepository;
+import com.deliverytech.delivery.service.RelatorioService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
+
+@Service
+<span class="fc" id="L18">public class RelatorioServiceImpl implements RelatorioService {</span>
+
+    @Autowired
+    private PedidoRepository pedidoRepository;
+
+    // ======================================================
+    // RELATÓRIO DE VENDAS POR RESTAURANTE
+    // (Este método estava OK)
+    // ======================================================
+    @Override
+    @Transactional(readOnly = true)
+    public List&lt;RelatorioVendasDTO&gt; gerarRelatorioVendas(LocalDate inicio, LocalDate fim) {
+<span class="nc" id="L30">        LocalDateTime inicioDia = inicio.atStartOfDay();</span>
+<span class="nc" id="L31">        LocalDateTime fimDia = fim.atTime(23, 59, 59);</span>
+
+<span class="nc" id="L33">        List&lt;Pedido&gt; pedidos = pedidoRepository.findAll().stream()</span>
+<span class="nc bnc" id="L34" title="All 2 branches missed.">                .filter(p -&gt; p.getDataPedido() != null &amp;&amp;</span>
+<span class="nc bnc" id="L35" title="All 2 branches missed.">                        p.getRestaurante() != null &amp;&amp;</span>
+<span class="nc bnc" id="L36" title="All 2 branches missed.">                        !p.getDataPedido().isBefore(inicioDia) &amp;&amp;</span>
+<span class="nc bnc" id="L37" title="All 2 branches missed.">                        !p.getDataPedido().isAfter(fimDia))</span>
+<span class="nc" id="L38">                .collect(Collectors.toList());</span>
+
+<span class="nc bnc" id="L40" title="All 2 branches missed.">        if (pedidos.isEmpty()) {</span>
+<span class="nc" id="L41">            return Collections.emptyList();</span>
+        }
+
+<span class="nc" id="L44">        Map&lt;Restaurante, List&lt;Pedido&gt;&gt; pedidosPorRestaurante =</span>
+<span class="nc" id="L45">                pedidos.stream().collect(Collectors.groupingBy(Pedido::getRestaurante));</span>
+
+<span class="nc" id="L47">        return pedidosPorRestaurante.entrySet().stream()</span>
+<span class="nc" id="L48">                .map(entry -&gt; {</span>
+<span class="nc" id="L49">                    Restaurante r = entry.getKey();</span>
+<span class="nc" id="L50">                    List&lt;Pedido&gt; pedidosRestaurante = entry.getValue();</span>
+<span class="nc" id="L51">                    BigDecimal totalVendas = pedidosRestaurante.stream()</span>
+<span class="nc" id="L52">                            .map(Pedido::getValorTotal)</span>
+<span class="nc" id="L53">                            .reduce(BigDecimal.ZERO, BigDecimal::add);</span>
+<span class="nc" id="L54">                    return new RelatorioVendasDTO(</span>
+<span class="nc" id="L55">                            r.getNome(),</span>
+<span class="nc" id="L56">                            pedidosRestaurante.size(),</span>
+                            totalVendas
+                    );
+                })
+<span class="nc" id="L60">                .collect(Collectors.toList());</span>
+    }
+
+    // ======================================================
+    // RELATÓRIO DE PRODUTOS MAIS VENDIDOS (MÉTODO REFATORADO)
+    // ======================================================
+    @Override
+    @Transactional(readOnly = true)
+    public List&lt;RelatorioProdutosDTO&gt; gerarRelatorioProdutos(LocalDate inicio, LocalDate fim) {
+<span class="nc" id="L69">        LocalDateTime inicioDia = inicio.atStartOfDay();</span>
+<span class="nc" id="L70">        LocalDateTime fimDia = fim.atTime(23, 59, 59);</span>
+
+<span class="nc" id="L72">        List&lt;Pedido&gt; pedidos = pedidoRepository.findAll().stream()</span>
+<span class="nc bnc" id="L73" title="All 2 branches missed.">                .filter(p -&gt; p.getDataPedido() != null &amp;&amp;</span>
+<span class="nc bnc" id="L74" title="All 2 branches missed.">                        p.getItens() != null &amp;&amp;</span>
+<span class="nc bnc" id="L75" title="All 2 branches missed.">                        !p.getDataPedido().isBefore(inicioDia) &amp;&amp;</span>
+<span class="nc bnc" id="L76" title="All 2 branches missed.">                        !p.getDataPedido().isAfter(fimDia))</span>
+<span class="nc" id="L77">                .collect(Collectors.toList());</span>
+
+<span class="nc bnc" id="L79" title="All 2 branches missed.">        if (pedidos.isEmpty()) {</span>
+<span class="nc" id="L80">            return Collections.emptyList();</span>
+        }
+
+        // --- LÓGICA REFATORADA ---
+<span class="nc" id="L84">        Map&lt;Long, Integer&gt; contagemProdutos = new HashMap&lt;&gt;(); // (ID do Produto -&gt; Qtd Total)</span>
+<span class="nc" id="L85">        Map&lt;Long, BigDecimal&gt; receitaProdutos = new HashMap&lt;&gt;(); // (ID do Produto -&gt; Receita Total)</span>
+<span class="nc" id="L86">        Map&lt;Long, Produto&gt; produtosMap = new HashMap&lt;&gt;(); // (ID do Produto -&gt; Objeto Produto)</span>
+
+<span class="nc bnc" id="L88" title="All 2 branches missed.">        for (Pedido pedido : pedidos) {</span>
+<span class="nc bnc" id="L89" title="All 2 branches missed.">            if (pedido.getItens() != null) {</span>
+<span class="nc bnc" id="L90" title="All 2 branches missed.">                for (ItemPedido item : pedido.getItens()) {</span>
+<span class="nc bnc" id="L91" title="All 6 branches missed.">                    if (item != null &amp;&amp; item.getProduto() != null &amp;&amp; item.getQuantidade() != null) {</span>
+<span class="nc" id="L92">                        Long produtoId = item.getProduto().getId();</span>
+                        
+                        // 1. Soma a quantidade vendida (como antes)
+<span class="nc" id="L95">                        contagemProdutos.merge(produtoId, item.getQuantidade(), Integer::sum);</span>
+                        
+                        // 2. SOMA A RECEITA REAL (do ItemPedido, que inclui opcionais)
+<span class="nc" id="L98">                        receitaProdutos.merge(produtoId, item.getSubtotal(), BigDecimal::add);</span>
+                        
+<span class="nc" id="L100">                        produtosMap.put(produtoId, item.getProduto());</span>
+                    }
+<span class="nc" id="L102">                }</span>
+            }
+<span class="nc" id="L104">        }</span>
+
+<span class="nc bnc" id="L106" title="All 2 branches missed.">        if (contagemProdutos.isEmpty()) {</span>
+<span class="nc" id="L107">            return Collections.emptyList();</span>
+        }
+
+        // 3. Monta a resposta usando a RECEITA REAL (não o preço base)
+<span class="nc" id="L111">        return contagemProdutos.entrySet().stream()</span>
+<span class="nc" id="L112">                .map(entry -&gt; {</span>
+<span class="nc" id="L113">                    Long produtoId = entry.getKey();</span>
+<span class="nc" id="L114">                    Produto produto = produtosMap.get(produtoId);</span>
+<span class="nc" id="L115">                    Integer totalVendido = entry.getValue();</span>
+                    
+                    // CORREÇÃO: Pega a receita total somada (que já inclui os opcionais)
+<span class="nc" id="L118">                    BigDecimal receitaTotal = receitaProdutos.getOrDefault(produtoId, BigDecimal.ZERO);</span>
+                    
+                    // (A linha 'produto.getPreco()' foi removida, corrigindo o erro)
+
+<span class="nc" id="L122">                    return new RelatorioProdutosDTO(</span>
+<span class="nc" id="L123">                            produto.getNome(),</span>
+<span class="nc" id="L124">                            produto.getCategoria(),</span>
+                            totalVendido,
+                            receitaTotal // &lt;-- Usa a receita correta
+                    );
+                })
+<span class="nc" id="L129">                .sorted(Comparator.comparing(RelatorioProdutosDTO::getTotalVendido).reversed())</span>
+<span class="nc" id="L130">                .collect(Collectors.toList());</span>
+    }
+
+    // ======================================================
+    // RELATÓRIO DE CLIENTES COM MAIS PEDIDOS
+    // (Este método estava OK - 'c.getNome()' está correto na Decisão 1)
+    // ======================================================
+    @Override
+    @Transactional(readOnly = true)
+    public List&lt;RelatorioClientesDTO&gt; gerarRelatorioClientes(LocalDate inicio, LocalDate fim) {
+<span class="nc" id="L140">        LocalDateTime inicioDia = inicio.atStartOfDay();</span>
+<span class="nc" id="L141">        LocalDateTime fimDia = fim.atTime(23, 59, 59);</span>
+
+<span class="nc" id="L143">        List&lt;Pedido&gt; pedidos = pedidoRepository.findAll().stream()</span>
+<span class="nc bnc" id="L144" title="All 2 branches missed.">                .filter(p -&gt; p.getDataPedido() != null &amp;&amp;</span>
+<span class="nc bnc" id="L145" title="All 2 branches missed.">                        p.getCliente() != null &amp;&amp;</span>
+<span class="nc bnc" id="L146" title="All 2 branches missed.">                        !p.getDataPedido().isBefore(inicioDia) &amp;&amp;</span>
+<span class="nc bnc" id="L147" title="All 2 branches missed.">                        !p.getDataPedido().isAfter(fimDia))</span>
+<span class="nc" id="L148">                .collect(Collectors.toList());</span>
+
+<span class="nc bnc" id="L150" title="All 2 branches missed.">        if (pedidos.isEmpty()) {</span>
+<span class="nc" id="L151">            return Collections.emptyList();</span>
+        }
+
+<span class="nc" id="L154">        Map&lt;Cliente, List&lt;Pedido&gt;&gt; pedidosPorCliente =</span>
+<span class="nc" id="L155">                pedidos.stream().collect(Collectors.groupingBy(Pedido::getCliente));</span>
+
+<span class="nc" id="L157">        return pedidosPorCliente.entrySet().stream()</span>
+<span class="nc" id="L158">                .map(entry -&gt; {</span>
+<span class="nc" id="L159">                    Cliente c = entry.getKey();</span>
+<span class="nc" id="L160">                    List&lt;Pedido&gt; pedidosCliente = entry.getValue();</span>
+<span class="nc" id="L161">                    BigDecimal totalGasto = pedidosCliente.stream()</span>
+<span class="nc" id="L162">                            .map(Pedido::getValorTotal)</span>
+<span class="nc" id="L163">                            .reduce(BigDecimal.ZERO, BigDecimal::add);</span>
+<span class="nc" id="L164">                    return new RelatorioClientesDTO(</span>
+<span class="nc" id="L165">                            c.getNome(), // &lt;-- Está CORRETO (Nome está em Cliente)</span>
+<span class="nc" id="L166">                            pedidosCliente.size(),</span>
+                            totalGasto
+                    );
+                })
+<span class="nc" id="L170">                .sorted(Comparator.comparing(RelatorioClientesDTO::getTotalGasto).reversed())</span>
+<span class="nc" id="L171">                .collect(Collectors.toList());</span>
+    }
+
+    // ======================================================
+    // RELATÓRIO DE PEDIDOS (GERAL)
+    // (Este método estava OK - 'p.getCliente().getNome()' está correto na Decisão 1)
+    // ======================================================
+    @Override
+    @Transactional(readOnly = true)
+    public List&lt;RelatorioPedidosDTO&gt; gerarRelatorioPedidos(LocalDate inicio, LocalDate fim) {
+<span class="nc" id="L181">        LocalDateTime inicioDia = inicio.atStartOfDay();</span>
+<span class="nc" id="L182">        LocalDateTime fimDia = fim.atTime(23, 59, 59);</span>
+
+<span class="nc" id="L184">        List&lt;Pedido&gt; pedidos = pedidoRepository.findAll().stream()</span>
+<span class="nc bnc" id="L185" title="All 2 branches missed.">                .filter(p -&gt; p.getDataPedido() != null &amp;&amp;</span>
+<span class="nc bnc" id="L186" title="All 2 branches missed.">                        p.getCliente() != null &amp;&amp;</span>
+<span class="nc bnc" id="L187" title="All 2 branches missed.">                        p.getRestaurante() != null &amp;&amp;</span>
+<span class="nc bnc" id="L188" title="All 2 branches missed.">                        !p.getDataPedido().isBefore(inicioDia) &amp;&amp;</span>
+<span class="nc bnc" id="L189" title="All 2 branches missed.">                        !p.getDataPedido().isAfter(fimDia))</span>
+<span class="nc" id="L190">                .collect(Collectors.toList());</span>
+
+<span class="nc bnc" id="L192" title="All 2 branches missed.">        if (pedidos.isEmpty()) {</span>
+<span class="nc" id="L193">            return Collections.emptyList();</span>
+        }
+
+<span class="nc" id="L196">        return pedidos.stream()</span>
+<span class="nc" id="L197">                .map(p -&gt; new RelatorioPedidosDTO(</span>
+<span class="nc" id="L198">                        p.getId(),</span>
+<span class="nc" id="L199">                        p.getNumeroPedido(),</span>
+<span class="nc" id="L200">                        p.getRestaurante().getNome(),</span>
+<span class="nc" id="L201">                        p.getCliente().getNome(), // &lt;-- Está CORRETO</span>
+<span class="nc" id="L202">                        p.getValorTotal(),</span>
+<span class="nc" id="L203">                        p.getStatus(),</span>
+<span class="nc" id="L204">                        p.getDataPedido()</span>
+                ))
+<span class="nc" id="L206">                .collect(Collectors.toList());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

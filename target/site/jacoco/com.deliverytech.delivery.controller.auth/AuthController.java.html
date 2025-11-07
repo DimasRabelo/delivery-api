@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pt"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AuthController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">delivery-api</a> &gt; <a href="index.source.html" class="el_package">com.deliverytech.delivery.controller.auth</a> &gt; <span class="el_source">AuthController.java</span></div><h1>AuthController.java</h1><pre class="source lang-java linenums">package com.deliverytech.delivery.controller.auth;
+
+import com.deliverytech.delivery.dto.auth.LoginRequest;
+import com.deliverytech.delivery.dto.auth.LoginResponse;
+import com.deliverytech.delivery.dto.auth.RegisterRequest; // (Este é o DTO refatorado)
+import com.deliverytech.delivery.dto.auth.UserResponse;
+import com.deliverytech.delivery.entity.Usuario;
+import com.deliverytech.delivery.security.jwt.JwtUtil;
+import com.deliverytech.delivery.service.auth.AuthService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Date;
+import java.util.Map;
+
+@Tag(name = &quot;1. Autenticação&quot;, description = &quot;Endpoints para login e registro de clientes.&quot;)
+@RestController
+@RequestMapping(&quot;/api/auth&quot;)
+@CrossOrigin(origins = &quot;*&quot;)
+@RequiredArgsConstructor
+public class AuthController {
+
+    private final AuthenticationManager authenticationManager;
+    private final AuthService authService;
+    private final JwtUtil jwtUtil;
+
+    @Value(&quot;${app.jwt.expiration-ms:60000}&quot;)
+    private long jwtExpirationMs;
+
+    
+    /**
+     * (Seu método original - Está OK)
+     * Autentica um usuário com email e senha.
+     */
+    @Operation(summary = &quot;Autentica um usuário (Login)&quot;, description = &quot;Valida email/senha e retorna um token JWT.&quot;)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = &quot;200&quot;, description = &quot;Autenticação bem-sucedida&quot;,
+                         content = @Content(schema = @Schema(implementation = LoginResponse.class))),
+            @ApiResponse(responseCode = &quot;401&quot;, description = &quot;Credenciais inválidas&quot;)
+    })
+    @PostMapping(&quot;/login&quot;)
+    public ResponseEntity&lt;?&gt; login(@Valid @RequestBody LoginRequest loginRequest) {
+        try {
+<span class="nc" id="L58">            Authentication auth = authenticationManager.authenticate(</span>
+                    new UsernamePasswordAuthenticationToken(
+<span class="nc" id="L60">                            loginRequest.getEmail(),</span>
+<span class="nc" id="L61">                            loginRequest.getSenha()</span>
+                    )
+            );
+
+<span class="nc" id="L65">            Usuario usuario = (Usuario) auth.getPrincipal();</span>
+<span class="nc" id="L66">            String token = jwtUtil.generateToken(usuario);</span>
+<span class="nc" id="L67">            Date expirationDate = jwtUtil.extractExpiration(token);</span>
+<span class="nc" id="L68">            UserResponse userResponse = new UserResponse(usuario);</span>
+<span class="nc" id="L69">            long segundos = jwtExpirationMs / 1000;</span>
+
+<span class="nc" id="L71">            LoginResponse loginResponse = new LoginResponse(token, expirationDate, userResponse, segundos);</span>
+
+<span class="nc" id="L73">            return ResponseEntity.ok(loginResponse);</span>
+
+<span class="nc" id="L75">        } catch (BadCredentialsException e) {</span>
+<span class="nc" id="L76">            return ResponseEntity.status(401).body(Map.of(&quot;message&quot;, &quot;Credenciais inválidas&quot;));</span>
+<span class="nc" id="L77">        } catch (Exception e) {</span>
+<span class="nc" id="L78">            return ResponseEntity.status(500).body(Map.of(&quot;message&quot;, &quot;Erro interno: &quot; + e.getMessage()));</span>
+        }
+    }
+
+
+    /**
+     * Registra um novo CLIENTE no sistema (VERSÃO REFATORADA).
+     *
+     * @param registerRequest DTO refatorado (com nome, cpf, telefone, email, senha e EnderecoDTO).
+     * @return ResponseEntity 201 (Created) com o UserResponse do usuário criado.
+     */
+    @Operation(summary = &quot;Registra um novo Cliente&quot;,
+               description = &quot;Cria um novo Cliente (Usuário + Perfil + Endereço). Valida se o email já existe.&quot;)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = &quot;201&quot;, description = &quot;Cliente criado com sucesso&quot;,
+                         content = @Content(schema = @Schema(implementation = UserResponse.class))),
+            @ApiResponse(responseCode = &quot;400&quot;, description = &quot;Email já está em uso ou dados de validação inválidos&quot;)
+    })
+    @PostMapping(&quot;/register&quot;) // (Mantivemos o endpoint /register)
+    public ResponseEntity&lt;?&gt; registerCliente(@Valid @RequestBody RegisterRequest registerRequest) { // &lt;-- DTO Refatorado
+        
+        // 1. Verifica se o email já está cadastrado (OK)
+<span class="nc bnc" id="L100" title="All 2 branches missed.">        if (authService.existsByEmail(registerRequest.getEmail())) {</span>
+<span class="nc" id="L101">            return ResponseEntity.badRequest().body(Map.of(</span>
+                    &quot;message&quot;, &quot;Email já está em uso&quot;
+            ));
+        }
+
+        // 2. CORREÇÃO: Chama o novo método do AuthService
+        // (Este método agora cria Usuario + Cliente + Endereco)
+<span class="nc" id="L108">        Usuario novoUsuario = authService.registrarCliente(registerRequest);</span>
+        
+        // 3. Retorna o DTO seguro (sem a senha)
+<span class="nc" id="L111">        UserResponse userResponse = new UserResponse(novoUsuario);</span>
+<span class="nc" id="L112">        return ResponseEntity.status(201).body(userResponse);</span>
+    }
+
+    
+    /**
+     * (Seu método original - Está OK)
+     * Obtém os dados do usuário atualmente autenticado (logado).
+     */
+    @Operation(summary = &quot;Obtém dados do usuário logado (requer token)&quot;,
+               description = &quot;Retorna os dados do usuário autenticado (baseado no token JWT enviado).&quot;)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = &quot;200&quot;, description = &quot;Dados do usuário autenticado&quot;,
+                         content = @Content(schema = @Schema(implementation = UserResponse.class))),
+            @ApiResponse(responseCode = &quot;401&quot;, description = &quot;Token ausente ou inválido.&quot;)
+    })
+    @SecurityRequirement(name = &quot;bearerAuth&quot;)
+    @GetMapping(&quot;/me&quot;)
+    public ResponseEntity&lt;?&gt; getCurrentUser(Authentication authentication) {
+<span class="nc bnc" id="L130" title="All 6 branches missed.">        if (authentication == null || !authentication.isAuthenticated() || !(authentication.getPrincipal() instanceof Usuario)) {</span>
+<span class="nc" id="L131">            return ResponseEntity.status(401)</span>
+<span class="nc" id="L132">                    .body(Map.of(&quot;message&quot;, &quot;Token ausente ou inválido. Acesso negado.&quot;));</span>
+        }
+
+<span class="nc" id="L135">        Usuario usuario = (Usuario) authentication.getPrincipal();</span>
+<span class="nc" id="L136">        return ResponseEntity.ok(new UserResponse(usuario));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

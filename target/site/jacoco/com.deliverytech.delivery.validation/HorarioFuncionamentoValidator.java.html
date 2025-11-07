@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pt"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HorarioFuncionamentoValidator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">delivery-api</a> &gt; <a href="index.source.html" class="el_package">com.deliverytech.delivery.validation</a> &gt; <span class="el_source">HorarioFuncionamentoValidator.java</span></div><h1>HorarioFuncionamentoValidator.java</h1><pre class="source lang-java linenums">package com.deliverytech.delivery.validation;
+
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+/**
+ * Implementa a lógica de validação para a anotação @ValidHorarioFuncionamento.
+ * Verifica se a string está no formato &quot;HH:mm-HH:mm&quot; e se as horas/minutos são válidos.
+ */
+<span class="nc" id="L12">public class HorarioFuncionamentoValidator implements ConstraintValidator&lt;ValidHorarioFuncionamento, String&gt; {</span>
+
+    // Compila a expressão regular uma vez para melhor performance
+    // Regex: \d{2} -&gt; dois dígitos, : -&gt; literal :, - -&gt; literal -
+<span class="nc" id="L16">    private static final Pattern HORARIO_PATTERN = Pattern.compile(&quot;^(\\d{2}):(\\d{2})-(\\d{2}):(\\d{2})$&quot;);</span>
+
+    @Override
+    public void initialize(ValidHorarioFuncionamento constraintAnnotation) {
+        // Método chamado ao inicializar o validador (pode ser usado para pegar atributos da anotação, se houver)
+<span class="nc" id="L21">    }</span>
+
+    @Override
+    public boolean isValid(String horario, ConstraintValidatorContext context) {
+        // Se o horário for nulo ou vazio, considera válido (use @NotBlank/@NotNull para obrigatoriedade)
+<span class="nc bnc" id="L26" title="All 4 branches missed.">        if (horario == null || horario.trim().isEmpty()) {</span>
+<span class="nc" id="L27">            return true; // Ou false se o campo for obrigatório E validado aqui</span>
+        }
+
+<span class="nc" id="L30">        Matcher matcher = HORARIO_PATTERN.matcher(horario);</span>
+
+        // 1. Verifica se o formato geral &quot;HH:mm-HH:mm&quot; bate
+<span class="nc bnc" id="L33" title="All 2 branches missed.">        if (!matcher.matches()) {</span>
+<span class="nc" id="L34">            return false;</span>
+        }
+
+        try {
+            // 2. Extrai as horas e minutos (matcher.group(index) pega os parênteses da regex)
+<span class="nc" id="L39">            int horaInicio = Integer.parseInt(matcher.group(1));</span>
+<span class="nc" id="L40">            int minutoInicio = Integer.parseInt(matcher.group(2));</span>
+<span class="nc" id="L41">            int horaFim = Integer.parseInt(matcher.group(3));</span>
+<span class="nc" id="L42">            int minutoFim = Integer.parseInt(matcher.group(4));</span>
+
+            // 3. Verifica se as horas (00-23) e minutos (00-59) são válidos individualmente
+<span class="nc bnc" id="L45" title="All 4 branches missed.">            if (!isHoraValida(horaInicio) || !isMinutoValido(minutoInicio) ||</span>
+<span class="nc bnc" id="L46" title="All 4 branches missed.">                !isHoraValida(horaFim) || !isMinutoValido(minutoFim)) {</span>
+<span class="nc" id="L47">                return false;</span>
+            }
+
+            // 4. (Opcional) Poderia verificar se horaInicio &lt; horaFim,
+            // mas isso pode ser complexo (ex: 22:00-02:00).
+            // Para simplificar, validamos apenas o formato e os valores.
+
+<span class="nc" id="L54">            return true; // Se passou por todas as verificações</span>
+
+<span class="nc" id="L56">        } catch (NumberFormatException e) {</span>
+            // Se algo der errado na conversão para int (não deveria acontecer por causa da regex)
+<span class="nc" id="L58">            return false;</span>
+        }
+    }
+
+    // Métodos auxiliares privados para checar os limites
+    private boolean isHoraValida(int hora) {
+<span class="nc bnc" id="L64" title="All 4 branches missed.">        return hora &gt;= 0 &amp;&amp; hora &lt;= 23;</span>
+    }
+
+    private boolean isMinutoValido(int minuto) {
+<span class="nc bnc" id="L68" title="All 4 branches missed.">        return minuto &gt;= 0 &amp;&amp; minuto &lt;= 59;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

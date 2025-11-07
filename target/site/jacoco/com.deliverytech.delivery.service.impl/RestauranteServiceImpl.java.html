@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pt"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RestauranteServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">delivery-api</a> &gt; <a href="index.source.html" class="el_package">com.deliverytech.delivery.service.impl</a> &gt; <span class="el_source">RestauranteServiceImpl.java</span></div><h1>RestauranteServiceImpl.java</h1><pre class="source lang-java linenums">package com.deliverytech.delivery.service.impl;
+
+import com.deliverytech.delivery.dto.RestauranteDTO;
+import com.deliverytech.delivery.dto.EnderecoDTO; 
+import com.deliverytech.delivery.dto.response.RestauranteResponseDTO;
+import com.deliverytech.delivery.entity.Restaurante;
+import com.deliverytech.delivery.entity.Endereco;
+import com.deliverytech.delivery.exception.BusinessException;
+import com.deliverytech.delivery.exception.ConflictException;
+import com.deliverytech.delivery.exception.EntityNotFoundException;
+import com.deliverytech.delivery.repository.RestauranteRepository;
+
+import com.deliverytech.delivery.service.RestauranteService;
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+@Transactional
+<span class="fc" id="L28">public class RestauranteServiceImpl implements RestauranteService {</span>
+
+    @Autowired
+    private RestauranteRepository restauranteRepository;
+
+  @Autowired
+    private ModelMapper modelMapper;
+
+    /**
+     * Cadastra um novo restaurante (VERSÃO REFATORADA).
+     * (Este método está OK como na mensagem 101)
+     */
+    @Override
+    public RestauranteResponseDTO cadastrarRestaurante(RestauranteDTO dto) {
+<span class="nc" id="L42">        restauranteRepository.findByNome(dto.getNome())</span>
+<span class="nc" id="L43">            .ifPresent(r -&gt; { </span>
+<span class="nc" id="L44">                throw new ConflictException(&quot;Restaurante já cadastrado: &quot; + dto.getNome(), &quot;nome&quot;, dto.getNome()); </span>
+            });
+
+<span class="nc" id="L47">        Restaurante restaurante = modelMapper.map(dto, Restaurante.class);</span>
+<span class="nc" id="L48">        restaurante.setAtivo(true);</span>
+
+<span class="nc" id="L50">        EnderecoDTO enderecoDTO = dto.getEndereco();</span>
+<span class="nc" id="L51">        Endereco endereco = modelMapper.map(enderecoDTO, Endereco.class);</span>
+<span class="nc" id="L52">        restaurante.setEndereco(endereco);</span>
+        
+<span class="nc" id="L54">        validarDadosRestaurante(restaurante);</span>
+
+<span class="nc" id="L56">        Restaurante salvo = restauranteRepository.save(restaurante);</span>
+<span class="nc" id="L57">        return modelMapper.map(salvo, RestauranteResponseDTO.class);</span>
+    }
+
+    /**
+     * Atualiza um restaurante (VERSÃO REFATORADA).
+     * (Este método está OK como na mensagem 101)
+     */
+    @Override
+    public RestauranteResponseDTO atualizarRestaurante(Long id, RestauranteDTO dto) {
+<span class="nc" id="L66">        Restaurante restaurante = restauranteRepository.findById(id)</span>
+<span class="nc" id="L67">                .orElseThrow(() -&gt; new EntityNotFoundException(&quot;Restaurante não encontrado: &quot; + id));</span>
+
+<span class="nc" id="L69">        restauranteRepository.findByNome(dto.getNome())</span>
+<span class="nc bnc" id="L70" title="All 2 branches missed.">                .ifPresent(r -&gt; { if (!r.getId().equals(id)) </span>
+<span class="nc" id="L71">                    throw new ConflictException(&quot;Nome já cadastrado: &quot; + dto.getNome(), &quot;nome&quot;, dto.getNome()); </span>
+<span class="nc" id="L72">                });</span>
+
+        // Mapeia os campos simples
+<span class="nc" id="L75">        restaurante.setNome(dto.getNome());</span>
+<span class="nc" id="L76">        restaurante.setCategoria(dto.getCategoria());</span>
+<span class="nc" id="L77">        restaurante.setTelefone(dto.getTelefone());</span>
+<span class="nc" id="L78">        restaurante.setTaxaEntrega(dto.getTaxaEntrega());</span>
+<span class="nc" id="L79">        restaurante.setAtivo(dto.getAtivo());</span>
+<span class="nc" id="L80">        restaurante.setTempoEntrega(dto.getTempoEntrega());</span>
+<span class="nc" id="L81">        restaurante.setHorarioFuncionamento(dto.getHorarioFuncionamento());</span>
+
+        // Atualiza a entidade Endereço aninhada
+<span class="nc bnc" id="L84" title="All 2 branches missed.">        if (dto.getEndereco() != null) {</span>
+<span class="nc" id="L85">            Endereco enderecoExistente = restaurante.getEndereco();</span>
+<span class="nc bnc" id="L86" title="All 2 branches missed.">            if (enderecoExistente == null) {</span>
+<span class="nc" id="L87">                enderecoExistente = new Endereco();</span>
+<span class="nc" id="L88">                restaurante.setEndereco(enderecoExistente);</span>
+            }
+<span class="nc" id="L90">            modelMapper.map(dto.getEndereco(), enderecoExistente);</span>
+        }
+
+<span class="nc" id="L93">        validarDadosRestaurante(restaurante);</span>
+<span class="nc" id="L94">        Restaurante atualizado = restauranteRepository.save(restaurante);</span>
+<span class="nc" id="L95">        return modelMapper.map(atualizado, RestauranteResponseDTO.class);</span>
+    }
+    
+
+    /**
+     * Calcula a taxa de entrega (VERSÃO REFATORADA COM LÓGICA DE CEP).
+     * Simula a distância comparando os 5 primeiros dígitos do CEP.
+     */
+    @Override
+    public BigDecimal calcularTaxaEntrega(Long restauranteId, String cepDestino) {
+<span class="nc" id="L105">        Restaurante restaurante = restauranteRepository.findById(restauranteId)</span>
+<span class="nc" id="L106">                .orElseThrow(() -&gt; new EntityNotFoundException(&quot;Restaurante não encontrado: &quot; + restauranteId));</span>
+
+<span class="nc bnc" id="L108" title="All 4 branches missed.">        if (restaurante.getAtivo() == null || !restaurante.getAtivo()) {</span>
+<span class="nc" id="L109">            throw new ConflictException(&quot;Restaurante não está disponível&quot;);</span>
+        }
+
+        // --- LÓGICA DE TAXA REFATORADA COM BASE NO CEP ---
+        
+        // 1. Pega o CEP do restaurante (da nova entidade Endereco)
+<span class="nc bnc" id="L115" title="All 4 branches missed.">        if (restaurante.getEndereco() == null || restaurante.getEndereco().getCep() == null) {</span>
+<span class="nc" id="L116">             throw new BusinessException(&quot;Restaurante está com endereço incompleto.&quot;);</span>
+        }
+<span class="nc" id="L118">        String cepRestaurante = restaurante.getEndereco().getCep().replaceAll(&quot;[^0-9]&quot;, &quot;&quot;);</span>
+        
+        // 2. Limpa o CEP do destino
+<span class="nc" id="L121">        String cepCliente = cepDestino.replaceAll(&quot;[^0-9]&quot;, &quot;&quot;);</span>
+        
+        // 3. Validação simples
+<span class="nc bnc" id="L124" title="All 4 branches missed.">        if (cepRestaurante.length() &lt; 8 || cepCliente.length() &lt; 8) {</span>
+<span class="nc" id="L125">             throw new BusinessException(&quot;CEP inválido para cálculo de taxa.&quot;);</span>
+        }
+
+        // 4. Pega a &quot;Área&quot; (primeiros 5 dígitos) de cada CEP
+<span class="nc" id="L129">        String areaRestaurante = cepRestaurante.substring(0, 5);</span>
+<span class="nc" id="L130">        String areaCliente = cepCliente.substring(0, 5);</span>
+        
+        BigDecimal taxaFinal;
+        
+        // 5. Compara as áreas
+<span class="nc bnc" id="L135" title="All 2 branches missed.">        if (areaRestaurante.equals(areaCliente)) {</span>
+            // Se for na mesma área, usa a taxa base (ou R$ 5,00)
+<span class="nc bnc" id="L137" title="All 2 branches missed.">            taxaFinal = restaurante.getTaxaEntrega() != null </span>
+<span class="nc" id="L138">                ? restaurante.getTaxaEntrega() </span>
+<span class="nc" id="L139">                : BigDecimal.valueOf(5.00);</span>
+        } else {
+            // Se for em área diferente, adiciona R$ 5,00 (simulando distância)
+<span class="nc bnc" id="L142" title="All 2 branches missed.">            BigDecimal taxaBase = restaurante.getTaxaEntrega() != null </span>
+<span class="nc" id="L143">                ? restaurante.getTaxaEntrega() </span>
+<span class="nc" id="L144">                : BigDecimal.valueOf(5.00);</span>
+<span class="nc" id="L145">            taxaFinal = taxaBase.add(BigDecimal.valueOf(5.00));</span>
+        }
+
+<span class="nc" id="L148">        return taxaFinal.setScale(2, RoundingMode.HALF_UP);</span>
+    }
+
+    /**
+     * Busca restaurantes próximos (VERSÃO REFATORADA COM LÓGICA DE CEP).
+     * Simula a &quot;proximidade&quot; comparando os 5 primeiros dígitos do CEP.
+     */
+    @Override
+    public List&lt;RestauranteResponseDTO&gt; buscarRestaurantesProximos(String cep, Integer raioKm) {
+        // 1. Limpa o CEP do cliente
+<span class="nc" id="L158">        String cepCliente = cep.replaceAll(&quot;[^0-9]&quot;, &quot;&quot;);</span>
+<span class="nc bnc" id="L159" title="All 2 branches missed.">        if (cepCliente.length() &lt; 8) {</span>
+            // Se o CEP for inválido, retorna todos os restaurantes
+<span class="nc" id="L161">            return buscarRestaurantesDisponiveis();</span>
+        }
+<span class="nc" id="L163">        String areaCliente = cepCliente.substring(0, 5);</span>
+        
+        // 2. Busca todos os restaurantes ativos
+<span class="nc" id="L166">        List&lt;Restaurante&gt; ativos = restauranteRepository.findByAtivoTrue();</span>
+
+        // 3. Filtra os restaurantes
+<span class="nc" id="L169">        List&lt;Restaurante&gt; proximos = ativos.stream()</span>
+<span class="nc" id="L170">            .filter(restaurante -&gt; {</span>
+                // 4. Pega o CEP do restaurante e compara a &quot;área&quot;
+<span class="nc bnc" id="L172" title="All 4 branches missed.">                if (restaurante.getEndereco() != null &amp;&amp; restaurante.getEndereco().getCep() != null) {</span>
+<span class="nc" id="L173">                    String cepRestaurante = restaurante.getEndereco().getCep().replaceAll(&quot;[^0-9]&quot;, &quot;&quot;);</span>
+<span class="nc bnc" id="L174" title="All 2 branches missed.">                    if (cepRestaurante.length() &gt;= 5) {</span>
+<span class="nc" id="L175">                        String areaRestaurante = cepRestaurante.substring(0, 5);</span>
+                        // (Aqui, o 'raioKm' é ignorado, mas a lógica de área funciona)
+<span class="nc" id="L177">                        return areaRestaurante.equals(areaCliente); </span>
+                    }
+                }
+<span class="nc" id="L180">                return false; // Ignora restaurantes sem CEP</span>
+            })
+<span class="nc" id="L182">            .collect(Collectors.toList());</span>
+
+<span class="nc" id="L184">        return proximos.stream()</span>
+<span class="nc" id="L185">                .map(r -&gt; modelMapper.map(r, RestauranteResponseDTO.class))</span>
+<span class="nc" id="L186">                .collect(Collectors.toList());</span>
+    }
+    
+
+    // ==========================================================
+    // (O resto dos seus métodos: buscarPorId, alterarStatus, etc.)
+    // (Eles não precisam de mudanças e estão OK)
+    // ==========================================================
+
+    @Override
+    @Transactional(readOnly = true)
+    public RestauranteResponseDTO buscarRestaurantePorId(Long id) {
+<span class="nc" id="L198">        Restaurante restaurante = restauranteRepository.findById(id)</span>
+<span class="nc" id="L199">                .orElseThrow(() -&gt; new EntityNotFoundException(&quot;Restaurante não encontrado: &quot; + id));</span>
+<span class="nc" id="L200">        return modelMapper.map(restaurante, RestauranteResponseDTO.class);</span>
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List&lt;RestauranteResponseDTO&gt; buscarRestaurantesPorCategoria(String categoria) {
+<span class="nc" id="L206">        List&lt;Restaurante&gt; restaurantes = restauranteRepository.findByCategoria(categoria);</span>
+<span class="nc" id="L207">        return restaurantes.stream()</span>
+<span class="nc" id="L208">                .map(r -&gt; modelMapper.map(r, RestauranteResponseDTO.class))</span>
+<span class="nc" id="L209">                .collect(Collectors.toList());</span>
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List&lt;RestauranteResponseDTO&gt; buscarRestaurantesDisponiveis() {
+<span class="nc" id="L215">        List&lt;Restaurante&gt; ativos = restauranteRepository.findByAtivoTrue();</span>
+<span class="nc" id="L216">        return ativos.stream()</span>
+<span class="nc" id="L217">                .map(r -&gt; modelMapper.map(r, RestauranteResponseDTO.class))</span>
+<span class="nc" id="L218">                .collect(Collectors.toList());</span>
+    }
+
+    @Override
+    public RestauranteResponseDTO alterarStatusRestaurante(Long id) {
+<span class="nc" id="L223">        Restaurante restaurante = restauranteRepository.findById(id)</span>
+<span class="nc" id="L224">                .orElseThrow(() -&gt; new EntityNotFoundException(&quot;Restaurante não encontrado: &quot; + id));</span>
+<span class="nc bnc" id="L225" title="All 4 branches missed.">        restaurante.setAtivo(restaurante.getAtivo() == null ? true : !restaurante.getAtivo());</span>
+<span class="nc" id="L226">        restauranteRepository.save(restaurante);</span>
+<span class="nc" id="L227">        return modelMapper.map(restaurante, RestauranteResponseDTO.class);</span>
+    }
+    
+    @Override
+    public Page&lt;RestauranteResponseDTO&gt; listarRestaurantes(String categoria, Boolean ativo, Pageable pageable) {
+        Page&lt;Restaurante&gt; restaurantesPage;
+<span class="nc bnc" id="L233" title="All 4 branches missed.">        if (categoria != null &amp;&amp; ativo != null) {</span>
+<span class="nc" id="L234">            restaurantesPage = restauranteRepository.findByCategoriaAndAtivo(categoria, ativo, pageable);</span>
+<span class="nc bnc" id="L235" title="All 2 branches missed.">        } else if (categoria != null) {</span>
+<span class="nc" id="L236">            restaurantesPage = restauranteRepository.findByCategoria(categoria, pageable);</span>
+<span class="nc bnc" id="L237" title="All 2 branches missed.">        } else if (ativo != null) {</span>
+<span class="nc" id="L238">            restaurantesPage = restauranteRepository.findByAtivo(ativo, pageable);</span>
+        } else {
+<span class="nc" id="L240">            restaurantesPage = restauranteRepository.findAll(pageable);</span>
+        }
+<span class="nc" id="L242">        return restaurantesPage.map(r -&gt; modelMapper.map(r, RestauranteResponseDTO.class));</span>
+    }
+
+    private void validarDadosRestaurante(Restaurante restaurante) {
+<span class="nc bnc" id="L246" title="All 4 branches missed.">        if (restaurante.getNome() == null || restaurante.getNome().trim().isEmpty())</span>
+<span class="nc" id="L247">            throw new ConflictException(&quot;Nome é obrigatório&quot;, &quot;nome&quot;, null);</span>
+<span class="nc bnc" id="L248" title="All 4 branches missed.">        if (restaurante.getTelefone() == null || restaurante.getTelefone().trim().isEmpty())</span>
+<span class="nc" id="L249">            throw new ConflictException(&quot;Telefone é obrigatório&quot;, &quot;telefone&quot;, null);</span>
+<span class="nc bnc" id="L250" title="All 2 branches missed.">        if (restaurante.getEndereco() == null) // (Validação Refatorada)</span>
+<span class="nc" id="L251">            throw new ConflictException(&quot;Endereço é obrigatório&quot;, &quot;endereco&quot;, null);</span>
+<span class="nc bnc" id="L252" title="All 4 branches missed.">        if (restaurante.getTaxaEntrega() != null &amp;&amp; restaurante.getTaxaEntrega().compareTo(BigDecimal.ZERO) &lt; 0)</span>
+<span class="nc" id="L253">            throw new ConflictException(&quot;Taxa de entrega não pode ser negativa&quot;, &quot;taxaEntrega&quot;, restaurante.getTaxaEntrega());</span>
+<span class="nc" id="L254">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pt"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProdutoController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">delivery-api</a> &gt; <a href="index.source.html" class="el_package">com.deliverytech.delivery.controller</a> &gt; <span class="el_source">ProdutoController.java</span></div><h1>ProdutoController.java</h1><pre class="source lang-java linenums">package com.deliverytech.delivery.controller;
+
+import com.deliverytech.delivery.dto.ProdutoDTO;
+import com.deliverytech.delivery.dto.response.ApiResponseWrapper;
+import com.deliverytech.delivery.dto.response.PagedResponseWrapper;
+import com.deliverytech.delivery.dto.response.ProdutoResponseDTO;
+import com.deliverytech.delivery.service.ProdutoService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+/**
+ * Controller para operações de CRUD e consulta relacionadas a Produtos.
+ *
+ * Expõe endpoints públicos para consulta de cardápios e endpoints protegidos
+ * para o gerenciamento de produtos por (ADMINs ou donos de restaurantes).
+ */
+@RestController
+@RequestMapping(&quot;/api/produtos&quot;)
+@CrossOrigin(origins = &quot;*&quot;)
+@Validated
+@Tag(name = &quot;4. Produtos&quot;, description = &quot;Operações de consulta e gerenciamento de produtos&quot;)
+<span class="fc" id="L40">public class ProdutoController {</span>
+
+    @Autowired
+    private ProdutoService produtoService;
+
+    /**
+     * Cadastra um novo produto no sistema.
+     * Acesso permitido para 'ADMIN' ou 'RESTAURANTE'.
+     *
+     * @param dto DTO contendo os dados do produto.
+     * @return ResponseEntity 201 (Created) com os dados do produto criado.
+     *
+     * @implNote **Atenção de Segurança:** A regra `@PreAuthorize(&quot;hasRole('RESTAURANTE')&quot;)`
+     * apenas verifica se o usuário é um restaurante, mas não se ele é o dono
+     * do 'restauranteId' informado no DTO. É esperado que o
+     * {@link ProdutoService#cadastrarProduto(ProdutoDTO)} contenha a lógica para
+     * extrair o usuário logado e forçar o 'restauranteId' correto,
+     * ignorando o que vier no DTO para evitar que um restaurante crie
+     * produtos para outro.
+     */
+    @PostMapping
+    @PreAuthorize(&quot;hasRole('ADMIN') or hasRole('RESTAURANTE')&quot;)
+    @Operation(summary = &quot;Cadastrar produto (ADMIN ou Dono)&quot;,
+               description = &quot;Cria um novo produto. Requer permissão de ADMIN ou RESTAURANTE.&quot;)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = &quot;201&quot;, description = &quot;Produto criado com sucesso&quot;,
+                         content = @Content(schema = @Schema(implementation = ProdutoResponseDTO.class))),
+            @ApiResponse(responseCode = &quot;400&quot;, description = &quot;Dados inválidos&quot;),
+            @ApiResponse(responseCode = &quot;401&quot;, description = &quot;Token ausente ou inválido&quot;),
+            @ApiResponse(responseCode = &quot;403&quot;, description = &quot;Acesso negado&quot;)
+    })
+    @SecurityRequirement(name = &quot;bearerAuth&quot;)
+    public ResponseEntity&lt;ApiResponseWrapper&lt;ProdutoResponseDTO&gt;&gt; cadastrar(
+            @Parameter(description = &quot;Dados do produto a ser cadastrado&quot;, required = true)
+            @Valid @RequestBody ProdutoDTO dto) {
+
+<span class="nc" id="L76">        ProdutoResponseDTO produto = produtoService.cadastrarProduto(dto);</span>
+<span class="nc" id="L77">        ApiResponseWrapper&lt;ProdutoResponseDTO&gt; response =</span>
+                new ApiResponseWrapper&lt;&gt;(true, produto, &quot;Produto criado com sucesso&quot;);
+<span class="nc" id="L79">        return ResponseEntity.status(HttpStatus.CREATED).body(response);</span>
+    }
+
+    /**
+     * Busca um produto específico pelo seu ID. Endpoint público.
+     *
+     * @param id ID do produto a ser consultado.
+     * @return ResponseEntity 200 (OK) com os dados do produto.
+     */
+    @GetMapping(&quot;/{id}&quot;)
+    @Operation(summary = &quot;Buscar produto por ID (Público)&quot;,
+               description = &quot;Retorna um produto específico pelo seu ID.&quot;)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = &quot;200&quot;, description = &quot;Produto encontrado&quot;,
+                         content = @Content(schema = @Schema(implementation = ProdutoResponseDTO.class))),
+            @ApiResponse(responseCode = &quot;404&quot;, description = &quot;Produto não encontrado&quot;)
+    })
+    public ResponseEntity&lt;ApiResponseWrapper&lt;ProdutoResponseDTO&gt;&gt; buscarPorId(
+            @Parameter(description = &quot;ID do produto a ser consultado&quot;, required = true, example = &quot;1&quot;)
+            @PathVariable Long id) {
+
+<span class="nc" id="L100">        ProdutoResponseDTO produto = produtoService.buscarProdutoPorId(id);</span>
+<span class="nc" id="L101">        ApiResponseWrapper&lt;ProdutoResponseDTO&gt; response =</span>
+                new ApiResponseWrapper&lt;&gt;(true, produto, &quot;Produto encontrado&quot;);
+<span class="nc" id="L103">        return ResponseEntity.ok(response);</span>
+    }
+
+    /**
+     * Atualiza os dados de um produto existente.
+     * Acesso restrito a 'ADMIN' ou ao dono do restaurante ao qual o produto pertence.
+     *
+     * @param id  ID do produto a ser atualizado.
+     * @param dto DTO com os novos dados do produto.
+     * @return ResponseEntity 200 (OK) com os dados do produto atualizado.
+     */
+    @PutMapping(&quot;/{id}&quot;)
+    @PreAuthorize(&quot;hasRole('ADMIN') or @produtoService.isOwner(#id)&quot;)
+    @Operation(summary = &quot;Atualizar produto (ADMIN ou Dono)&quot;,
+               description = &quot;Atualiza os dados de um produto. Requer permissão de ADMIN ou ser o dono do produto.&quot;)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = &quot;200&quot;, description = &quot;Produto atualizado com sucesso&quot;),
+            @ApiResponse(responseCode = &quot;400&quot;, description = &quot;Dados inválidos&quot;),
+            @ApiResponse(responseCode = &quot;401&quot;, description = &quot;Token ausente ou inválido&quot;),
+            @ApiResponse(responseCode = &quot;403&quot;, description = &quot;Acesso negado (não é ADMIN ou dono)&quot;),
+            @ApiResponse(responseCode = &quot;404&quot;, description = &quot;Produto não encontrado&quot;)
+    })
+    @SecurityRequirement(name = &quot;bearerAuth&quot;)
+    public ResponseEntity&lt;ApiResponseWrapper&lt;ProdutoResponseDTO&gt;&gt; atualizar(
+            @Parameter(description = &quot;ID do produto a ser atualizado&quot;, required = true, example = &quot;1&quot;)
+            @PathVariable Long id,
+            @Parameter(description = &quot;Dados atualizados do produto&quot;, required = true)
+            @Valid @RequestBody ProdutoDTO dto) {
+
+<span class="nc" id="L132">        ProdutoResponseDTO produto = produtoService.atualizarProduto(id, dto);</span>
+<span class="nc" id="L133">        ApiResponseWrapper&lt;ProdutoResponseDTO&gt; response =</span>
+                new ApiResponseWrapper&lt;&gt;(true, produto, &quot;Produto atualizado com sucesso&quot;);
+<span class="nc" id="L135">        return ResponseEntity.ok(response);</span>
+    }
+
+    /**
+     * Remove um produto do sistema (deleção lógica ou física).
+     * Acesso restrito a 'ADMIN' ou ao dono do restaurante ao qual o produto pertence.
+     *
+     * @param id ID do produto a ser removido.
+     * @return ResponseEntity 204 (No Content).
+     */
+    @DeleteMapping(&quot;/{id}&quot;)
+    @PreAuthorize(&quot;hasRole('ADMIN') or @produtoService.isOwner(#id)&quot;)
+    @Operation(summary = &quot;Remover produto (ADMIN ou Dono)&quot;,
+               description = &quot;Remove um produto. Requer permissão de ADMIN ou ser o dono do produto.&quot;)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = &quot;204&quot;, description = &quot;Produto removido com sucesso&quot;),
+            @ApiResponse(responseCode = &quot;401&quot;, description = &quot;Token ausente ou inválido&quot;),
+            @ApiResponse(responseCode = &quot;403&quot;, description = &quot;Acesso negado (não é ADMIN ou dono)&quot;),
+            @ApiResponse(responseCode = &quot;404&quot;, description = &quot;Produto não encontrado&quot;)
+    })
+    @SecurityRequirement(name = &quot;bearerAuth&quot;)
+    public ResponseEntity&lt;Void&gt; remover(
+            @Parameter(description = &quot;ID do produto a ser removido&quot;, required = true, example = &quot;1&quot;)
+            @PathVariable Long id) {
+
+<span class="nc" id="L160">        produtoService.removerProduto(id);</span>
+<span class="nc" id="L161">        return ResponseEntity.noContent().build();</span>
+    }
+
+    /**
+     * Altera a disponibilidade (ativo/inativo) de um produto.
+     * Acesso restrito a 'ADMIN' ou ao dono do restaurante ao qual o produto pertence.
+     *
+     * @param id ID do produto a ter sua disponibilidade alterada.
+     * @return ResponseEntity 200 (OK) com os dados do produto atualizado.
+     */
+    @PatchMapping(&quot;/{id}/disponibilidade&quot;)
+    @PreAuthorize(&quot;hasRole('ADMIN') or @produtoService.isOwner(#id)&quot;)
+    @Operation(summary = &quot;Alterar disponibilidade (ADMIN ou Dono)&quot;,
+               description = &quot;Altera a disponibilidade (ativo/inativo) de um produto.&quot;)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = &quot;200&quot;, description = &quot;Disponibilidade alterada com sucesso&quot;),
+            @ApiResponse(responseCode = &quot;401&quot;, description = &quot;Token ausente ou inválido&quot;),
+            @ApiResponse(responseCode = &quot;403&quot;, description = &quot;Acesso negado (não é ADMIN ou dono)&quot;),
+            @ApiResponse(responseCode = &quot;404&quot;, description = &quot;Produto não encontrado&quot;)
+    })
+    @SecurityRequirement(name = &quot;bearerAuth&quot;)
+    public ResponseEntity&lt;ApiResponseWrapper&lt;ProdutoResponseDTO&gt;&gt; alterarDisponibilidade(
+            @Parameter(description = &quot;ID do produto&quot;, required = true, example = &quot;1&quot;)
+            @PathVariable Long id) {
+
+<span class="nc" id="L186">        ProdutoResponseDTO produto = produtoService.alterarDisponibilidade(id);</span>
+<span class="nc" id="L187">        ApiResponseWrapper&lt;ProdutoResponseDTO&gt; response =</span>
+                new ApiResponseWrapper&lt;&gt;(true, produto, &quot;Disponibilidade alterada com sucesso&quot;);
+<span class="nc" id="L189">        return ResponseEntity.ok(response);</span>
+    }
+
+    /**
+     * Busca produtos por uma categoria específica. Endpoint público.
+     *
+     * @param categoria Categoria a ser buscada (ex: &quot;Bebidas&quot;).
+     * @return ResponseEntity 200 (OK) com a lista de produtos encontrados.
+     */
+    @GetMapping(&quot;/categoria/{categoria}&quot;)
+    @Operation(summary = &quot;Buscar produtos por categoria (Público)&quot;,
+               description = &quot;Retorna todos os produtos de uma determinada categoria.&quot;)
+    @ApiResponse(responseCode = &quot;200&quot;, description = &quot;Produtos encontrados&quot;,
+                 content = @Content(array = @ArraySchema(schema = @Schema(implementation = ProdutoResponseDTO.class))))
+    public ResponseEntity&lt;ApiResponseWrapper&lt;List&lt;ProdutoResponseDTO&gt;&gt;&gt; buscarPorCategoria(
+            @Parameter(description = &quot;Categoria dos produtos&quot;, required = true, example = &quot;Bebidas&quot;)
+            @PathVariable String categoria) {
+
+<span class="nc" id="L207">        List&lt;ProdutoResponseDTO&gt; produtos = produtoService.buscarProdutosPorCategoria(categoria);</span>
+<span class="nc" id="L208">        ApiResponseWrapper&lt;List&lt;ProdutoResponseDTO&gt;&gt; response =</span>
+                new ApiResponseWrapper&lt;&gt;(true, produtos, &quot;Produtos encontrados&quot;);
+<span class="nc" id="L210">        return ResponseEntity.ok(response);</span>
+    }
+
+    /**
+     * Busca produtos por nome (correspondência parcial). Endpoint público.
+     *
+     * @param nome Termo de busca para o nome do produto.
+     * @return ResponseEntity 200 (OK) com a lista de produtos encontrados.
+     */
+    @GetMapping(&quot;/buscar&quot;)
+    @Operation(summary = &quot;Buscar produtos por nome (Público)&quot;,
+               description = &quot;Retorna produtos que correspondem ao nome informado (busca parcial).&quot;)
+    @ApiResponse(responseCode = &quot;200&quot;, description = &quot;Busca realizada com sucesso&quot;,
+                 content = @Content(array = @ArraySchema(schema = @Schema(implementation = ProdutoResponseDTO.class))))
+    public ResponseEntity&lt;ApiResponseWrapper&lt;List&lt;ProdutoResponseDTO&gt;&gt;&gt; buscarPorNome(
+            @Parameter(description = &quot;Nome do produto a ser buscado&quot;, required = true, example = &quot;Coca-Cola&quot;)
+            @RequestParam String nome) {
+
+<span class="nc" id="L228">        List&lt;ProdutoResponseDTO&gt; produtos = produtoService.buscarProdutosPorNome(nome);</span>
+<span class="nc" id="L229">        ApiResponseWrapper&lt;List&lt;ProdutoResponseDTO&gt;&gt; response =</span>
+                new ApiResponseWrapper&lt;&gt;(true, produtos, &quot;Busca realizada com sucesso&quot;);
+<span class="nc" id="L231">        return ResponseEntity.ok(response);</span>
+    }
+
+    /**
+     * Lista todos os produtos de forma paginada.
+     * Permite filtrar por ID do restaurante, categoria e disponibilidade. Endpoint público.
+     *
+     * @param pageable      Objeto de paginação (tamanho, página, ordenação).
+     * @param restauranteId (Opcional) Filtra produtos pelo ID do restaurante.
+     * @param categoria     (Opcional) Filtra produtos pela categoria.
+     * @param disponivel    (Opcional) Filtra produtos pelo status de disponibilidade.
+     * @return ResponseEntity 200 (OK) com a página de produtos.
+     */
+    @GetMapping
+    @Operation(summary = &quot;Listar produtos (Público, Paginado)&quot;,
+               description = &quot;Lista produtos com filtros opcionais (restauranteId, categoria, disponibilidade) e paginação.&quot;)
+    @ApiResponse(responseCode = &quot;200&quot;, description = &quot;Lista de produtos retornada com sucesso&quot;)
+    public ResponseEntity&lt;PagedResponseWrapper&lt;ProdutoResponseDTO&gt;&gt; listar(
+            @Parameter(description = &quot;ID do restaurante para filtrar&quot;) 
+            @RequestParam(required = false) Long restauranteId,
+            
+            @Parameter(description = &quot;Categoria para filtrar&quot;) 
+            @RequestParam(required = false) String categoria,
+            
+            @Parameter(description = &quot;Status de disponibilidade para filtrar&quot;) 
+            @RequestParam(required = false) Boolean disponivel,
+            
+            @Parameter(description = &quot;Parâmetros de paginação (size, page, sort)&quot;) 
+            Pageable pageable) {
+
+        
+<span class="nc" id="L262">        Page&lt;ProdutoResponseDTO&gt; paginaProdutos = produtoService.listarProdutos(pageable, restauranteId, categoria, disponivel);</span>
+
+<span class="nc" id="L264">        PagedResponseWrapper&lt;ProdutoResponseDTO&gt; response = new PagedResponseWrapper&lt;&gt;(paginaProdutos);</span>
+<span class="nc" id="L265">        return ResponseEntity.ok(response);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

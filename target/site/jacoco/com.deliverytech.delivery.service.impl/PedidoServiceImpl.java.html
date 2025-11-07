@@ -1,0 +1,424 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pt"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PedidoServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">delivery-api</a> &gt; <a href="index.source.html" class="el_package">com.deliverytech.delivery.service.impl</a> &gt; <span class="el_source">PedidoServiceImpl.java</span></div><h1>PedidoServiceImpl.java</h1><pre class="source lang-java linenums">package com.deliverytech.delivery.service.impl;
+
+// (Todos os imports... OK)
+import com.deliverytech.delivery.dto.PedidoDTO;
+import com.deliverytech.delivery.dto.ItemPedidoDTO;
+import com.deliverytech.delivery.repository.auth.UsuarioRepository;
+import com.deliverytech.delivery.dto.response.CalculoPedidoDTO;
+import com.deliverytech.delivery.dto.response.CalculoPedidoResponseDTO;
+import com.deliverytech.delivery.dto.response.PedidoResponseDTO;
+import com.deliverytech.delivery.entity.*;
+import com.deliverytech.delivery.enums.Role;
+import com.deliverytech.delivery.enums.StatusPedido;
+import com.deliverytech.delivery.exception.BusinessException;
+import com.deliverytech.delivery.exception.EntityNotFoundException;
+import com.deliverytech.delivery.repository.*;
+import com.deliverytech.delivery.service.PedidoService;
+import com.deliverytech.delivery.security.jwt.SecurityUtils;
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import com.deliverytech.delivery.service.metrics.MetricsService;
+import io.micrometer.core.instrument.Timer;
+import com.deliverytech.delivery.service.audit.AuditService;
+
+@Service
+<span class="fc" id="L35">public class PedidoServiceImpl implements PedidoService {</span>
+
+    // (Todos os @Autowired... OK)
+    @Autowired private PedidoRepository pedidoRepository;
+    @Autowired private RestauranteRepository restauranteRepository;
+    @Autowired private ProdutoRepository produtoRepository;
+    @Autowired private ModelMapper modelMapper;
+    @Autowired private MetricsService metricsService;
+    @Autowired private AuditService auditService;
+    @Autowired private UsuarioRepository usuarioRepository;
+    @Autowired private EnderecoRepository enderecoRepository;
+    @Autowired private ItemOpcionalRepository itemOpcionalRepository;
+
+
+    /**
+     * Cria um novo pedido no sistema (VERSÃO REFATORADA).
+     * (Este método já está 100% corrigido, com a validação de opcional)
+     */
+    @Override
+@Transactional
+public PedidoResponseDTO criarPedido(PedidoDTO dto) {
+<span class="nc" id="L56">    Timer.Sample sample = metricsService.iniciarTimerPedido();</span>
+<span class="nc" id="L57">    metricsService.incrementarPedidosProcessados();</span>
+
+<span class="nc" id="L59">    Long usuarioId = SecurityUtils.getCurrentUserId();</span>
+<span class="nc bnc" id="L60" title="All 2 branches missed.">    String usuarioIdLog = (usuarioId != null) ? usuarioId.toString() : &quot;ANONIMO&quot;;</span>
+
+    try {
+<span class="nc" id="L63">        auditService.logUserAction(usuarioIdLog, &quot;CRIAR_PEDIDO_INICIO&quot;, &quot;PedidoDTO&quot;, dto);</span>
+
+        // --- 1. BUSCAR ENTIDADES PRINCIPAIS ---
+<span class="nc bnc" id="L66" title="All 2 branches missed.">        if (usuarioId == null) {</span>
+<span class="nc" id="L67">            throw new BusinessException(&quot;Acesso negado. Usuário não autenticado.&quot;);</span>
+        }
+
+<span class="nc" id="L70">        Usuario usuario = usuarioRepository.findById(usuarioId)</span>
+<span class="nc" id="L71">                .orElseThrow(() -&gt; new EntityNotFoundException(&quot;Usuário não encontrado&quot;));</span>
+<span class="nc" id="L72">        Cliente cliente = usuario.getCliente();</span>
+<span class="nc bnc" id="L73" title="All 2 branches missed.">        if (cliente == null) {</span>
+<span class="nc" id="L74">            throw new BusinessException(&quot;Este usuário não possui um perfil de cliente.&quot;);</span>
+        }
+<span class="nc bnc" id="L76" title="All 2 branches missed.">        if (!usuario.getAtivo()) {</span>
+<span class="nc" id="L77">            throw new BusinessException(&quot;Cliente inativo não pode fazer pedidos&quot;);</span>
+        }
+
+<span class="nc" id="L80">        Restaurante restaurante = restauranteRepository.findById(dto.getRestauranteId())</span>
+<span class="nc" id="L81">                .orElseThrow(() -&gt; new EntityNotFoundException(&quot;Restaurante não encontrado&quot;));</span>
+<span class="nc bnc" id="L82" title="All 4 branches missed.">        if (restaurante.getAtivo() == null || !restaurante.getAtivo()) {</span>
+<span class="nc" id="L83">            throw new BusinessException(&quot;Restaurante não está disponível&quot;);</span>
+        }
+
+<span class="nc" id="L86">        Endereco endereco = enderecoRepository.findById(dto.getEnderecoEntregaId())</span>
+<span class="nc" id="L87">                .orElseThrow(() -&gt; new EntityNotFoundException(&quot;Endereço não encontrado&quot;));</span>
+<span class="nc bnc" id="L88" title="All 2 branches missed.">        if (!endereco.getUsuario().getId().equals(usuarioId)) {</span>
+<span class="nc" id="L89">            throw new BusinessException(&quot;Endereço de entrega inválido. Pertence a outro usuário.&quot;);</span>
+        }
+
+        // --- 2. CRIAR A ENTIDADE PEDIDO ---
+<span class="nc" id="L93">        Pedido pedido = new Pedido();</span>
+<span class="nc" id="L94">        pedido.setCliente(cliente);</span>
+<span class="nc" id="L95">        pedido.setRestaurante(restaurante);</span>
+<span class="nc" id="L96">        pedido.setDataPedido(LocalDateTime.now());</span>
+<span class="nc" id="L97">        pedido.setStatus(StatusPedido.PENDENTE);</span>
+<span class="nc" id="L98">        pedido.setObservacoes(dto.getObservacoes());</span>
+<span class="nc" id="L99">        pedido.setEnderecoEntrega(endereco);</span>
+<span class="nc" id="L100">        pedido.setMetodoPagamento(dto.getMetodoPagamento());</span>
+<span class="nc" id="L101">        pedido.setTrocoPara(dto.getTrocoPara());</span>
+
+        // 🔥 Inicializa valores padrão para evitar NullPointer
+<span class="nc" id="L104">        pedido.setSubtotal(BigDecimal.ZERO);</span>
+<span class="nc" id="L105">        pedido.setTaxaEntrega(BigDecimal.ZERO);</span>
+<span class="nc" id="L106">        pedido.setValorTotal(BigDecimal.ZERO);</span>
+
+<span class="nc" id="L108">        BigDecimal subtotal = BigDecimal.ZERO;</span>
+
+        // --- 3. LOOP DOS ITENS ---
+<span class="nc bnc" id="L111" title="All 2 branches missed.">        for (ItemPedidoDTO itemDTO : dto.getItens()) {</span>
+<span class="nc" id="L112">            Produto produto = produtoRepository.findById(itemDTO.getProdutoId())</span>
+<span class="nc" id="L113">                    .orElseThrow(() -&gt; new EntityNotFoundException(&quot;Produto não encontrado: &quot; + itemDTO.getProdutoId()));</span>
+
+<span class="nc bnc" id="L115" title="All 4 branches missed.">            if (produto.getDisponivel() == null || !produto.getDisponivel()) {</span>
+<span class="nc" id="L116">                throw new BusinessException(&quot;Produto indisponível: &quot; + produto.getNome());</span>
+            }
+<span class="nc bnc" id="L118" title="All 2 branches missed.">            if (!produto.getRestaurante().getId().equals(dto.getRestauranteId())) {</span>
+<span class="nc" id="L119">                throw new BusinessException(&quot;Produto &quot; + produto.getNome() + &quot; não pertence ao restaurante selecionado&quot;);</span>
+            }
+<span class="nc bnc" id="L121" title="All 2 branches missed.">            if (produto.getEstoque() &lt; itemDTO.getQuantidade()) {</span>
+<span class="nc" id="L122">                throw new BusinessException(&quot;Estoque insuficiente para o produto: &quot; + produto.getNome());</span>
+            }
+
+<span class="nc" id="L125">            BigDecimal precoUnitarioCalculado = produto.getPrecoBase();</span>
+<span class="nc" id="L126">            ItemPedido item = new ItemPedido();</span>
+<span class="nc" id="L127">            item.setProduto(produto);</span>
+<span class="nc" id="L128">            item.setQuantidade(itemDTO.getQuantidade());</span>
+<span class="nc" id="L129">            item.setPedido(pedido);</span>
+
+            // --- 3.1 OPCIONAIS ---
+<span class="nc bnc" id="L132" title="All 4 branches missed.">            if (itemDTO.getOpcionaisIds() != null &amp;&amp; !itemDTO.getOpcionaisIds().isEmpty()) {</span>
+<span class="nc bnc" id="L133" title="All 2 branches missed.">                for (Long opcionalId : itemDTO.getOpcionaisIds()) {</span>
+<span class="nc" id="L134">                    ItemOpcional opcional = itemOpcionalRepository.findById(opcionalId)</span>
+<span class="nc" id="L135">                            .orElseThrow(() -&gt; new EntityNotFoundException(&quot;Opcional não encontrado: &quot; + opcionalId));</span>
+
+<span class="nc bnc" id="L137" title="All 2 branches missed.">                    if (opcional.getGrupoOpcional() == null ||</span>
+<span class="nc bnc" id="L138" title="All 2 branches missed.">                        opcional.getGrupoOpcional().getProduto() == null ||</span>
+<span class="nc bnc" id="L139" title="All 2 branches missed.">                        !opcional.getGrupoOpcional().getProduto().getId().equals(produto.getId())) {</span>
+
+<span class="nc" id="L141">                        throw new BusinessException(&quot;Opcional inválido: '&quot; + opcional.getNome() +</span>
+<span class="nc" id="L142">                                &quot;' não pertence ao produto '&quot; + produto.getNome() + &quot;'&quot;);</span>
+                    }
+
+<span class="nc" id="L145">                    precoUnitarioCalculado = precoUnitarioCalculado.add(opcional.getPrecoAdicional());</span>
+<span class="nc" id="L146">                    ItemPedidoOpcional linkOpcional = new ItemPedidoOpcional(item, opcional);</span>
+<span class="nc" id="L147">                    item.getOpcionaisSelecionados().add(linkOpcional);</span>
+<span class="nc" id="L148">                }</span>
+            }
+
+<span class="nc" id="L151">            item.setPrecoUnitario(precoUnitarioCalculado);</span>
+<span class="nc" id="L152">            item.calcularSubtotal();</span>
+
+<span class="nc" id="L154">            pedido.getItens().add(item);</span>
+<span class="nc" id="L155">            subtotal = subtotal.add(item.getSubtotal());</span>
+
+<span class="nc" id="L157">            produto.setEstoque(produto.getEstoque() - itemDTO.getQuantidade());</span>
+<span class="nc" id="L158">            produtoRepository.save(produto);</span>
+<span class="nc" id="L159">        }</span>
+
+        // --- 4. FINALIZAR O PEDIDO ---
+<span class="nc bnc" id="L162" title="All 2 branches missed.">        BigDecimal taxaEntrega = restaurante.getTaxaEntrega() != null ? restaurante.getTaxaEntrega() : BigDecimal.ZERO;</span>
+<span class="nc" id="L163">        BigDecimal valorTotal = subtotal.add(taxaEntrega);</span>
+
+<span class="nc" id="L165">        pedido.setSubtotal(subtotal);</span>
+<span class="nc" id="L166">        pedido.setTaxaEntrega(taxaEntrega);</span>
+<span class="nc" id="L167">        pedido.setValorTotal(valorTotal);</span>
+<span class="nc" id="L168">        pedido.setNumeroPedido(UUID.randomUUID().toString().substring(0, 18));</span>
+
+<span class="nc" id="L170">        Pedido pedidoSalvo = pedidoRepository.save(pedido);</span>
+
+        // --- 5. MÉTRICAS ---
+<span class="nc" id="L173">        metricsService.incrementarPedidosComSucesso();</span>
+
+        // ✅ Evita NPE aqui também
+<span class="nc bnc" id="L176" title="All 2 branches missed.">        BigDecimal totalFinal = pedidoSalvo.getValorTotal() != null ? pedidoSalvo.getValorTotal() : BigDecimal.ZERO;</span>
+<span class="nc" id="L177">        metricsService.adicionarReceita(totalFinal.doubleValue());</span>
+
+<span class="nc" id="L179">        auditService.logUserAction(usuarioIdLog, &quot;CRIAR_PEDIDO_SUCESSO&quot;, &quot;Pedido&quot;, pedidoSalvo);</span>
+<span class="nc" id="L180">        return mapToPedidoResponseDTO(pedidoSalvo);</span>
+
+<span class="nc" id="L182">    } catch (Exception e) {</span>
+<span class="nc" id="L183">        metricsService.incrementarPedidosComErro();</span>
+<span class="nc" id="L184">        auditService.logUserAction(usuarioIdLog, &quot;CRIAR_PEDIDO_FALHA&quot;, e.getClass().getSimpleName(), e.getMessage());</span>
+<span class="nc" id="L185">        throw e;</span>
+    } finally {
+<span class="nc" id="L187">        metricsService.finalizarTimerPedido(sample);</span>
+    }
+}
+    /**
+     * Calcula o total de um pedido (VERSÃO REFATORADA E CORRIGIDA).
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public CalculoPedidoResponseDTO calcularTotalPedido(CalculoPedidoDTO dto) {
+        // (Este método já está 100% corrigido, com a validação de opcional)
+<span class="nc" id="L197">        BigDecimal subtotal = BigDecimal.ZERO;</span>
+<span class="nc bnc" id="L198" title="All 2 branches missed.">        for (ItemPedidoDTO item : dto.getItens()) {</span>
+<span class="nc" id="L199">            Produto produto = produtoRepository.findById(item.getProdutoId())</span>
+<span class="nc" id="L200">                    .orElseThrow(() -&gt; new EntityNotFoundException(&quot;Produto não encontrado: &quot; + item.getProdutoId()));</span>
+<span class="nc" id="L201">            BigDecimal precoItem = produto.getPrecoBase();</span>
+<span class="nc bnc" id="L202" title="All 2 branches missed.">            if (item.getOpcionaisIds() != null) {</span>
+<span class="nc bnc" id="L203" title="All 2 branches missed.">                for (Long opcionalId : item.getOpcionaisIds()) {</span>
+<span class="nc" id="L204">                    ItemOpcional opcional = itemOpcionalRepository.findById(opcionalId)</span>
+<span class="nc" id="L205">                            .orElseThrow(() -&gt; new EntityNotFoundException(&quot;Opcional não encontrado: &quot; + opcionalId));</span>
+<span class="nc bnc" id="L206" title="All 2 branches missed.">                    if (opcional.getGrupoOpcional() == null || </span>
+<span class="nc bnc" id="L207" title="All 2 branches missed.">                        opcional.getGrupoOpcional().getProduto() == null ||</span>
+<span class="nc bnc" id="L208" title="All 2 branches missed.">                        !opcional.getGrupoOpcional().getProduto().getId().equals(produto.getId())) {</span>
+<span class="nc" id="L209">                        throw new BusinessException(&quot;Opcional inválido: '&quot; + opcional.getNome() + &quot;'&quot;);</span>
+                    }
+<span class="nc" id="L211">                    precoItem = precoItem.add(opcional.getPrecoAdicional());</span>
+<span class="nc" id="L212">                }</span>
+            }
+<span class="nc" id="L214">            subtotal = subtotal.add(precoItem.multiply(BigDecimal.valueOf(item.getQuantidade())));</span>
+<span class="nc" id="L215">        }</span>
+<span class="nc" id="L216">        Restaurante restaurante = restauranteRepository.findById(dto.getRestauranteId())</span>
+<span class="nc" id="L217">                .orElseThrow(() -&gt; new EntityNotFoundException(&quot;Restaurante não encontrado&quot;));</span>
+<span class="nc bnc" id="L218" title="All 2 branches missed.">        BigDecimal taxaEntrega = restaurante.getTaxaEntrega() != null ? restaurante.getTaxaEntrega() : BigDecimal.ZERO;</span>
+<span class="nc" id="L219">        BigDecimal total = subtotal.add(taxaEntrega);</span>
+<span class="nc" id="L220">        CalculoPedidoResponseDTO response = new CalculoPedidoResponseDTO();</span>
+<span class="nc" id="L221">        response.setSubtotal(subtotal);</span>
+<span class="nc" id="L222">        response.setTaxaEntrega(taxaEntrega);</span>
+<span class="nc" id="L223">        response.setTotal(total);</span>
+<span class="nc" id="L224">        return response;</span>
+    }
+
+
+    // ==========================================================
+    // SEUS OUTROS MÉTODOS
+    // ==========================================================
+
+    @Override
+    @Transactional(readOnly = true)
+    public PedidoResponseDTO buscarPedidoPorId(Long id) {
+<span class="nc" id="L235">        Timer.Sample sample = metricsService.iniciarTimerBanco();</span>
+        try {
+<span class="nc" id="L237">            Pedido pedido = pedidoRepository.findById(id)</span>
+<span class="nc" id="L238">                    .orElseThrow(() -&gt; new EntityNotFoundException(&quot;Pedido não encontrado com ID: &quot; + id));</span>
+<span class="nc" id="L239">            return mapToPedidoResponseDTO(pedido);</span>
+        } finally {
+<span class="nc" id="L241">            metricsService.finalizarTimerBanco(sample);</span>
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List&lt;PedidoResponseDTO&gt; buscarPedidosPorCliente(Long clienteId) {
+<span class="nc" id="L248">        List&lt;Pedido&gt; pedidos = pedidoRepository.findByClienteIdOrderByDataPedidoDesc(clienteId);</span>
+<span class="nc" id="L249">        return pedidos.stream()</span>
+<span class="nc" id="L250">                .map(this::mapToPedidoResponseDTO)</span>
+<span class="nc" id="L251">                .collect(Collectors.toList());</span>
+    }
+
+    /**
+     * Atualiza o status de um pedido (COM LÓGICA DE ENTREGADOR).
+     */
+    @Override
+    @Transactional
+    public PedidoResponseDTO atualizarStatusPedido(Long id, StatusPedido novoStatus) {
+<span class="nc" id="L260">        Pedido pedido = pedidoRepository.findById(id)</span>
+<span class="nc" id="L261">                .orElseThrow(() -&gt; new EntityNotFoundException(&quot;Pedido não encontrado&quot;));</span>
+<span class="nc bnc" id="L262" title="All 2 branches missed.">        if (!isTransicaoValida(pedido.getStatus(), novoStatus)) {</span>
+<span class="nc" id="L263">            throw new BusinessException(&quot;Transição de status inválida: &quot; +</span>
+<span class="nc" id="L264">                    pedido.getStatus() + &quot; -&gt; &quot; + novoStatus);</span>
+        }
+        
+        // --- INÍCIO DA CORREÇÃO --- 
+<span class="nc bnc" id="L268" title="All 2 branches missed.">        if (novoStatus == StatusPedido.SAIU_PARA_ENTREGA) {</span>
+<span class="nc bnc" id="L269" title="All 2 branches missed.">            if (pedido.getEntregador() == null) {</span>
+<span class="nc" id="L270">                Usuario entregador = encontrarEntregadorDisponivel();</span>
+<span class="nc" id="L271">                pedido.setEntregador(entregador);</span>
+            }
+        }
+        // --- FIM DA CORREÇÃO ---
+        
+<span class="nc" id="L276">        pedido.setStatus(novoStatus);</span>
+<span class="nc" id="L277">        Pedido pedidoAtualizado = pedidoRepository.save(pedido);</span>
+<span class="nc" id="L278">        return mapToPedidoResponseDTO(pedidoAtualizado);</span>
+    }
+
+    @Override
+    @Transactional
+    public void cancelarPedido(Long id) {
+<span class="nc" id="L284">        Pedido pedido = pedidoRepository.findById(id)</span>
+<span class="nc" id="L285">                .orElseThrow(() -&gt; new EntityNotFoundException(&quot;Pedido não encontrado&quot;));</span>
+<span class="nc bnc" id="L286" title="All 2 branches missed.">        if (!podeSerCancelado(pedido.getStatus())) {</span>
+<span class="nc" id="L287">            throw new BusinessException(&quot;Pedido não pode ser cancelado no status: &quot; + pedido.getStatus());</span>
+        }
+<span class="nc" id="L289">        pedido.setStatus(StatusPedido.CANCELADO);</span>
+<span class="nc" id="L290">        pedidoRepository.save(pedido);</span>
+<span class="nc" id="L291">    }</span>
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page&lt;PedidoResponseDTO&gt; listarPedidos(StatusPedido status, LocalDate dataInicio, LocalDate dataFim, Pageable pageable) {
+        Page&lt;Pedido&gt; pedidos;
+<span class="nc" id="L297">        LocalDateTime inicio = null, fim = null;</span>
+<span class="nc bnc" id="L298" title="All 4 branches missed.">        if (dataInicio != null &amp;&amp; dataFim != null) {</span>
+<span class="nc" id="L299">            inicio = dataInicio.atStartOfDay();</span>
+<span class="nc" id="L300">            fim = dataFim.plusDays(1).atStartOfDay();</span>
+        }
+        // (Lógica de query... OK)
+<span class="nc bnc" id="L303" title="All 4 branches missed.">        if (status != null &amp;&amp; inicio != null) {</span>
+<span class="nc" id="L304">            pedidos = pedidoRepository.findByStatusAndDataPedidoBetween(status, inicio, fim, pageable);</span>
+<span class="nc bnc" id="L305" title="All 2 branches missed.">        } else if (status != null) {</span>
+<span class="nc" id="L306">            pedidos = pedidoRepository.findByStatus(status, pageable);</span>
+<span class="nc bnc" id="L307" title="All 2 branches missed.">        } else if (inicio != null) {</span>
+<span class="nc" id="L308">            pedidos = pedidoRepository.findByDataPedidoBetween(inicio, fim, pageable);</span>
+        } else {
+<span class="nc" id="L310">            pedidos = pedidoRepository.findAll(pageable);</span>
+        }
+<span class="nc" id="L312">        return pedidos.map(this::mapToPedidoResponseDTO);</span>
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page&lt;PedidoResponseDTO&gt; listarMeusPedidos(Pageable pageable) {
+<span class="nc" id="L318">        Long usuarioIdLogado = SecurityUtils.getCurrentUserId();</span>
+<span class="nc bnc" id="L319" title="All 2 branches missed.">        if (usuarioIdLogado == null) {</span>
+<span class="nc" id="L320">            throw new BusinessException(&quot;Acesso negado. Usuário não autenticado.&quot;);</span>
+        }
+<span class="nc" id="L322">        Page&lt;Pedido&gt; paginaPedidos = pedidoRepository.findByClienteId(usuarioIdLogado, pageable);</span>
+<span class="nc" id="L323">        return paginaPedidos.map(this::mapToPedidoResponseDTO);</span>
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List&lt;PedidoResponseDTO&gt; buscarPedidosPorRestaurante(Long restauranteId, StatusPedido status) {
+        List&lt;Pedido&gt; pedidos;
+<span class="nc bnc" id="L330" title="All 2 branches missed.">        if (status != null) {</span>
+<span class="nc" id="L331">            pedidos = pedidoRepository.findByRestauranteIdAndStatus(restauranteId, status, Pageable.unpaged()).getContent();</span>
+        } else {
+<span class="nc" id="L333">            pedidos = pedidoRepository.findByRestauranteId(restauranteId, Pageable.unpaged()).getContent();</span>
+        }
+<span class="nc" id="L335">        return pedidos.stream()</span>
+<span class="nc" id="L336">                .map(this::mapToPedidoResponseDTO)</span>
+<span class="nc" id="L337">                .collect(Collectors.toList());</span>
+    }
+
+    // --- Métodos Privados (Helper) ---
+
+    private boolean isTransicaoValida(StatusPedido statusAtual, StatusPedido novoStatus) {
+<span class="nc bnc" id="L343" title="All 7 branches missed.">        switch (statusAtual) {</span>
+            case PENDENTE:
+<span class="nc bnc" id="L345" title="All 4 branches missed.">                return novoStatus == StatusPedido.CONFIRMADO || novoStatus == StatusPedido.CANCELADO;</span>
+            case CONFIRMADO:
+<span class="nc bnc" id="L347" title="All 4 branches missed.">                return novoStatus == StatusPedido.PREPARANDO || novoStatus == StatusPedido.CANCELADO;</span>
+            case PREPARANDO:
+<span class="nc bnc" id="L349" title="All 2 branches missed.">                return novoStatus == StatusPedido.SAIU_PARA_ENTREGA;</span>
+            case SAIU_PARA_ENTREGA:
+<span class="nc bnc" id="L351" title="All 2 branches missed.">                return novoStatus == StatusPedido.ENTREGUE;</span>
+            case ENTREGUE:
+<span class="nc" id="L353">                return false; </span>
+            case CANCELADO:
+<span class="nc" id="L355">                return false; </span>
+            default:
+<span class="nc" id="L357">                return false;</span>
+        }
+    }
+
+    private boolean podeSerCancelado(StatusPedido status) {
+<span class="nc bnc" id="L362" title="All 4 branches missed.">        return status == StatusPedido.PENDENTE || status == StatusPedido.CONFIRMADO;</span>
+    }
+
+    private PedidoResponseDTO mapToPedidoResponseDTO(Pedido pedido) {
+<span class="nc" id="L366">        PedidoResponseDTO dto = modelMapper.map(pedido, PedidoResponseDTO.class);</span>
+<span class="nc bnc" id="L367" title="All 2 branches missed.">        if (pedido.getCliente() != null) {</span>
+<span class="nc" id="L368">            dto.setClienteId(pedido.getCliente().getId());</span>
+<span class="nc" id="L369">            dto.setClienteNome(pedido.getCliente().getNome()); </span>
+        }
+<span class="nc bnc" id="L371" title="All 2 branches missed.">        if (pedido.getRestaurante() != null) {</span>
+<span class="nc" id="L372">            dto.setRestauranteId(pedido.getRestaurante().getId());</span>
+<span class="nc" id="L373">            dto.setRestauranteNome(pedido.getRestaurante().getNome());</span>
+        }
+<span class="nc bnc" id="L375" title="All 2 branches missed.">        if (pedido.getEnderecoEntrega() != null) {</span>
+<span class="nc" id="L376">            Endereco end = pedido.getEnderecoEntrega();</span>
+<span class="nc" id="L377">            String enderecoFormatado = String.format(&quot;%s, %s - %s, %s/%s&quot;,</span>
+<span class="nc" id="L378">                    end.getRua(), end.getNumero(), end.getBairro(), end.getCidade(), end.getEstado());</span>
+<span class="nc" id="L379">            dto.setEnderecoEntrega(enderecoFormatado); </span>
+        }
+<span class="nc" id="L381">        dto.setTotal(pedido.getValorTotal());</span>
+<span class="nc" id="L382">        dto.setItens(pedido.getItens().stream()</span>
+<span class="nc" id="L383">                .map(item -&gt; {</span>
+<span class="nc" id="L384">                    ItemPedidoDTO iDTO = new ItemPedidoDTO();</span>
+<span class="nc" id="L385">                    iDTO.setProdutoId(item.getProduto().getId());</span>
+<span class="nc" id="L386">                    iDTO.setQuantidade(item.getQuantidade());</span>
+<span class="nc bnc" id="L387" title="All 2 branches missed.">                    if (item.getOpcionaisSelecionados() != null) {</span>
+<span class="nc" id="L388">                         iDTO.setOpcionaisIds(item.getOpcionaisSelecionados().stream()</span>
+<span class="nc" id="L389">                            .map(opcionalLink -&gt; opcionalLink.getItemOpcional().getId())</span>
+<span class="nc" id="L390">                            .collect(Collectors.toList()));</span>
+                    }
+<span class="nc" id="L392">                    return iDTO;</span>
+<span class="nc" id="L393">                }).collect(Collectors.toList()));</span>
+<span class="nc" id="L394">        return dto;</span>
+    }
+    
+    // --- NOVO MÉTODO HELPER ---
+    /**
+     * Lógica (simples) para encontrar um entregador.
+     * @return Um usuário Entregador disponível.
+     */
+    private Usuario encontrarEntregadorDisponivel() {
+        
+<span class="nc" id="L404">        List&lt;Usuario&gt; entregadoresDisponiveis = usuarioRepository.findAll().stream()</span>
+<span class="nc bnc" id="L405" title="All 4 branches missed.">                .filter(u -&gt; u.getRole() == Role.ENTREGADOR &amp;&amp; u.getAtivo())</span>
+<span class="nc" id="L406">                .filter(u -&gt; {</span>
+                    // --- IMPLEMENTAÇÃO DO GARGALO 3 ---
+                    // Verifica se o entregador (u) tem algum pedido com status SAIU_PARA_ENTREGA
+<span class="nc" id="L409">                    boolean estaEmEntrega = pedidoRepository.existsByEntregadorAndStatus(</span>
+                            u, StatusPedido.SAIU_PARA_ENTREGA
+                    );
+<span class="nc bnc" id="L412" title="All 2 branches missed.">                    return !estaEmEntrega; // Retorna 'true' se ele NÃO está em entrega</span>
+                })
+<span class="nc" id="L414">                .collect(Collectors.toList());</span>
+
+<span class="nc bnc" id="L416" title="All 2 branches missed.">        if (entregadoresDisponiveis.isEmpty()) {</span>
+<span class="nc" id="L417">            throw new BusinessException(&quot;Nenhum entregador disponível no momento.&quot;);</span>
+        }
+
+        // Retorna o primeiro entregador livre da lista
+<span class="nc" id="L421">        return entregadoresDisponiveis.get(0); </span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

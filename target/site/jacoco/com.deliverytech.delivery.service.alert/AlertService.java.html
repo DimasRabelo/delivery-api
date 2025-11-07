@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pt"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AlertService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">delivery-api</a> &gt; <a href="index.source.html" class="el_package">com.deliverytech.delivery.service.alert</a> &gt; <span class="el_source">AlertService.java</span></div><h1>AlertService.java</h1><pre class="source lang-java linenums">package com.deliverytech.delivery.service.alert; // Seu novo pacote
+
+import io.micrometer.core.instrument.MeterRegistry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.boot.actuate.health.Status;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Serviço agendado (@Scheduled) que verifica métricas e health checks
+ * periodicamente para disparar alertas.
+ */
+@Service
+public class AlertService {
+
+<span class="fc" id="L24">    private static final Logger logger = LoggerFactory.getLogger(AlertService.class);</span>
+    private final MeterRegistry meterRegistry;
+
+    // ⬇️ CORREÇÃO DA &quot;PEGADINHA&quot;: Injetando nossos HealthChecks da Atividade 1 ⬇️
+    private final HealthIndicator databaseHealthIndicator;
+    private final HealthIndicator externalServiceHealthIndicator;
+
+    // Thresholds (Limites) para Alertas (do gabarito)
+    private static final double ERROR_RATE_THRESHOLD = 0.05; // 5%
+    private static final double RESPONSE_TIME_THRESHOLD_MS = 1000; // 1000ms (1 segundo)
+
+    @Autowired
+    public AlertService(MeterRegistry meterRegistry,
+                        @Qualifier(&quot;database&quot;) HealthIndicator databaseHealthIndicator,
+<span class="fc" id="L38">                        @Qualifier(&quot;externalService&quot;) HealthIndicator externalServiceHealthIndicator) {</span>
+<span class="fc" id="L39">        this.meterRegistry = meterRegistry;</span>
+<span class="fc" id="L40">        this.databaseHealthIndicator = databaseHealthIndicator;</span>
+<span class="fc" id="L41">        this.externalServiceHealthIndicator = externalServiceHealthIndicator;</span>
+<span class="fc" id="L42">    }</span>
+
+    /**
+     * Roda a cada 30 segundos para verificar a saúde do sistema.
+     */
+    @Scheduled(fixedRate = 30000) // 30.000 milissegundos = 30 segundos
+    public void verificarAlertas() {
+<span class="fc" id="L49">        logger.info(&quot;[ALERTS] Verificando métricas e saúde do sistema...&quot;);</span>
+<span class="fc" id="L50">        verificarErrorRate();</span>
+<span class="fc" id="L51">        verificarResponseTime();</span>
+<span class="nc" id="L52">        verificarHealthStatus();</span>
+<span class="nc" id="L53">    }</span>
+
+    /**
+     * Verifica a taxa de erro dos pedidos (Métricas da Atividade 2)
+     */
+    private void verificarErrorRate() {
+        // Usamos os métodos auxiliares (getCounterValue) para evitar NPE
+<span class="fc" id="L60">        double totalRequests = getCounterValue(&quot;delivery.pedidos.total&quot;);</span>
+<span class="fc" id="L61">        double errorRequests = getCounterValue(&quot;delivery.pedidos.erro&quot;);</span>
+
+<span class="pc bpc" id="L63" title="1 of 2 branches missed.">        if (totalRequests &gt; 0) { // Evita divisão por zero</span>
+<span class="nc" id="L64">            double errorRate = errorRequests / totalRequests;</span>
+<span class="nc bnc" id="L65" title="All 2 branches missed.">            if (errorRate &gt; ERROR_RATE_THRESHOLD) {</span>
+<span class="nc" id="L66">                enviarAlerta(&quot;HIGH_ERROR_RATE&quot;,</span>
+<span class="nc" id="L67">                        String.format(&quot;Taxa de erro alta: %.2f%% (Limite: %.2f%%)&quot;, </span>
+<span class="nc" id="L68">                                errorRate * 100, ERROR_RATE_THRESHOLD * 100),</span>
+                        &quot;CRITICAL&quot;);
+            }
+        }
+<span class="fc" id="L72">    }</span>
+
+    /**
+     * Verifica o tempo médio de resposta dos pedidos (Métricas da Atividade 2)
+     */
+    private void verificarResponseTime() {
+<span class="fc" id="L78">        double avgResponseTime = getTimerMean(&quot;delivery.pedido.processamento.tempo&quot;);</span>
+
+<span class="pc bpc" id="L80" title="1 of 2 branches missed.">        if (avgResponseTime &gt; RESPONSE_TIME_THRESHOLD_MS) {</span>
+<span class="nc" id="L81">            enviarAlerta(&quot;HIGH_RESPONSE_TIME&quot;,</span>
+<span class="nc" id="L82">                    String.format(&quot;Tempo de resposta alto: %.2fms (Limite: %.2fms)&quot;, </span>
+<span class="nc" id="L83">                            avgResponseTime, RESPONSE_TIME_THRESHOLD_MS),</span>
+                    &quot;WARNING&quot;);
+        }
+<span class="fc" id="L86">    }</span>
+
+    /**
+     * Verifica os Health Checks customizados (Saúde da Atividade 1)
+     */
+    private void verificarHealthStatus() {
+        try {
+            // ⬇️ CORREÇÃO DA &quot;PEGADINHA&quot;: Verificando os beans reais ⬇️
+            
+            // 1. Verifica o Banco de Dados
+<span class="fc" id="L96">            Status dbStatus = databaseHealthIndicator.health().getStatus();</span>
+<span class="pc bpc" id="L97" title="1 of 2 branches missed.">            if (!dbStatus.equals(Status.UP)) {</span>
+<span class="nc" id="L98">                enviarAlerta(&quot;DATABASE_DOWN&quot;,</span>
+                        &quot;Banco de dados não está respondendo (Status: &quot; + dbStatus + &quot;)&quot;,
+                        &quot;CRITICAL&quot;);
+            }
+
+            // 2. Verifica o Serviço Externo
+<span class="nc" id="L104">            Status externalStatus = externalServiceHealthIndicator.health().getStatus();</span>
+<span class="nc bnc" id="L105" title="All 2 branches missed.">            if (!externalStatus.equals(Status.UP)) {</span>
+<span class="nc" id="L106">                enviarAlerta(&quot;EXTERNAL_SERVICE_DOWN&quot;,</span>
+                        &quot;Serviço externo (Gateway de Pagamento) não está disponível (Status: &quot; + externalStatus + &quot;)&quot;,
+                        &quot;WARNING&quot;);
+            }
+
+<span class="nc" id="L111">        } catch (Exception e) {</span>
+<span class="nc" id="L112">            logger.error(&quot;[ALERTS] Erro ao verificar health status customizado&quot;, e);</span>
+<span class="nc" id="L113">        }</span>
+<span class="nc" id="L114">    }</span>
+
+    // ==========================================================
+    // MÉTODOS AUXILIARES (do gabarito - corretos)
+    // ==========================================================
+
+    private void enviarAlerta(String tipo, String mensagem, String severidade) {
+<span class="nc" id="L121">        Map&lt;String, Object&gt; alerta = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L122">        alerta.put(&quot;timestamp&quot;, System.currentTimeMillis());</span>
+<span class="nc" id="L123">        alerta.put(&quot;tipo&quot;, tipo);</span>
+<span class="nc" id="L124">        alerta.put(&quot;mensagem&quot;, mensagem);</span>
+<span class="nc" id="L125">        alerta.put(&quot;severidade&quot;, severidade);</span>
+<span class="nc" id="L126">        alerta.put(&quot;aplicacao&quot;, &quot;delivery-api&quot;);</span>
+
+        // Loga o alerta como WARN para se destacar no console
+<span class="nc" id="L129">        logger.warn(&quot;ALERTA [{}] {}: {}&quot;, severidade, tipo, mensagem);</span>
+        
+        // (Aqui entraria a integração com Slack, PagerDuty, etc.)
+<span class="nc" id="L132">    }</span>
+
+    // Método seguro para pegar um contador (evita NullPointerException)
+    private double getCounterValue(String name) {
+<span class="pc bpc" id="L136" title="1 of 2 branches missed.">        if (meterRegistry.find(name).counter() != null) {</span>
+<span class="fc" id="L137">            return meterRegistry.find(name).counter().count();</span>
+        }
+<span class="nc" id="L139">        return 0.0;</span>
+    }
+
+    // Método seguro para pegar a média de um Timer (em Milissegundos)
+    private double getTimerMean(String name) {
+<span class="pc bpc" id="L144" title="1 of 2 branches missed.">        if (meterRegistry.find(name).timer() != null) {</span>
+<span class="fc" id="L145">            return meterRegistry.find(name).timer().mean(TimeUnit.MILLISECONDS);</span>
+        }
+<span class="nc" id="L147">        return 0.0;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pt"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AuthService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">delivery-api</a> &gt; <a href="index.source.html" class="el_package">com.deliverytech.delivery.service.auth</a> &gt; <span class="el_source">AuthService.java</span></div><h1>AuthService.java</h1><pre class="source lang-java linenums">package com.deliverytech.delivery.service.auth;
+
+// --- IMPORTS ADICIONADOS ---
+import com.deliverytech.delivery.dto.auth.RegisterRequest; // (O DTO refatorado)
+import com.deliverytech.delivery.dto.EnderecoDTO;
+import com.deliverytech.delivery.entity.Cliente;
+import com.deliverytech.delivery.entity.Endereco;
+import com.deliverytech.delivery.enums.Role;
+import com.deliverytech.delivery.repository.ClienteRepository;
+import com.deliverytech.delivery.repository.EnderecoRepository;
+import com.deliverytech.delivery.exception.ConflictException; // (Para validar e-mail)
+import org.modelmapper.ModelMapper; // (Para mapear o EnderecoDTO)
+import org.springframework.transaction.annotation.Transactional; // (Para o @Transactional)
+// --- FIM DOS IMPORTS ADICIONADOS ---
+
+import com.deliverytech.delivery.entity.Usuario;
+import com.deliverytech.delivery.repository.auth.UsuarioRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+@Service
+@RequiredArgsConstructor // O Lombok injeta todos os campos 'final'
+public class AuthService implements UserDetailsService {
+
+    // --- DEPENDÊNCIAS ANTIGAS (OK) ---
+    private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    // --- NOVAS DEPENDÊNCIAS (NECESSÁRIAS) ---
+    private final ClienteRepository clienteRepository;
+    private final EnderecoRepository enderecoRepository;
+    private final ModelMapper modelMapper; // (Certifique-se que este Bean está configurado)
+
+    
+    /**
+     * (Seu método original - Está OK)
+     * Carrega o usuário pelo email para o Spring Security.
+     */
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+<span class="fc" id="L45">        return usuarioRepository.findByEmailAndAtivo(email, true)</span>
+<span class="pc" id="L46">                .orElseThrow(() -&gt; new UsernameNotFoundException(&quot;Usuário não encontrado: &quot; + email));</span>
+    }
+
+    
+    /**
+     * (Seu método original - Está OK)
+     * Verifica se um e-mail já existe.
+     */
+    public boolean existsByEmail(String email) {
+<span class="nc" id="L55">        return usuarioRepository.existsByEmail(email);</span>
+    }
+
+    /**
+     * Registra um novo CLIENTE no sistema (VERSÃO REFATORADA).
+     * Cria o Usuário (autenticação), o Cliente (perfil) e o Endereço (entrega)
+     * e os conecta corretamente usando @OneToOne e @ManyToOne.
+     *
+     * @param dto O DTO 'RegisterRequest' refatorado (com dados de perfil e endereço).
+     * @return A entidade 'Usuario' que foi salva.
+     */
+    @Transactional // Garante que tudo (Usuário, Cliente, Endereço) seja salvo, ou nada.
+    public Usuario registrarCliente(RegisterRequest dto) {
+        
+        // 1. Validação de E-mail
+<span class="nc bnc" id="L70" title="All 2 branches missed.">        if (existsByEmail(dto.getEmail())) {</span>
+<span class="nc" id="L71">            throw new ConflictException(&quot;Email já está em uso&quot;, &quot;email&quot;, dto.getEmail());</span>
+        }
+
+        // 2. Criar a entidade de Autenticação (Usuario)
+<span class="nc" id="L75">        Usuario usuario = new Usuario();</span>
+<span class="nc" id="L76">        usuario.setEmail(dto.getEmail());</span>
+<span class="nc" id="L77">        usuario.setSenha(passwordEncoder.encode(dto.getSenha()));</span>
+<span class="nc" id="L78">        usuario.setRole(Role.CLIENTE); // Define a Role direto (este método é só para clientes)</span>
+<span class="nc" id="L79">        usuario.setAtivo(true);</span>
+        // (O campo 'nome' FOI REMOVIDO daqui - CORRIGE O ERRO `setNome`)
+        
+<span class="nc" id="L82">        Usuario usuarioSalvo = usuarioRepository.save(usuario);</span>
+
+        // 3. Criar a entidade de Perfil (Cliente)
+<span class="nc" id="L85">        Cliente cliente = new Cliente();</span>
+<span class="nc" id="L86">        cliente.setUsuario(usuarioSalvo); // &lt;-- Conecta ao Usuário</span>
+<span class="nc" id="L87">        cliente.setId(usuarioSalvo.getId()); // &lt;-- Define a PK/FK (@MapsId)</span>
+        
+<span class="nc" id="L89">        cliente.setNome(dto.getNome()); // &lt;-- 'nome' agora fica no Cliente</span>
+<span class="nc" id="L90">        cliente.setCpf(dto.getCpf());</span>
+<span class="nc" id="L91">        cliente.setTelefone(dto.getTelefone());</span>
+        
+        // (Não setamos email/ativo aqui - CORRIGE OS ERROS `setEmail`/`setAtivo`)
+        
+<span class="nc" id="L95">        clienteRepository.save(cliente);</span>
+
+        // 4. Criar a entidade de Endereço (Gargalo 1)
+<span class="nc" id="L98">        EnderecoDTO enderecoDTO = dto.getEndereco();</span>
+<span class="nc" id="L99">        Endereco endereco = modelMapper.map(enderecoDTO, Endereco.class);</span>
+<span class="nc" id="L100">        endereco.setUsuario(usuarioSalvo); // &lt;-- Conecta o endereço ao Usuário</span>
+<span class="nc" id="L101">        endereco.setApelido(&quot;Principal&quot;); // Define o primeiro endereço como 'Principal'</span>
+        
+<span class="nc" id="L103">        enderecoRepository.save(endereco);</span>
+
+        // Retorna o Usuário salvo (agora completo com perfil e endereço)
+<span class="nc" id="L106">        return usuarioSalvo;</span>
+    }
+
+    // O método 'criarUsuario(RegisterRequest)' antigo (que recebia Role) 
+    // foi substituído por 'registrarCliente(RegisterRequest)'.
+    // Se você precisar de um método para criar ADMIN/RESTAURANTE, 
+    // ele deve ser um método separado.
+
+    
+    /**
+     * (Seu método original - Está OK)
+     * Busca um usuário pelo seu ID.
+     */
+    public Usuario buscarPorId(Long id) {
+<span class="nc" id="L120">        return usuarioRepository.findById(id)</span>
+<span class="nc" id="L121">                .orElseThrow(() -&gt; new RuntimeException(&quot;Usuário não encontrado&quot;));</span>
+    }
+
+    /**
+     * (Seu método original - Está OK)
+     * Busca um usuário pelo seu email.
+     */
+    public Usuario buscarPorEmail(String email) {
+<span class="nc" id="L129">        return usuarioRepository.findByEmail(email)</span>
+<span class="nc" id="L130">                .orElseThrow(() -&gt; new RuntimeException(&quot;Usuário não encontrado&quot;));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

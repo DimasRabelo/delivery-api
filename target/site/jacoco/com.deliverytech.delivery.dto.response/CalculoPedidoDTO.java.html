@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pt"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CalculoPedidoDTO.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">delivery-api</a> &gt; <a href="index.source.html" class="el_package">com.deliverytech.delivery.dto.response</a> &gt; <span class="el_source">CalculoPedidoDTO.java</span></div><h1>CalculoPedidoDTO.java</h1><pre class="source lang-java linenums">
+package com.deliverytech.delivery.dto.response;
+
+import com.deliverytech.delivery.dto.ItemPedidoDTO;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import java.util.ArrayList;
+import java.util.List;
+
+// ============================================
+// DTO usado para enviar informações de um pedido
+// para cálculo do total sem salvar no banco
+// ============================================
+@Schema(description = &quot;DTO para cálculo do total de um pedido sem persistir no banco&quot;)
+<span class="nc" id="L17">public class CalculoPedidoDTO {</span>
+
+    // ------------------------------------------------
+    // ID do restaurante para o qual o cálculo será feito
+    // @Schema → documenta no Swagger o que é esse campo
+    // @NotNull → validação para garantir que não seja nulo
+    // ------------------------------------------------
+    @Schema(description = &quot;ID do restaurante onde o pedido será calculado&quot;, example = &quot;2&quot;, required = true)
+    @NotNull(message = &quot;ID do restaurante é obrigatório&quot;)
+    private Long restauranteId;
+
+    // ------------------------------------------------
+    // Lista de itens do pedido a ser calculado
+    // @NotEmpty → valida que a lista não pode estar vazia
+    // @Valid → valida os itens internos da lista (ItemPedidoDTO)
+    // ------------------------------------------------
+<span class="nc" id="L33">    @Schema(description = &quot;Lista de itens para cálculo do pedido&quot;, required = true)</span>
+    @NotEmpty(message = &quot;Pedido deve ter pelo menos um item&quot;)
+    @Valid
+    private List&lt;ItemPedidoDTO&gt; itens = new ArrayList&lt;&gt;();
+
+    // =======================
+    // GETTERS E SETTERS
+    // =======================
+
+    // Retorna o ID do restaurante
+<span class="nc" id="L43">    public Long getRestauranteId() { return restauranteId; }</span>
+    // Define o ID do restaurante
+<span class="nc" id="L45">    public void setRestauranteId(Long restauranteId) { this.restauranteId = restauranteId; }</span>
+
+    // Retorna a lista de itens do pedido
+<span class="nc" id="L48">    public List&lt;ItemPedidoDTO&gt; getItens() { return itens; }</span>
+    // Define a lista de itens do pedido
+<span class="nc" id="L50">    public void setItens(List&lt;ItemPedidoDTO&gt; itens) { this.itens = itens; }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

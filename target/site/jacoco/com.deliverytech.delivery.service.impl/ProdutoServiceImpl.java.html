@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pt"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProdutoServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">delivery-api</a> &gt; <a href="index.source.html" class="el_package">com.deliverytech.delivery.service.impl</a> &gt; <span class="el_source">ProdutoServiceImpl.java</span></div><h1>ProdutoServiceImpl.java</h1><pre class="source lang-java linenums">package com.deliverytech.delivery.service.impl;
+
+import com.deliverytech.delivery.dto.ProdutoDTO;
+import com.deliverytech.delivery.dto.GrupoOpcionalDTO; // IMPORT ADICIONADO
+import com.deliverytech.delivery.dto.ItemOpcionalDTO; // IMPORT ADICIONADO
+import com.deliverytech.delivery.dto.response.ProdutoResponseDTO;
+import com.deliverytech.delivery.entity.Produto;
+import com.deliverytech.delivery.entity.Restaurante;
+import com.deliverytech.delivery.entity.GrupoOpcional; // IMPORT ADICIONADO
+import com.deliverytech.delivery.entity.ItemOpcional; // IMPORT ADICIONADO
+//import com.deliverytech.delivery.exception.BusinessException;
+import com.deliverytech.delivery.exception.ConflictException;
+import com.deliverytech.delivery.exception.EntityNotFoundException;
+import com.deliverytech.delivery.repository.ProdutoRepository;
+import com.deliverytech.delivery.repository.RestauranteRepository;
+import com.deliverytech.delivery.service.ProdutoService;
+import com.deliverytech.delivery.security.jwt.SecurityUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import java.util.List;
+//import java.util.ArrayList; // IMPORT ADICIONADO
+import java.util.stream.Collectors;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
+
+@Service(&quot;produtoService&quot;)
+@Transactional
+<span class="fc" id="L32">public class ProdutoServiceImpl implements ProdutoService {</span>
+
+    @Autowired
+    private ProdutoRepository produtoRepository;
+
+    @Autowired
+    private RestauranteRepository restauranteRepository;
+    
+    // (Não precisamos dos repositórios de Opcionais aqui, 
+    // pois o Cascade fará o salvamento)
+
+    /**
+     * Cadastra um novo produto (VERSÃO REFATORADA).
+     * Agora salva o 'precoBase' e a árvore de 'gruposOpcionais'.
+     */
+    @Override
+    @CacheEvict(value = &quot;produtos&quot;, allEntries = true) // Limpa o cache de produtos
+    public ProdutoResponseDTO cadastrarProduto(ProdutoDTO dto) {
+        
+        // (Validações de DTO - seu código original)
+<span class="nc bnc" id="L52" title="All 2 branches missed.">        if (dto.getRestauranteId() == null) {</span>
+<span class="nc" id="L53">            throw new IllegalArgumentException(&quot;Restaurante ID é obrigatório&quot;);</span>
+        }
+        
+<span class="nc" id="L56">        Restaurante restaurante = restauranteRepository.findById(dto.getRestauranteId())</span>
+<span class="nc" id="L57">                .orElseThrow(() -&gt; new EntityNotFoundException(&quot;Restaurante não encontrado&quot;));</span>
+
+<span class="nc" id="L59">        boolean exists = produtoRepository.existsByNomeAndRestauranteId(dto.getNome(), dto.getRestauranteId());</span>
+<span class="nc bnc" id="L60" title="All 2 branches missed.">        if (exists) {</span>
+<span class="nc" id="L61">            throw new ConflictException(&quot;Produto já existe para este restaurante&quot;, &quot;nome&quot;, dto.getNome());</span>
+        }
+
+        // 1. Mapeia os dados básicos do Produto
+<span class="nc" id="L65">        Produto produto = new Produto();</span>
+<span class="nc" id="L66">        produto.setNome(dto.getNome());</span>
+<span class="nc" id="L67">        produto.setDescricao(dto.getDescricao());</span>
+<span class="nc" id="L68">        produto.setCategoria(dto.getCategoria());</span>
+<span class="nc" id="L69">        produto.setDisponivel(true); // Padrão</span>
+<span class="nc" id="L70">        produto.setEstoque(dto.getEstoque());</span>
+<span class="nc" id="L71">        produto.setRestaurante(restaurante);</span>
+
+        // --- CORREÇÃO (GARGALO 2) ---
+<span class="nc" id="L74">        produto.setPrecoBase(dto.getPrecoBase()); // &lt;-- MUDOU (era 'preco')</span>
+
+        // 2. Constrói a árvore de Opcionais (Gargalo 2)
+<span class="nc bnc" id="L77" title="All 2 branches missed.">        if (dto.getGruposOpcionais() != null) {</span>
+<span class="nc bnc" id="L78" title="All 2 branches missed.">            for (GrupoOpcionalDTO grupoDTO : dto.getGruposOpcionais()) {</span>
+<span class="nc" id="L79">                GrupoOpcional grupo = new GrupoOpcional();</span>
+<span class="nc" id="L80">                grupo.setNome(grupoDTO.getNome());</span>
+<span class="nc" id="L81">                grupo.setMinSelecao(grupoDTO.getMinSelecao());</span>
+<span class="nc" id="L82">                grupo.setMaxSelecao(grupoDTO.getMaxSelecao());</span>
+<span class="nc" id="L83">                grupo.setProduto(produto); // Linka o grupo ao produto &quot;pai&quot;</span>
+
+<span class="nc bnc" id="L85" title="All 2 branches missed.">                if (grupoDTO.getItensOpcionais() != null) {</span>
+<span class="nc bnc" id="L86" title="All 2 branches missed.">                    for (ItemOpcionalDTO itemDTO : grupoDTO.getItensOpcionais()) {</span>
+<span class="nc" id="L87">                        ItemOpcional item = new ItemOpcional();</span>
+<span class="nc" id="L88">                        item.setNome(itemDTO.getNome());</span>
+<span class="nc" id="L89">                        item.setPrecoAdicional(itemDTO.getPrecoAdicional());</span>
+<span class="nc" id="L90">                        item.setGrupoOpcional(grupo); // Linka o item ao grupo &quot;pai&quot;</span>
+<span class="nc" id="L91">                        grupo.getItensOpcionais().add(item); // Adiciona o item ao grupo</span>
+<span class="nc" id="L92">                    }</span>
+                }
+<span class="nc" id="L94">                produto.getGruposOpcionais().add(grupo); // Adiciona o grupo ao produto</span>
+<span class="nc" id="L95">            }</span>
+        }
+
+<span class="nc" id="L98">        Produto produtoSalvo = produtoRepository.save(produto); // O Cascade salva tudo</span>
+
+<span class="nc" id="L100">        return new ProdutoResponseDTO(produtoSalvo); // O novo DTO de resposta lida com a árvore</span>
+    }
+
+    /**
+     * Atualiza um produto (VERSÃO REFATORADA).
+     * Usa 'orphanRemoval=true' para limpar e recriar os opcionais.
+     */
+    @Override
+    @CacheEvict(value = &quot;produtos&quot;, key = &quot;#id&quot;)
+    public ProdutoResponseDTO atualizarProduto(Long id, ProdutoDTO dto) {
+        
+<span class="nc" id="L111">        Produto produto = produtoRepository.findById(id)</span>
+<span class="nc" id="L112">                .orElseThrow(() -&gt; new EntityNotFoundException(&quot;Produto não encontrado: &quot; + id));</span>
+
+<span class="nc" id="L114">        Restaurante restaurante = restauranteRepository.findById(dto.getRestauranteId())</span>
+<span class="nc" id="L115">                .orElseThrow(() -&gt; new EntityNotFoundException(&quot;Restaurante não encontrado: &quot; + dto.getRestauranteId()));</span>
+
+        // 1. Atualiza os dados básicos
+<span class="nc" id="L118">        produto.setNome(dto.getNome());</span>
+<span class="nc" id="L119">        produto.setDescricao(dto.getDescricao());</span>
+<span class="nc" id="L120">        produto.setCategoria(dto.getCategoria());</span>
+<span class="nc" id="L121">        produto.setEstoque(dto.getEstoque());</span>
+<span class="nc" id="L122">        produto.setRestaurante(restaurante);</span>
+
+        // --- CORREÇÃO (GARGALO 2) ---
+<span class="nc" id="L125">        produto.setPrecoBase(dto.getPrecoBase()); // &lt;-- MUDOU (era 'preco')</span>
+        
+        // (Seu DTO antigo tinha 'disponivel', o novo não, mas o 'atualizar' deveria ter)
+        // if (dto.getDisponivel() != null) { 
+        //     produto.setDisponivel(dto.getDisponivel());
+        // }
+
+        // 2. Atualiza a árvore de Opcionais (Gargalo 2)
+        // A forma mais simples (usando orphanRemoval=true na Entidade Produto)
+        // é limpar a lista antiga e adicionar os novos.
+        
+<span class="nc" id="L136">        produto.getGruposOpcionais().clear(); // &lt;-- Limpa a lista (Cascade remove os antigos)</span>
+
+<span class="nc bnc" id="L138" title="All 2 branches missed.">        if (dto.getGruposOpcionais() != null) {</span>
+<span class="nc bnc" id="L139" title="All 2 branches missed.">            for (GrupoOpcionalDTO grupoDTO : dto.getGruposOpcionais()) {</span>
+<span class="nc" id="L140">                GrupoOpcional grupo = new GrupoOpcional();</span>
+<span class="nc" id="L141">                grupo.setNome(grupoDTO.getNome());</span>
+<span class="nc" id="L142">                grupo.setMinSelecao(grupoDTO.getMinSelecao());</span>
+<span class="nc" id="L143">                grupo.setMaxSelecao(grupoDTO.getMaxSelecao());</span>
+<span class="nc" id="L144">                grupo.setProduto(produto);</span>
+
+<span class="nc bnc" id="L146" title="All 2 branches missed.">                if (grupoDTO.getItensOpcionais() != null) {</span>
+<span class="nc bnc" id="L147" title="All 2 branches missed.">                    for (ItemOpcionalDTO itemDTO : grupoDTO.getItensOpcionais()) {</span>
+<span class="nc" id="L148">                        ItemOpcional item = new ItemOpcional();</span>
+<span class="nc" id="L149">                        item.setNome(itemDTO.getNome());</span>
+<span class="nc" id="L150">                        item.setPrecoAdicional(itemDTO.getPrecoAdicional());</span>
+<span class="nc" id="L151">                        item.setGrupoOpcional(grupo);</span>
+<span class="nc" id="L152">                        grupo.getItensOpcionais().add(item);</span>
+<span class="nc" id="L153">                    }</span>
+                }
+<span class="nc" id="L155">                produto.getGruposOpcionais().add(grupo); // Adiciona o grupo (novo)</span>
+<span class="nc" id="L156">            }</span>
+        }
+
+<span class="nc" id="L159">        Produto atualizado = produtoRepository.save(produto);</span>
+
+<span class="nc" id="L161">        return new ProdutoResponseDTO(atualizado);</span>
+    }
+
+
+    // ==========================================================
+    // MÉTODOS DE BUSCA (A maioria deve funcionar agora)
+    // O construtor 'new ProdutoResponseDTO(produto)' foi refatorado
+    // para lidar com a nova estrutura (precoBase e opcionais).
+    // ==========================================================
+
+    @Override
+    @Transactional(readOnly = true)
+    @Cacheable(value = &quot;produtos&quot;, key = &quot;#id&quot;)
+    public ProdutoResponseDTO buscarProdutoPorId(Long id) {
+<span class="nc" id="L175">        Produto produto = produtoRepository.findById(id)</span>
+<span class="nc" id="L176">                .orElseThrow(() -&gt; new EntityNotFoundException(&quot;Produto não encontrado: &quot; + id));</span>
+
+        // Sua lógica original de 'disponivel' foi movida para o 'listar'
+        // if (!produto.getDisponivel()) {
+        //     throw new BusinessException(&quot;Produto não está disponível&quot;);
+        // }
+
+        // O novo construtor do DTO de Resposta faz todo o trabalho de mapeamento
+<span class="nc" id="L184">        return new ProdutoResponseDTO(produto);</span>
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List&lt;ProdutoResponseDTO&gt; buscarProdutosPorNome(String nome) {
+<span class="nc" id="L190">        List&lt;Produto&gt; produtos = produtoRepository.findByNomeContainingIgnoreCaseAndDisponivelTrue(nome);</span>
+<span class="nc" id="L191">        return produtos.stream()</span>
+<span class="nc" id="L192">                .map(ProdutoResponseDTO::new) // Usa o construtor refatorado</span>
+<span class="nc" id="L193">                .collect(Collectors.toList());</span>
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List&lt;ProdutoResponseDTO&gt; buscarProdutosPorRestaurante(Long restauranteId, Boolean disponivel) {
+        List&lt;Produto&gt; produtos;
+<span class="nc bnc" id="L200" title="All 2 branches missed.">        if (disponivel != null) {</span>
+<span class="nc" id="L201">            produtos = produtoRepository.findByRestauranteIdAndDisponivel(restauranteId, disponivel);</span>
+        } else {
+            // Padrão: buscar todos (incluindo indisponíveis, para o gerente ver)
+<span class="nc" id="L204">            produtos = produtoRepository.findByRestauranteId(restauranteId);</span>
+        }
+
+<span class="nc" id="L207">        return produtos.stream()</span>
+<span class="nc" id="L208">                .map(ProdutoResponseDTO::new) // Usa o construtor refatorado</span>
+<span class="nc" id="L209">                .collect(Collectors.toList());</span>
+    }
+
+    @Override
+    @CacheEvict(value = &quot;produtos&quot;, key = &quot;#id&quot;)
+    public ProdutoResponseDTO alterarDisponibilidade(Long id) {
+<span class="nc" id="L215">        Produto produto = produtoRepository.findById(id)</span>
+<span class="nc" id="L216">                .orElseThrow(() -&gt; new EntityNotFoundException(&quot;Produto não encontrado&quot;));</span>
+
+<span class="nc bnc" id="L218" title="All 4 branches missed.">        produto.setDisponivel(produto.getDisponivel() == null ? true : !produto.getDisponivel());</span>
+<span class="nc" id="L219">        produtoRepository.save(produto);</span>
+
+<span class="nc" id="L221">        return new ProdutoResponseDTO(produto);</span>
+    }
+
+    @Override
+    @CacheEvict(value = &quot;produtos&quot;, key = &quot;#id&quot;)
+    public void removerProduto(Long id) {
+<span class="nc" id="L227">        Produto produto = produtoRepository.findById(id)</span>
+<span class="nc" id="L228">                .orElseThrow(() -&gt; new EntityNotFoundException(&quot;Produto não encontrado&quot;));</span>
+
+        // (Aqui você pode querer verificar se o produto está em algum Pedido antes de deletar)
+        
+<span class="nc" id="L232">        produtoRepository.delete(produto);</span>
+<span class="nc" id="L233">    }</span>
+
+    @Override
+    @Transactional(readOnly = true)
+    public List&lt;ProdutoResponseDTO&gt; buscarProdutosPorCategoria(String categoria) {
+<span class="nc" id="L238">        List&lt;Produto&gt; produtos = produtoRepository.findByCategoriaAndDisponivelTrue(categoria);</span>
+<span class="nc" id="L239">        return produtos.stream()</span>
+<span class="nc" id="L240">                .map(ProdutoResponseDTO::new) // Usa o construtor refatorado</span>
+<span class="nc" id="L241">                .collect(Collectors.toList());</span>
+    }
+
+    @Override
+    public boolean isOwner(Long produtoId) {
+        // Esta lógica está OK
+<span class="nc" id="L247">        Produto produto = produtoRepository.findById(produtoId).orElse(null);</span>
+<span class="nc bnc" id="L248" title="All 2 branches missed.">        if (produto == null) return false;</span>
+<span class="nc" id="L249">        Long restauranteLogadoId = SecurityUtils.getCurrentRestauranteId();</span>
+<span class="nc bnc" id="L250" title="All 2 branches missed.">        if (restauranteLogadoId == null) return false;</span>
+<span class="nc bnc" id="L251" title="All 2 branches missed.">        return produto.getRestaurante() != null &amp;&amp;</span>
+<span class="nc bnc" id="L252" title="All 2 branches missed.">               produto.getRestaurante().getId().equals(restauranteLogadoId);</span>
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page&lt;ProdutoResponseDTO&gt; listarProdutos(Pageable pageable, Long restauranteId, String categoria, Boolean disponivel) {
+        // Esta lógica de Specification está OK
+<span class="nc" id="L259">        Specification&lt;Produto&gt; spec = Specification.not(null);</span>
+        // ... (seu código de spec) ...
+<span class="nc" id="L261">        Page&lt;Produto&gt; paginaDeProdutos = produtoRepository.findAll(spec, pageable);</span>
+<span class="nc" id="L262">        return paginaDeProdutos.map(ProdutoResponseDTO::new); // Usa o construtor refatorado</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

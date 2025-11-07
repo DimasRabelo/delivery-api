@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pt"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ClienteController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">delivery-api</a> &gt; <a href="index.source.html" class="el_package">com.deliverytech.delivery.controller</a> &gt; <span class="el_source">ClienteController.java</span></div><h1>ClienteController.java</h1><pre class="source lang-java linenums">package com.deliverytech.delivery.controller;
+
+import com.deliverytech.delivery.dto.ClienteDTO;
+import com.deliverytech.delivery.dto.response.ApiResponseWrapper;
+import com.deliverytech.delivery.dto.response.ClienteResponseDTO;
+import com.deliverytech.delivery.dto.response.PagedResponseWrapper; // Importe o Wrapper Paginado
+import com.deliverytech.delivery.service.ClienteService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Positive;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable; // Importe o Pageable correto
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping(&quot;/api/clientes&quot;)
+@CrossOrigin(origins = &quot;*&quot;)
+@Validated // Habilita validação em parâmetros (ex: @Positive, @Email)
+@Tag(name = &quot;2. Clientes&quot;, description = &quot;Gerenciamento de clientes (Admin) e auto-serviço&quot;)
+@SecurityRequirement(name = &quot;bearerAuth&quot;) // Aplica o cadeado a todos os endpoints
+<span class="fc" id="L32">public class ClienteController {</span>
+
+    @Autowired
+    private ClienteService clienteService;
+
+    /**
+     * Cadastra um novo cliente.
+     * Este endpoint é redundante se /api/auth/register já faz isso para clientes.
+     * Assumindo que este é um endpoint para ADMINS criarem clientes.
+     */
+    @PostMapping
+    @PreAuthorize(&quot;hasRole('ADMIN')&quot;)
+    @Operation(summary = &quot;Cadastrar cliente (ADMIN)&quot;,
+               description = &quot;Cria um novo cliente no sistema. Requer role ADMIN.&quot;)
+    @ApiResponses({
+            @ApiResponse(responseCode = &quot;201&quot;, description = &quot;Cliente criado com sucesso&quot;),
+            @ApiResponse(responseCode = &quot;400&quot;, description = &quot;Email já em uso ou dados inválidos&quot;),
+            @ApiResponse(responseCode = &quot;403&quot;, description = &quot;Acesso negado&quot;)
+    })
+    public ResponseEntity&lt;ApiResponseWrapper&lt;ClienteResponseDTO&gt;&gt; cadastrarCliente(
+            @Valid @RequestBody ClienteDTO dto) {
+        
+<span class="nc" id="L54">        ClienteResponseDTO cliente = clienteService.cadastrarCliente(dto);</span>
+<span class="nc" id="L55">        ApiResponseWrapper&lt;ClienteResponseDTO&gt; response = </span>
+                new ApiResponseWrapper&lt;&gt;(true, cliente, &quot;Cliente criado com sucesso&quot;);
+<span class="nc" id="L57">        return ResponseEntity.status(HttpStatus.CREATED).body(response);</span>
+    }
+
+    /**
+     * Lista todos os clientes ativos de forma paginada.
+     * Acesso restrito a usuários com a role 'ADMIN'.
+     */
+    @GetMapping
+    @PreAuthorize(&quot;hasRole('ADMIN')&quot;)
+    @Operation(summary = &quot;Listar clientes (ADMIN, Paginado)&quot;,
+               description = &quot;Lista todos os clientes ativos do sistema com paginação. Requer role ADMIN.&quot;)
+    @ApiResponse(responseCode = &quot;200&quot;, description = &quot;Clientes listados com sucesso&quot;)
+    public ResponseEntity&lt;PagedResponseWrapper&lt;ClienteResponseDTO&gt;&gt; listarClientes(
+            @Parameter(description = &quot;Informações de paginação (size, page, sort)&quot;) Pageable pageable) {
+        
+<span class="nc" id="L72">        Page&lt;ClienteResponseDTO&gt; clientes = clienteService.listarClientesAtivosPaginado(pageable);</span>
+<span class="nc" id="L73">        return ResponseEntity.ok(new PagedResponseWrapper&lt;&gt;(clientes));</span>
+    }
+
+    /**
+     * Busca um cliente específico pelo seu ID.
+     * Acesso permitido para 'ADMIN' ou para o próprio 'CLIENTE'.
+     */
+    @GetMapping(&quot;/{id}&quot;)
+    @PreAuthorize(&quot;hasRole('ADMIN') or (hasRole('CLIENTE') and #id == principal.id)&quot;)
+    @Operation(summary = &quot;Buscar cliente por ID&quot;,
+               description = &quot;Busca um cliente. Requer role ADMIN ou ser o próprio cliente.&quot;)
+    @ApiResponses({
+            @ApiResponse(responseCode = &quot;200&quot;, description = &quot;Cliente encontrado&quot;),
+            @ApiResponse(responseCode = &quot;403&quot;, description = &quot;Acesso negado&quot;),
+            @ApiResponse(responseCode = &quot;404&quot;, description = &quot;Cliente não encontrado&quot;)
+    })
+    public ResponseEntity&lt;ApiResponseWrapper&lt;ClienteResponseDTO&gt;&gt; buscarPorId(
+            @Parameter(description = &quot;ID do cliente a ser buscado&quot;, required = true, example = &quot;1&quot;) 
+            @PathVariable @Positive Long id) {
+        
+<span class="nc" id="L93">        ClienteResponseDTO cliente = clienteService.buscarClientePorId(id);</span>
+<span class="nc" id="L94">        ApiResponseWrapper&lt;ClienteResponseDTO&gt; response = </span>
+                new ApiResponseWrapper&lt;&gt;(true, cliente, &quot;Cliente encontrado&quot;);
+<span class="nc" id="L96">        return ResponseEntity.ok(response);</span>
+    }
+
+    /**
+     * Busca um cliente específico pelo seu email.
+     * Acesso restrito a usuários com a role 'ADMIN'.
+     */
+    @GetMapping(&quot;/email/{email}&quot;)
+    @PreAuthorize(&quot;hasRole('ADMIN')&quot;)
+    @Operation(summary = &quot;Buscar cliente por Email (ADMIN)&quot;,
+               description = &quot;Busca um cliente pelo email. Requer role ADMIN.&quot;)
+    @ApiResponses({
+            @ApiResponse(responseCode = &quot;200&quot;, description = &quot;Cliente encontrado&quot;),
+            @ApiResponse(responseCode = &quot;403&quot;, description = &quot;Acesso negado&quot;),
+            @ApiResponse(responseCode = &quot;404&quot;, description = &quot;Cliente não encontrado&quot;)
+    })
+    public ResponseEntity&lt;ApiResponseWrapper&lt;ClienteResponseDTO&gt;&gt; buscarPorEmail(
+            @Parameter(description = &quot;Email do cliente a ser buscado&quot;, required = true, example = &quot;cliente@email.com&quot;) 
+            @PathVariable @Email String email) {
+        
+<span class="nc" id="L116">        ClienteResponseDTO cliente = clienteService.buscarClientePorEmail(email);</span>
+<span class="nc" id="L117">        ApiResponseWrapper&lt;ClienteResponseDTO&gt; response = </span>
+                new ApiResponseWrapper&lt;&gt;(true, cliente, &quot;Cliente encontrado&quot;);
+<span class="nc" id="L119">        return ResponseEntity.ok(response);</span>
+    }
+
+    /**
+     * Atualiza os dados de um cliente existente.
+     * Acesso restrito a 'ADMIN' ou ao próprio 'CLIENTE'.
+     */
+    @PutMapping(&quot;/{id}&quot;)
+    @PreAuthorize(&quot;hasRole('ADMIN') or (hasRole('CLIENTE') and #id == principal.id)&quot;)
+    @Operation(summary = &quot;Atualizar dados do cliente&quot;,
+               description = &quot;Atualiza dados de um cliente. Requer role ADMIN ou ser o próprio cliente.&quot;)
+    @ApiResponses({
+            @ApiResponse(responseCode = &quot;200&quot;, description = &quot;Cliente atualizado com sucesso&quot;),
+            @ApiResponse(responseCode = &quot;400&quot;, description = &quot;Dados inválidos&quot;),
+            @ApiResponse(responseCode = &quot;403&quot;, description = &quot;Acesso negado&quot;),
+            @ApiResponse(responseCode = &quot;404&quot;, description = &quot;Cliente não encontrado&quot;)
+    })
+    public ResponseEntity&lt;ApiResponseWrapper&lt;ClienteResponseDTO&gt;&gt; atualizarCliente(
+            @Parameter(description = &quot;ID do cliente a ser atualizado&quot;, required = true, example = &quot;1&quot;) 
+            @PathVariable @Positive Long id,
+            @Valid @RequestBody ClienteDTO dto) {
+        
+<span class="nc" id="L141">        ClienteResponseDTO cliente = clienteService.atualizarCliente(id, dto);</span>
+<span class="nc" id="L142">        ApiResponseWrapper&lt;ClienteResponseDTO&gt; response = </span>
+                new ApiResponseWrapper&lt;&gt;(true, cliente, &quot;Cliente atualizado com sucesso&quot;);
+<span class="nc" id="L144">        return ResponseEntity.ok(response);</span>
+    }
+
+    /**
+     * Desativa um cliente (exclusão lógica / soft delete).
+     * Acesso restrito a usuários com a role 'ADMIN'.
+     * Retorna 204 No Content, como é padrão para DELETE.
+     */
+    @DeleteMapping(&quot;/{id}&quot;)
+    @PreAuthorize(&quot;hasRole('ADMIN')&quot;)
+    @Operation(summary = &quot;Desativar (soft delete) cliente (ADMIN)&quot;,
+               description = &quot;Desativa um cliente (exclusão lógica). Requer role ADMIN.&quot;)
+    @ApiResponses({
+            @ApiResponse(responseCode = &quot;204&quot;, description = &quot;Cliente desativado com sucesso&quot;),
+            @ApiResponse(responseCode = &quot;403&quot;, description = &quot;Acesso negado&quot;),
+            @ApiResponse(responseCode = &quot;404&quot;, description = &quot;Cliente não encontrado&quot;)
+    })
+    public ResponseEntity&lt;Void&gt; ativarDesativarCliente(
+            @Parameter(description = &quot;ID do cliente a ser desativado&quot;, required = true, example = &quot;1&quot;) 
+            @PathVariable @Positive Long id) {
+        
+<span class="nc" id="L165">        clienteService.ativarDesativarCliente(id);</span>
+<span class="nc" id="L166">        return ResponseEntity.noContent().build(); // Retorna 204 No Content</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

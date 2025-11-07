@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pt"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ItemPedidoOpcional.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">delivery-api</a> &gt; <a href="index.source.html" class="el_package">com.deliverytech.delivery.entity</a> &gt; <span class="el_source">ItemPedidoOpcional.java</span></div><h1>ItemPedidoOpcional.java</h1><pre class="source lang-java linenums">package com.deliverytech.delivery.entity;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+
+import java.math.BigDecimal;
+
+/**
+ * Tabela de Ligação (Join Table).
+ * Registra que um 'ItemOpcional' (ex: &quot;+Borda&quot;) foi selecionado 
+ * para um 'ItemPedido' (ex: a &quot;Pizza Média&quot; no pedido 100).
+ */
+@Entity
+@Table(name = &quot;item_pedido_opcional&quot;)
+@Getter
+@Setter
+@ToString(exclude = {&quot;itemPedido&quot;, &quot;itemOpcional&quot;})
+@EqualsAndHashCode(of = &quot;id&quot;)
+@Schema(description = &quot;Registra um opcional que foi selecionado para um item do pedido&quot;)
+public class ItemPedidoOpcional {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Schema(description = &quot;Identificador único da seleção do opcional&quot;, example = &quot;1001&quot;)
+    private Long id;
+
+    // O Item do Pedido (Ex: A &quot;Pizza Média&quot; no Pedido 100)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = &quot;item_pedido_id&quot;, nullable = false)
+    @Schema(description = &quot;O item de pedido ao qual este opcional se aplica&quot;)
+    private ItemPedido itemPedido;
+
+    // O Opcional Escolhido (Ex: &quot;+Borda Catupiry&quot;)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = &quot;item_opcional_id&quot;, nullable = false)
+    @Schema(description = &quot;O item opcional que foi selecionado&quot;)
+    private ItemOpcional itemOpcional; // &lt;-- CORRIGIDO (era ItemPedidoOpcional)
+
+    @NotNull
+    @PositiveOrZero
+    @Schema(description = &quot;Preço do opcional no momento da compra (snapshot)&quot;, example = &quot;8.00&quot;)
+    private BigDecimal precoRegistrado; // Preço &quot;congelado&quot; do opcional
+    
+<span class="fc" id="L50">    public ItemPedidoOpcional() {</span>
+<span class="fc" id="L51">    }</span>
+
+    /**
+     * Construtor de conveniência
+     * @param itemPedido O item do pedido
+     * @param itemOpcional O opcional selecionado
+     */
+<span class="nc" id="L58">    public ItemPedidoOpcional(ItemPedido itemPedido, ItemOpcional itemOpcional) { // &lt;-- CORRIGIDO (era ItemPedidoOpcional)</span>
+<span class="nc" id="L59">        this.itemPedido = itemPedido;</span>
+<span class="nc" id="L60">        this.itemOpcional = itemOpcional;</span>
+        
+        // Agora esta linha funciona, pois ItemOpcional TEM o método getPrecoAdicional()
+<span class="nc bnc" id="L63" title="All 4 branches missed.">        if (itemOpcional != null &amp;&amp; itemOpcional.getPrecoAdicional() != null) { // &lt;-- CORRIGIDO</span>
+<span class="nc" id="L64">            this.precoRegistrado = itemOpcional.getPrecoAdicional(); // &lt;-- CORRIGIDO</span>
+        } else {
+<span class="nc" id="L66">            this.precoRegistrado = BigDecimal.ZERO;</span>
+        }
+<span class="nc" id="L68">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

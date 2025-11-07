@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pt"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProdutoResponseDTO.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">delivery-api</a> &gt; <a href="index.source.html" class="el_package">com.deliverytech.delivery.dto.response</a> &gt; <span class="el_source">ProdutoResponseDTO.java</span></div><h1>ProdutoResponseDTO.java</h1><pre class="source lang-java linenums">package com.deliverytech.delivery.dto.response;
+
+import com.deliverytech.delivery.entity.Produto;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.math.BigDecimal;
+import java.io.Serializable;
+// --- IMPORTS ADICIONADOS ---
+import com.deliverytech.delivery.dto.GrupoOpcionalDTO;
+import com.deliverytech.delivery.dto.ItemOpcionalDTO;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.ArrayList; // Adicionado para inicializar a lista
+// --- FIM DOS IMPORTS ---
+
+/**
+ * DTO (Data Transfer Object) usado para enviar informações de produtos para o cliente.
+ * (Refatorado para suportar precoBase e gruposOpcionais)
+ */
+@Schema(description = &quot;DTO de resposta com dados do produto (incluindo opcionais)&quot;)
+public class ProdutoResponseDTO implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+    @Schema(description = &quot;ID do produto&quot;, example = &quot;1&quot;)
+    private Long id;
+
+    @Schema(description = &quot;Nome do produto&quot;, example = &quot;Pizza Margherita&quot;)
+    private String nome;
+
+    @Schema(description = &quot;Descrição do produto&quot;, example = &quot;Pizza de massa fina...&quot;)
+    private String descricao;
+
+    // --- MUDANÇA (GARGALO 2) ---
+    @Schema(description = &quot;Preço BASE do produto (sem opcionais)&quot;, example = &quot;35.50&quot;)
+    private BigDecimal precoBase; // &lt;-- RENOMEADO (era 'preco')
+
+    @Schema(description = &quot;Indica se o produto está disponível&quot;, example = &quot;true&quot;)
+    private Boolean disponivel;
+
+    @Schema(description = &quot;ID do restaurante do produto&quot;, example = &quot;2&quot;)
+    private Long restauranteId;
+
+    @Schema(description = &quot;Categoria do produto&quot;, example = &quot;Italiana&quot;)
+    private String categoria;
+    
+    @Schema(description = &quot;Quantidade em estoque&quot;, example = &quot;50&quot;)
+    private int estoque;
+    
+    // --- MUDANÇA 2 (GARGALO 2) ---
+<span class="nc" id="L51">    @Schema(description = &quot;Lista de grupos de opcionais para este produto (Tamanho, Adicionais, etc.)&quot;)</span>
+    private List&lt;GrupoOpcionalDTO&gt; gruposOpcionais = new ArrayList&lt;&gt;(); // &lt;-- CAMPO NOVO
+
+
+<span class="nc" id="L55">    public ProdutoResponseDTO() {}</span>
+
+    /**
+     * Construtor de Mapeamento (VERSÃO REFATORADA)
+     * Converte a Entidade 'Produto' (com 'precoBase' e 'gruposOpcionais') 
+     * para este DTO de resposta.
+     */
+<span class="nc" id="L62">    public ProdutoResponseDTO(Produto produto) {</span>
+<span class="nc" id="L63">        this.id = produto.getId();</span>
+<span class="nc" id="L64">        this.nome = produto.getNome();</span>
+<span class="nc" id="L65">        this.descricao = produto.getDescricao();</span>
+<span class="nc" id="L66">        this.disponivel = produto.getDisponivel();</span>
+<span class="nc bnc" id="L67" title="All 2 branches missed.">        this.restauranteId = produto.getRestaurante() != null ? produto.getRestaurante().getId() : null;</span>
+<span class="nc" id="L68">        this.categoria = produto.getCategoria();</span>
+<span class="nc" id="L69">        this.estoque = produto.getEstoque();</span>
+
+        // --- CORREÇÃO (GARGALO 2) ---
+<span class="nc" id="L72">        this.precoBase = produto.getPrecoBase(); // &lt;-- CORRIGIDO (era 'getPreco()')</span>
+
+        // --- CORREÇÃO 2 (GARGALO 2) ---
+        // Mapeia as entidades de opcionais para DTOs de opcionais
+<span class="nc bnc" id="L76" title="All 2 branches missed.">        if (produto.getGruposOpcionais() != null) {</span>
+<span class="nc" id="L77">            this.gruposOpcionais = produto.getGruposOpcionais().stream()</span>
+<span class="nc" id="L78">                .map(grupo -&gt; {</span>
+<span class="nc" id="L79">                    GrupoOpcionalDTO grupoDTO = new GrupoOpcionalDTO();</span>
+<span class="nc" id="L80">                    grupoDTO.setId(grupo.getId());</span>
+<span class="nc" id="L81">                    grupoDTO.setNome(grupo.getNome());</span>
+<span class="nc" id="L82">                    grupoDTO.setMinSelecao(grupo.getMinSelecao());</span>
+<span class="nc" id="L83">                    grupoDTO.setMaxSelecao(grupo.getMaxSelecao());</span>
+                    
+                    // Mapeia os itens aninhados
+<span class="nc bnc" id="L86" title="All 2 branches missed.">                    if (grupo.getItensOpcionais() != null) {</span>
+<span class="nc" id="L87">                        grupoDTO.setItensOpcionais(grupo.getItensOpcionais().stream()</span>
+<span class="nc" id="L88">                            .map(item -&gt; {</span>
+<span class="nc" id="L89">                                ItemOpcionalDTO itemDTO = new ItemOpcionalDTO();</span>
+<span class="nc" id="L90">                                itemDTO.setId(item.getId());</span>
+<span class="nc" id="L91">                                itemDTO.setNome(item.getNome());</span>
+<span class="nc" id="L92">                                itemDTO.setPrecoAdicional(item.getPrecoAdicional());</span>
+<span class="nc" id="L93">                                return itemDTO;</span>
+<span class="nc" id="L94">                            }).collect(Collectors.toList()));</span>
+                    }
+<span class="nc" id="L96">                    return grupoDTO;</span>
+<span class="nc" id="L97">                }).collect(Collectors.toList());</span>
+        }
+<span class="nc" id="L99">    }</span>
+
+    // ===================================================
+    // GETTERS E SETTERS
+    // ===================================================
+    
+<span class="nc" id="L105">    public Long getId() { return id; }</span>
+<span class="nc" id="L106">    public void setId(Long id) { this.id = id; }</span>
+<span class="nc" id="L107">    public String getNome() { return nome; }</span>
+<span class="nc" id="L108">    public void setNome(String nome) { this.nome = nome; }</span>
+<span class="nc" id="L109">    public String getDescricao() { return descricao; }</span>
+<span class="nc" id="L110">    public void setDescricao(String descricao) { this.descricao = descricao; }</span>
+
+    // --- Getters/Setters Atualizados ---
+<span class="nc" id="L113">    public BigDecimal getPrecoBase() { return precoBase; }</span>
+<span class="nc" id="L114">    public void setPrecoBase(BigDecimal precoBase) { this.precoBase = precoBase; }</span>
+
+<span class="nc" id="L116">    public Boolean getDisponivel() { return disponivel; }</span>
+<span class="nc" id="L117">    public void setDisponivel(Boolean disponivel) { this.disponivel = disponivel; }</span>
+<span class="nc" id="L118">    public Long getRestauranteId() { return restauranteId; }</span>
+<span class="nc" id="L119">    public void setRestauranteId(Long restauranteId) { this.restauranteId = restauranteId; }</span>
+<span class="nc" id="L120">    public String getCategoria() { return categoria; }</span>
+<span class="nc" id="L121">    public void setCategoria(String categoria) { this.categoria = categoria; }</span>
+<span class="nc" id="L122">    public int getEstoque() { return estoque; }</span>
+<span class="nc" id="L123">    public void setEstoque(int estoque) { this.estoque = estoque; }</span>
+
+    // --- Novo Getter/Setter ---
+<span class="nc" id="L126">    public List&lt;GrupoOpcionalDTO&gt; getGruposOpcionais() { return gruposOpcionais; }</span>
+<span class="nc" id="L127">    public void setGruposOpcionais(List&lt;GrupoOpcionalDTO&gt; gruposOpcionais) { this.gruposOpcionais = gruposOpcionais; }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

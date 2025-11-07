@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pt"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Usuario.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">delivery-api</a> &gt; <a href="index.source.html" class="el_package">com.deliverytech.delivery.entity</a> &gt; <span class="el_source">Usuario.java</span></div><h1>Usuario.java</h1><pre class="source lang-java linenums">package com.deliverytech.delivery.entity;
+
+import com.deliverytech.delivery.enums.Role;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.ToString; // Import necessário
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList; // Import necessário
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List; // Import necessário
+
+/**
+ * Entidade de autenticação e autorização (Spring Security).
+ * Armazena credenciais (email/senha) e permissões (role).
+ */
+@Entity
+@Table(name = &quot;usuario&quot;)
+@Schema(description = &quot;Entidade de autenticação (login, senha, permissão)&quot;)
+public class Usuario implements UserDetails {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Schema(description = &quot;Identificador único do usuário&quot;, example = &quot;1&quot;)
+    private Long id;
+
+    @Column(nullable = false, unique = true)
+    @NotBlank(message = &quot;Email é obrigatório&quot;)
+    @Email(message = &quot;Email deve ter um formato válido&quot;)
+    @Size(max = 100)
+    @Schema(description = &quot;Email do usuário (usado como 'username' para login)&quot;, example = &quot;usuario@email.com&quot;, required = true)
+    private String email;
+
+    @Column(nullable = false)
+    @NotBlank(message = &quot;Senha é obrigatória&quot;)
+    @Schema(description = &quot;Senha criptografada do usuário (hash)&quot;, readOnly = true)
+    private String senha;
+
+    // --- CAMPO 'nome' REMOVIDO DAQUI ---
+    // O nome agora pertence às entidades de perfil (Cliente, Entregador, etc.)
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @NotNull(message = &quot;Role é obrigatória&quot;)
+    @Schema(description = &quot;Nível de permissão do usuário&quot;, example = &quot;CLIENTE&quot;, required = true)
+    private Role role;
+
+<span class="pc" id="L56">    @Column(nullable = false)</span>
+    @Schema(description = &quot;Indica se o usuário está ativo e pode logar&quot;, example = &quot;true&quot;, defaultValue = &quot;true&quot;)
+<span class="pc" id="L58">    private Boolean ativo = true;</span>
+
+<span class="pc" id="L60">    @Column(name = &quot;data_criacao&quot;, nullable = false, updatable = false)</span>
+    @Schema(description = &quot;Data e hora de criação do registro&quot;, example = &quot;2024-06-05T10:30:00&quot;, readOnly = true)
+<span class="pc" id="L62">    private LocalDateTime dataCriacao = LocalDateTime.now();</span>
+
+    @Column(name = &quot;restaurante_id&quot;)
+    @Schema(description = &quot;ID do restaurante associado (se a role for 'RESTAURANTE')&quot;, example = &quot;5&quot;, nullable = true)
+    private Long restauranteId;
+
+    // --- RELACIONAMENTO COM O PERFIL DO CLIENTE ---
+    /**
+     * Link para os dados cadastrais (nome, cpf) do cliente.
+     * Será nulo se a 'role' não for CLIENTE.
+     */
+    @OneToOne(mappedBy = &quot;usuario&quot;, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ToString.Exclude
+    @Schema(description = &quot;Dados cadastrais do perfil do cliente (se a role for CLIENTE)&quot;)
+    private Cliente cliente;
+
+    // --- RELACIONAMENTO COM ENDEREÇOS (GARGALO 1) ---
+    /**
+     * Lista de endereços cadastrados por este usuário.
+     */
+<span class="pc" id="L82">    @OneToMany(mappedBy = &quot;usuario&quot;, cascade = CascadeType.ALL, orphanRemoval = true)</span>
+    @ToString.Exclude
+    @Schema(description = &quot;Lista de endereços de entrega cadastrados pelo usuário&quot;)
+    private List&lt;Endereco&gt; enderecos = new ArrayList&lt;&gt;();
+
+    // -------------------------------------------------------------------------
+    // Construtores
+    // -------------------------------------------------------------------------
+
+<span class="fc" id="L91">    public Usuario() {</span>
+<span class="fc" id="L92">    }</span>
+
+    /**
+     * Construtor para novos usuários (sem nome).
+     */
+<span class="nc" id="L97">    public Usuario(String email, String senha, Role role) {</span>
+<span class="nc" id="L98">        this.email = email;</span>
+<span class="nc" id="L99">        this.senha = senha;</span>
+<span class="nc" id="L100">        this.role = role;</span>
+<span class="nc" id="L101">        this.ativo = true;</span>
+<span class="nc" id="L102">        this.dataCriacao = LocalDateTime.now();</span>
+<span class="nc" id="L103">    }</span>
+
+    // -------------------------------------------------------------------------
+    // Métodos UserDetails (Spring Security)
+    // -------------------------------------------------------------------------
+
+    @Override
+    public Collection&lt;? extends GrantedAuthority&gt; getAuthorities() {
+<span class="fc" id="L111">        return Collections.singletonList(new SimpleGrantedAuthority(&quot;ROLE_&quot; + role.name()));</span>
+    }
+    
+    // ... (getPassword, getUsername, isAccountNonExpired, etc. - seu código original)
+
+    // -------------------------------------------------------------------------
+    // Getters e Setters
+    // -------------------------------------------------------------------------
+    // (Incluindo os novos para cliente e enderecos)
+
+<span class="fc" id="L121">    public Long getId() { return id; }</span>
+<span class="nc" id="L122">    public void setId(Long id) { this.id = id; }</span>
+<span class="nc" id="L123">    public String getEmail() { return email; }</span>
+<span class="fc" id="L124">    public void setEmail(String email) { this.email = email; }</span>
+<span class="nc" id="L125">    public String getSenha() { return senha; }</span>
+<span class="fc" id="L126">    public void setSenha(String senha) { this.senha = senha; }</span>
+<span class="nc" id="L127">    public Role getRole() { return role; }</span>
+<span class="fc" id="L128">    public void setRole(Role role) { this.role = role; }</span>
+<span class="nc" id="L129">    public Boolean getAtivo() { return ativo; }</span>
+<span class="fc" id="L130">    public void setAtivo(Boolean ativo) { this.ativo = ativo; }</span>
+<span class="nc" id="L131">    public LocalDateTime getDataCriacao() { return dataCriacao; }</span>
+<span class="nc" id="L132">    public void setDataCriacao(LocalDateTime dataCriacao) { this.dataCriacao = dataCriacao; }</span>
+<span class="nc" id="L133">    public Long getRestauranteId() { return restauranteId; }</span>
+<span class="nc" id="L134">    public void setRestauranteId(Long restauranteId) { this.restauranteId = restauranteId; }</span>
+<span class="nc" id="L135">    public Cliente getCliente() { return cliente; }</span>
+<span class="fc" id="L136">    public void setCliente(Cliente cliente) { this.cliente = cliente; }</span>
+<span class="fc" id="L137">    public List&lt;Endereco&gt; getEnderecos() { return enderecos; }</span>
+<span class="nc" id="L138">    public void setEnderecos(List&lt;Endereco&gt; enderecos) { this.enderecos = enderecos; }</span>
+    
+    // Métodos UserDetails (sem getters/setters)
+<span class="fc" id="L141">    @Override public String getPassword() { return senha; }</span>
+<span class="fc" id="L142">    @Override public String getUsername() { return email; }</span>
+<span class="nc" id="L143">    @Override public boolean isAccountNonExpired() { return true; }</span>
+<span class="nc" id="L144">    @Override public boolean isAccountNonLocked() { return true; }</span>
+<span class="nc" id="L145">    @Override public boolean isCredentialsNonExpired() { return true; }</span>
+<span class="nc" id="L146">    @Override public boolean isEnabled() { return ativo; }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

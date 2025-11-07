@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pt"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RelatorioClientesDTO.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">delivery-api</a> &gt; <a href="index.source.html" class="el_package">com.deliverytech.delivery.dto.relatorio</a> &gt; <span class="el_source">RelatorioClientesDTO.java</span></div><h1>RelatorioClientesDTO.java</h1><pre class="source lang-java linenums">package com.deliverytech.delivery.dto.relatorio;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import java.math.BigDecimal;
+
+@Schema(description = &quot;Relatório dos clientes mais ativos&quot;)
+public class RelatorioClientesDTO {
+
+    @Schema(description = &quot;Nome do cliente&quot;)
+    private String clienteNome;
+
+    @Schema(description = &quot;Quantidade de pedidos realizados&quot;)
+    private int totalPedidos;
+
+    @Schema(description = &quot;Valor total gasto pelo cliente&quot;)
+    private BigDecimal totalGasto;
+
+<span class="nc" id="L18">    public RelatorioClientesDTO() {}</span>
+
+<span class="nc" id="L20">    public RelatorioClientesDTO(String clienteNome, int totalPedidos, BigDecimal totalGasto) {</span>
+<span class="nc" id="L21">        this.clienteNome = clienteNome;</span>
+<span class="nc" id="L22">        this.totalPedidos = totalPedidos;</span>
+<span class="nc" id="L23">        this.totalGasto = totalGasto;</span>
+<span class="nc" id="L24">    }</span>
+
+<span class="nc" id="L26">    public String getClienteNome() { return clienteNome; }</span>
+<span class="nc" id="L27">    public void setClienteNome(String clienteNome) { this.clienteNome = clienteNome; }</span>
+
+<span class="nc" id="L29">    public int getTotalPedidos() { return totalPedidos; }</span>
+<span class="nc" id="L30">    public void setTotalPedidos(int totalPedidos) { this.totalPedidos = totalPedidos; }</span>
+
+<span class="nc" id="L32">    public BigDecimal getTotalGasto() { return totalGasto; } // usado no Comparator</span>
+<span class="nc" id="L33">    public void setTotalGasto(BigDecimal totalGasto) { this.totalGasto = totalGasto; }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

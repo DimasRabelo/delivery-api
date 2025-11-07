@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pt"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Produto.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">delivery-api</a> &gt; <a href="index.source.html" class="el_package">com.deliverytech.delivery.entity</a> &gt; <span class="el_source">Produto.java</span></div><h1>Produto.java</h1><pre class="source lang-java linenums">package com.deliverytech.delivery.entity;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Size;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Representa a entidade Produto (item de cardápio).
+ * Agora suporta um 'precoBase' e 'gruposOpcionais' para personalização.
+ */
+@Entity
+@Getter // Usando Getter/Setter explícito para evitar problemas do @Data com relacionamentos
+@Setter
+@ToString(exclude = {&quot;restaurante&quot;, &quot;itensPedido&quot;, &quot;gruposOpcionais&quot;})
+@EqualsAndHashCode(of = &quot;id&quot;)
+@Schema(description = &quot;Entidade que representa um produto (item de cardápio) de um restaurante&quot;)
+public class Produto {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Schema(description = &quot;Identificador único do produto&quot;, example = &quot;101&quot;)
+    private Long id;
+
+    @NotBlank(message = &quot;Nome é obrigatório&quot;)
+    @Size(min = 2, max = 100)
+    @Schema(description = &quot;Nome do produto&quot;, example = &quot;Pizza Margherita&quot;, required = true)
+    private String nome;
+
+    @Size(max = 255)
+    @Schema(description = &quot;Descrição detalhada do produto&quot;, example = &quot;Molho de tomate fresco, mozzarella e manjericão&quot;)
+    private String descricao;
+
+    // --- MUDANÇA CRÍTICA ---
+    // O campo 'preco' foi renomeado para 'precoBase'
+    @NotNull(message = &quot;Preço base é obrigatório&quot;)
+    @PositiveOrZero(message = &quot;Preço base deve ser zero ou positivo&quot;)
+    @Column(name = &quot;preco_base&quot;) // Renomeado no banco
+    @Schema(description = &quot;Preço base do produto (opcionais podem somar a este valor)&quot;, example = &quot;40.00&quot;, required = true, minimum = &quot;0&quot;)
+    private BigDecimal precoBase; // Ex: Preço da Pizza Pequena (o menor)
+
+    @Schema(description = &quot;Categoria do produto&quot;, example = &quot;Pizzas Tradicionais&quot;)
+    private String categoria;
+
+    @Schema(description = &quot;Indica se o produto está disponível&quot;, example = &quot;true&quot;, defaultValue = &quot;true&quot;)
+    private Boolean disponivel;
+
+    @PositiveOrZero(message = &quot;Estoque deve ser zero ou positivo&quot;)
+    @Schema(description = &quot;Quantidade em estoque (se aplicável)&quot;, example = &quot;50&quot;, minimum = &quot;0&quot;)
+    private int estoque;
+
+    // Relacionamento com Restaurante (Seu código original)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = &quot;restaurante_id&quot;)
+    @Schema(description = &quot;Restaurante ao qual este produto pertence&quot;)
+    private Restaurante restaurante;
+
+    // --- MUDANÇA 2: LINK PARA OS GRUPOS DE OPÇÕES ---
+    /**
+     * Define os grupos de personalização do produto.
+     * Ex: 'Grupo 1: Tamanho', 'Grupo 2: Adicionais', 'Grupo 3: Remover ingredientes'.
+     */
+<span class="fc" id="L73">    @OneToMany(mappedBy = &quot;produto&quot;, cascade = CascadeType.ALL, orphanRemoval = true)</span>
+    @Schema(description = &quot;Lista de grupos de opcionais para este produto (Tamanho, Adicionais, etc.)&quot;)
+    private List&lt;GrupoOpcional&gt; gruposOpcionais = new ArrayList&lt;&gt;();
+
+    // Relacionamento com ItemPedido (Seu código original)
+<span class="fc" id="L78">    @OneToMany(mappedBy = &quot;produto&quot;)</span>
+    @Schema(description = &quot;Lista de itens de pedido associados a este produto&quot;)
+    private List&lt;ItemPedido&gt; itensPedido = new ArrayList&lt;&gt;();
+
+<span class="fc" id="L82">    public Produto() {</span>
+<span class="fc" id="L83">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

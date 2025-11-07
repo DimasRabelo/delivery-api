@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pt"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ClienteServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">delivery-api</a> &gt; <a href="index.source.html" class="el_package">com.deliverytech.delivery.service.impl</a> &gt; <span class="el_source">ClienteServiceImpl.java</span></div><h1>ClienteServiceImpl.java</h1><pre class="source lang-java linenums">package com.deliverytech.delivery.service.impl;
+
+import com.deliverytech.delivery.dto.ClienteDTO;
+import com.deliverytech.delivery.dto.response.ClienteResponseDTO;
+import com.deliverytech.delivery.entity.Cliente;
+import com.deliverytech.delivery.entity.Usuario; // IMPORT ADICIONADO
+import com.deliverytech.delivery.exception.BusinessException;
+import com.deliverytech.delivery.exception.EntityNotFoundException;
+import com.deliverytech.delivery.repository.ClienteRepository;
+import com.deliverytech.delivery.repository.auth.UsuarioRepository; // IMPORT ADICIONADO
+import com.deliverytech.delivery.security.jwt.SecurityUtils; // IMPORT ADICIONADO
+import com.deliverytech.delivery.service.ClienteService;
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+@Transactional
+<span class="fc" id="L25">public class ClienteServiceImpl implements ClienteService {</span>
+
+    @Autowired
+    private ClienteRepository clienteRepository;
+
+    @Autowired
+    private UsuarioRepository usuarioRepository; // &lt;-- NECESSÁRIO
+
+    @Autowired
+    private ModelMapper modelMapper;
+
+    /**
+     * MÉTODO REMOVIDO.
+     * O cadastro de cliente (que cria Usuario + Cliente + Endereco)
+     * agora é feito pelo AuthService.registrarCliente(RegisterRequest dto).
+     */
+    @Override
+    public ClienteResponseDTO cadastrarCliente(ClienteDTO dto) {
+<span class="nc" id="L43">        throw new BusinessException(&quot;Método obsoleto. Use o endpoint de registro do AuthService.&quot;);</span>
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ClienteResponseDTO buscarClientePorId(Long id) {
+<span class="nc" id="L49">        Cliente cliente = clienteRepository.findById(id)</span>
+<span class="nc" id="L50">                .orElseThrow(() -&gt; new EntityNotFoundException(&quot;Cliente não encontrado com ID: &quot; + id));</span>
+<span class="nc" id="L51">        return mapToClienteResponse(cliente);</span>
+    }
+
+    /**
+     * Busca um cliente pelo email (CORRIGIDO).
+     * Agora busca através do relacionamento com o Usuário.
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public ClienteResponseDTO buscarClientePorEmail(String email) {
+        // Usa o novo método do repositório
+<span class="nc" id="L62">        Cliente cliente = clienteRepository.findByUsuarioEmail(email) </span>
+<span class="nc" id="L63">                .orElseThrow(() -&gt; new EntityNotFoundException(&quot;Cliente não encontrado com email: &quot; + email));</span>
+<span class="nc" id="L64">        return mapToClienteResponse(cliente);</span>
+    }
+
+    /**
+     * Atualiza o perfil de um cliente (CORRIGIDO).
+     * Agora atualiza apenas os dados do CLIENTE (nome, cpf, telefone).
+     * O 'email' é atualizado via UsuarioService.
+     * O 'endereco' é atualizado via EnderecoService (a ser criado).
+     */
+    @Override
+    public ClienteResponseDTO atualizarCliente(Long id, ClienteDTO dto) {
+        // 'id' aqui é o ID do Cliente (que é o mesmo ID do Usuário)
+<span class="nc" id="L76">        Cliente cliente = clienteRepository.findById(id)</span>
+<span class="nc" id="L77">                .orElseThrow(() -&gt; new EntityNotFoundException(&quot;Cliente não encontrado com ID: &quot; + id));</span>
+        
+        // (Validação de segurança: o usuário logado é o dono deste perfil?)
+<span class="nc" id="L80">        Long usuarioLogadoId = SecurityUtils.getCurrentUserId();</span>
+<span class="nc bnc" id="L81" title="All 2 branches missed.">        if (!cliente.getUsuario().getId().equals(usuarioLogadoId)) {</span>
+<span class="nc" id="L82">             throw new BusinessException(&quot;Acesso negado. Você só pode atualizar o seu próprio perfil.&quot;);</span>
+        }
+
+        // Validação de duplicidade de CPF (OK)
+<span class="nc bnc" id="L86" title="All 4 branches missed.">        if (dto.getCpf() == null || dto.getCpf().isBlank()) {</span>
+<span class="nc" id="L87">            throw new BusinessException(&quot;CPF é obrigatório.&quot;);</span>
+        }
+<span class="nc bnc" id="L89" title="All 2 branches missed.">        if (!cliente.getCpf().equals(dto.getCpf()) &amp;&amp;</span>
+<span class="nc bnc" id="L90" title="All 2 branches missed.">                clienteRepository.existsByCpf(dto.getCpf())) {</span>
+<span class="nc" id="L91">            throw new BusinessException(&quot;CPF já cadastrado: &quot; + dto.getCpf());</span>
+        }
+
+        // --- ATUALIZAÇÃO CORRIGIDA ---
+        // Atualiza apenas os campos que pertencem ao Cliente
+<span class="nc" id="L96">        cliente.setNome(dto.getNome());</span>
+<span class="nc" id="L97">        cliente.setTelefone(dto.getTelefone());</span>
+<span class="nc" id="L98">        cliente.setCpf(dto.getCpf());</span>
+        
+        // (ERROS REMOVIDOS)
+        // cliente.setEmail(dto.getEmail()); 
+        // cliente.setEndereco(dto.getEndereco());
+
+<span class="nc" id="L104">        Cliente clienteAtualizado = clienteRepository.save(cliente);</span>
+<span class="nc" id="L105">        return mapToClienteResponse(clienteAtualizado);</span>
+    }
+
+    /**
+     * Ativa ou desativa um cliente (CORRIGIDO).
+     * A lógica de 'ativo' agora está na entidade Usuario.
+     */
+    @Override
+    public ClienteResponseDTO ativarDesativarCliente(Long id) {
+<span class="nc" id="L114">        Cliente cliente = clienteRepository.findById(id)</span>
+<span class="nc" id="L115">                .orElseThrow(() -&gt; new EntityNotFoundException(&quot;Cliente não encontrado com ID: &quot; + id));</span>
+
+        // Pega o Usuário associado
+<span class="nc" id="L118">        Usuario usuario = cliente.getUsuario();</span>
+<span class="nc bnc" id="L119" title="All 2 branches missed.">        if (usuario == null) {</span>
+<span class="nc" id="L120">             throw new EntityNotFoundException(&quot;Cliente não possui um usuário associado.&quot;);</span>
+        }
+
+        // (ERRO CORRIGIDO)
+        // Altera o status no Usuário, não no Cliente
+<span class="nc bnc" id="L125" title="All 2 branches missed.">        usuario.setAtivo(!usuario.getAtivo());</span>
+<span class="nc" id="L126">        usuarioRepository.save(usuario); // Salva a entidade Usuario</span>
+
+<span class="nc" id="L128">        return mapToClienteResponse(cliente);</span>
+    }
+
+    /**
+     * Lista clientes ativos (CORRIGIDO).
+     * Usa o novo método de busca.
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List&lt;ClienteResponseDTO&gt; listarClientesAtivos() {
+<span class="nc" id="L138">        List&lt;Cliente&gt; clientesAtivos = clienteRepository.findByUsuarioAtivoTrue();</span>
+<span class="nc" id="L139">        return clientesAtivos.stream()</span>
+<span class="nc" id="L140">                .map(this::mapToClienteResponse)</span>
+<span class="nc" id="L141">                .collect(Collectors.toList());</span>
+    }
+
+    /**
+     * Lista clientes ativos paginados (CORRIGIDO).
+     * Usa o novo método de busca.
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public Page&lt;ClienteResponseDTO&gt; listarClientesAtivosPaginado(Pageable pageable) {
+<span class="nc" id="L151">        Page&lt;Cliente&gt; clientes = clienteRepository.findByUsuarioAtivoTrue(pageable);</span>
+<span class="nc" id="L152">        return clientes.map(this::mapToClienteResponse);</span>
+    }
+
+    /**
+     * Método helper para mapear Cliente -&gt; ClienteResponseDTO (CORRIGIDO).
+     * Agora busca os dados (email, ativo) no Usuário associado.
+     */
+    private ClienteResponseDTO mapToClienteResponse(Cliente cliente) {
+        // Mapeia os campos básicos (id, nome, cpf, telefone)
+<span class="nc" id="L161">        ClienteResponseDTO dto = modelMapper.map(cliente, ClienteResponseDTO.class);</span>
+        
+        // Busca os dados do Usuário associado
+<span class="nc bnc" id="L164" title="All 2 branches missed.">        if (cliente.getUsuario() != null) {</span>
+<span class="nc" id="L165">            dto.setEmail(cliente.getUsuario().getEmail());</span>
+<span class="nc" id="L166">            dto.setAtivo(cliente.getUsuario().getAtivo());</span>
+<span class="nc" id="L167">            dto.setDataCadastro(cliente.getUsuario().getDataCriacao());</span>
+        }
+        
+        // (O campo 'endereco' (String) não existe mais. 
+        // O DTO de resposta precisa ser ajustado ou este campo ficará nulo)
+        // dto.setEndereco(???); 
+        
+<span class="nc" id="L174">        return dto;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

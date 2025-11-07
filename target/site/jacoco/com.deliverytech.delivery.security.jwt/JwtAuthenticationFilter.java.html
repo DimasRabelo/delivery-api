@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pt"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JwtAuthenticationFilter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">delivery-api</a> &gt; <a href="index.source.html" class="el_package">com.deliverytech.delivery.security.jwt</a> &gt; <span class="el_source">JwtAuthenticationFilter.java</span></div><h1>JwtAuthenticationFilter.java</h1><pre class="source lang-java linenums">package com.deliverytech.delivery.security.jwt;
+
+import com.deliverytech.delivery.service.auth.AuthService;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.lang.NonNull;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.io.IOException;
+
+/**
+ * Filtro de segurança customizado que intercepta todas as requisições HTTP.
+ *
+ * Esta classe estende {@link OncePerRequestFilter} para garantir que seja executada
+ * apenas uma vez por requisição.
+ *
+ * Sua principal responsabilidade é:
+ * 1. Verificar a presença de um token JWT no header &quot;Authorization&quot;.
+ * 2. Validar o token (assinatura, expiração, etc.) usando o {@link JwtUtil}.
+ * 3. Se o token for válido, carregar os dados do usuário (via {@link AuthService}) e
+ * definir a autenticação no {@link SecurityContextHolder}, permitindo que a
+ * requisição prossiga como &quot;autenticada&quot;.
+ * 4. Se o token for inválido ou expirado, ele anexa a exceção ao {@link HttpServletRequest}
+ * (sob o atributo &quot;JWT_EXCEPTION&quot;) para que o {@link com.deliverytech.delivery.config.SecurityConfig}
+ * (via AuthenticationEntryPoint) possa tratá-la e retornar um JSON de erro 401 customizado.
+ */
+@Component
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+    private final AuthService authService;
+    private final JwtUtil jwtUtil;
+
+    /**
+     * Construtor para injeção de dependências.
+     *
+     * @param authService O serviço de autenticação para carregar dados do usuário (UserDetails).
+     * É injetado com {@link Lazy} para quebrar uma possível dependência circular
+     * com a configuração de segurança principal (SecurityConfig).
+     * @param jwtUtil O componente utilitário para validar e extrair dados do token JWT.
+     */
+<span class="fc" id="L51">    public JwtAuthenticationFilter(@Lazy AuthService authService, JwtUtil jwtUtil) {</span>
+<span class="fc" id="L52">        this.authService = authService;</span>
+<span class="fc" id="L53">        this.jwtUtil = jwtUtil;</span>
+<span class="fc" id="L54">    }</span>
+
+    /**
+     * Método principal do filtro, executado para cada requisição.
+     *
+     * @param request A requisição HTTP.
+     * @param response A resposta HTTP.
+     * @param filterChain O objeto que nos permite invocar o próximo filtro na cadeia.
+     * @throws ServletException Se ocorrer um erro de servlet.
+     * @throws IOException Se ocorrer um erro de I/O.
+     */
+    @Override
+    protected void doFilterInternal(
+            @NonNull HttpServletRequest request,
+            @NonNull HttpServletResponse response,
+            @NonNull FilterChain filterChain
+    ) throws ServletException, IOException {
+
+        // --- 1. Extração do Token ---
+<span class="fc" id="L73">        final String requestTokenHeader = request.getHeader(&quot;Authorization&quot;);</span>
+<span class="fc" id="L74">        String username = null;</span>
+<span class="fc" id="L75">        String jwtToken = null;</span>
+
+        // O token deve existir e começar com &quot;Bearer &quot;
+<span class="pc bpc" id="L78" title="3 of 4 branches missed.">        if (requestTokenHeader != null &amp;&amp; requestTokenHeader.startsWith(&quot;Bearer &quot;)) {</span>
+<span class="nc" id="L79">            jwtToken = requestTokenHeader.substring(7);</span>
+            
+            try {
+                // Tenta fazer o parse do token para extrair o username
+<span class="nc" id="L83">                username = jwtUtil.extractUsername(jwtToken);</span>
+            
+            // --- 2. Tratamento de Erros de Token ---
+            // Bloco 'catch' crucial para o tratamento de erro 401 customizado.
+            // Ele salva a exceção no request para ser lida pelo SecurityConfig.
+
+<span class="nc" id="L89">            } catch (ExpiredJwtException e) {</span>
+                // Token expirou
+<span class="nc" id="L91">                logger.warn(&quot;Token JWT expirado: &quot; + e.getMessage());</span>
+<span class="nc" id="L92">                request.setAttribute(&quot;JWT_EXCEPTION&quot;, e); </span>
+            
+<span class="nc" id="L94">            } catch (JwtException e) {</span>
+                // Token inválido (Malformed, Signature, etc.)
+<span class="nc" id="L96">                logger.warn(&quot;Token JWT inválido (Malformed, Signature, etc.): &quot; + e.getMessage());</span>
+<span class="nc" id="L97">                request.setAttribute(&quot;JWT_EXCEPTION&quot;, e);</span>
+            
+<span class="nc" id="L99">            } catch (Exception e) {</span>
+                // Outro erro inesperado
+<span class="nc" id="L101">                logger.error(&quot;Erro inesperado ao extrair token JWT&quot;, e);</span>
+<span class="nc" id="L102">                request.setAttribute(&quot;JWT_EXCEPTION&quot;, e);</span>
+<span class="nc" id="L103">            }</span>
+        } else {
+<span class="fc" id="L105">            logger.warn(&quot;Header 'Authorization' ausente ou mal formatado&quot;);</span>
+        }
+
+        // --- 3. Validação e Autenticação ---
+        
+        // Se o 'username' foi extraído com sucesso (token válido)
+        // E se o usuário ainda não está autenticado no contexto de segurança
+<span class="pc bpc" id="L112" title="3 of 4 branches missed.">        if (username != null &amp;&amp; SecurityContextHolder.getContext().getAuthentication() == null) {</span>
+            
+            // Carrega os detalhes do usuário do banco de dados
+<span class="nc" id="L115">            UserDetails userDetails = this.authService.loadUserByUsername(username);</span>
+
+            // Valida se o token pertence a este usuário e se não expirou (dupla checagem)
+<span class="nc bnc" id="L118" title="All 2 branches missed.">            if (jwtUtil.validateToken(jwtToken, userDetails)) {</span>
+                
+                // Cria o objeto de autenticação
+<span class="nc" id="L121">                UsernamePasswordAuthenticationToken authenticationToken =</span>
+<span class="nc" id="L122">                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());</span>
+                
+<span class="nc" id="L124">                authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));</span>
+                
+                // Define o usuário como autenticado no contexto de segurança do Spring.
+                // É esta linha que &quot;autentica&quot; o usuário para esta requisição.
+<span class="nc" id="L128">                SecurityContextHolder.getContext().setAuthentication(authenticationToken);</span>
+            }
+        }
+
+        // --- 4. Continuação da Cadeia de Filtros ---
+        
+        // Passa a requisição (e resposta) para o próximo filtro na cadeia.
+        // Se a autenticação foi definida acima, o usuário estará &quot;logado&quot;.
+        // Se não (ex: token inválido), o SecurityContext estará vazio, e os
+        // filtros de autorização do Spring irão rejeitar a requisição,
+        // acionando nosso AuthenticationEntryPoint customizado (do SecurityConfig).
+<span class="fc" id="L139">        filterChain.doFilter(request, response);</span>
+<span class="fc" id="L140">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

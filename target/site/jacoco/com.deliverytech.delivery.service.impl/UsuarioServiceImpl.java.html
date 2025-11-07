@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pt"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UsuarioServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">delivery-api</a> &gt; <a href="index.source.html" class="el_package">com.deliverytech.delivery.service.impl</a> &gt; <span class="el_source">UsuarioServiceImpl.java</span></div><h1>UsuarioServiceImpl.java</h1><pre class="source lang-java linenums">package com.deliverytech.delivery.service.impl;
+
+import com.deliverytech.delivery.dto.auth.UserResponse;
+import com.deliverytech.delivery.dto.auth.UsuarioUpdateDTO;
+import com.deliverytech.delivery.entity.Usuario;
+import com.deliverytech.delivery.exception.ConflictException;
+import com.deliverytech.delivery.exception.EntityNotFoundException;
+import com.deliverytech.delivery.repository.auth.UsuarioRepository;
+import com.deliverytech.delivery.service.auth.UsuarioService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@Transactional
+public class UsuarioServiceImpl implements UsuarioService {
+
+    private final UsuarioRepository usuarioRepository;
+
+<span class="fc" id="L21">    public UsuarioServiceImpl(UsuarioRepository usuarioRepository) {</span>
+<span class="fc" id="L22">        this.usuarioRepository = usuarioRepository;</span>
+<span class="fc" id="L23">    }</span>
+
+    /**
+     * (Seu método original - Está OK)
+     * O 'UserResponse::new' funciona porque já corrigimos o UserResponse.java
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public Page&lt;UserResponse&gt; buscarTodos(Pageable pageable) {
+<span class="nc" id="L32">        Page&lt;Usuario&gt; paginaUsuarios = usuarioRepository.findAll(pageable);</span>
+<span class="nc" id="L33">        return paginaUsuarios.map(UserResponse::new);</span>
+    }
+
+    /**
+     * (Seu método original - Está OK)
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public Usuario buscarPorId(Long id) {
+<span class="nc" id="L42">        return usuarioRepository.findById(id)</span>
+<span class="nc" id="L43">                .orElseThrow(() -&gt; new EntityNotFoundException(&quot;Usuário não encontrado com id: &quot; + id));</span>
+    }
+
+    /**
+     * (Seu método original - Está OK)
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public UserResponse buscarPorIdResponse(Long id) {
+<span class="nc" id="L52">        Usuario usuario = this.buscarPorId(id);</span>
+<span class="nc" id="L53">        return new UserResponse(usuario);</span>
+    }
+
+    /**
+     * Atualiza os dados de autenticação de um usuário (VERSÃO REFATORADA).
+     * Agora atualiza APENAS os campos que pertencem ao 'Usuario' (email).
+     * A atualização do 'nome' é feita pelo ClienteService.
+     */
+    @Override
+    public UserResponse atualizar(Long id, UsuarioUpdateDTO dto) {
+        // 1. Busca o usuário existente
+<span class="nc" id="L64">        Usuario usuario = this.buscarPorId(id);</span>
+
+        // 2. Validação: Verifica se o novo email já está em uso
+<span class="nc bnc" id="L67" title="All 2 branches missed.">        if (!dto.getEmail().equalsIgnoreCase(usuario.getEmail()) &amp;&amp; </span>
+<span class="nc bnc" id="L68" title="All 2 branches missed.">             usuarioRepository.existsByEmail(dto.getEmail())) {</span>
+            
+<span class="nc" id="L70">            throw new ConflictException(&quot;Email já está em uso por outro usuário&quot;);</span>
+        }
+
+        // 3. --- CORREÇÃO (GARGALO 4 / DECISÃO 1) ---
+        // A linha 'usuario.setNome(dto.getNome());' FOI REMOVIDA.
+        // Este serviço só atualiza o 'email'.
+<span class="nc" id="L76">        usuario.setEmail(dto.getEmail());</span>
+        
+        // 4. Salva o usuário atualizado
+<span class="nc" id="L79">        Usuario usuarioSalvo = usuarioRepository.save(usuario);</span>
+
+        // 5. Retorna o DTO de resposta
+        // (O construtor do UserResponse já sabe buscar o 'nome' no Cliente)
+<span class="nc" id="L83">        return new UserResponse(usuarioSalvo);</span>
+    }
+
+    /**
+     * (Seu método original - Está OK)
+     * Realiza a &quot;exclusão lógica&quot; (soft delete) de um usuário.
+     */
+    @Override
+    public void deletar(Long id) {
+<span class="nc" id="L92">        Usuario usuario = this.buscarPorId(id);</span>
+        
+        // Soft Delete: Apenas desativa o usuário
+<span class="nc" id="L95">        usuario.setAtivo(false); </span>
+        
+<span class="nc" id="L97">        usuarioRepository.save(usuario);</span>
+<span class="nc" id="L98">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
