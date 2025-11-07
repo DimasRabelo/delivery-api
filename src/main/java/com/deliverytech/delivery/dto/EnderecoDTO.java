@@ -36,6 +36,10 @@ public class EnderecoDTO {
     @Size(min = 2, max = 2, message = "UF deve ter 2 caracteres")
     @Schema(description = "Sigla do estado (UF)", example = "SP", required = true)
     private String estado;
+
+    @Schema(description = "Apelido do endereço (ex: Casa, Trabalho)", required = true, example = "Casa")
+    @NotBlank(message = "Apelido é obrigatório") // <-- 🔥 ADICIONE ESTA VALIDAÇÃO
+    private String apelido; // <-- 🔥 ADICIONE ESTE CAMPO
     
     // (Opcional: Latitude e Longitude se o front-end for enviar)
     // private BigDecimal latitude;
@@ -56,4 +60,11 @@ public class EnderecoDTO {
     public void setCidade(String cidade) { this.cidade = cidade; }
     public String getEstado() { return estado; }
     public void setEstado(String estado) { this.estado = estado; }
+    
+    public String getApelido() {
+        return apelido;
+    }
+    public void setApelido(String apelido) {
+        this.apelido = apelido;
+    }
 }

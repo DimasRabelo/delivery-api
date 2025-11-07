@@ -104,6 +104,7 @@ class PedidoControllerIntegrationTest {
             ItemPedidoDTO item = new ItemPedidoDTO();
             item.setProdutoId(produtoDisponivel.getId());
             item.setQuantidade(2);
+            item.setPrecoUnitario(produtoDisponivel.getPrecoBase()); // (CORRIGIDO)
             item.setOpcionaisIds(List.of()); // <-- MUDOU (Gargalo 2) - envia lista vazia
             pedidoDTO.setItens(List.of(item));
             // --- FIM DO DTO ---
@@ -153,6 +154,7 @@ class PedidoControllerIntegrationTest {
             ItemPedidoDTO item = new ItemPedidoDTO();
             item.setProdutoId(produtoDisponivel.getId());
             item.setQuantidade(1);
+            item.setPrecoUnitario(produtoDisponivel.getPrecoBase()); // (CORRIGIDO)
             item.setOpcionaisIds(List.of());
             pedidoDTO.setItens(List.of(item));
     
@@ -172,15 +174,23 @@ class PedidoControllerIntegrationTest {
         try (MockedStatic<SecurityUtils> mockedSecurity = Mockito.mockStatic(SecurityUtils.class)) {
             mockedSecurity.when(SecurityUtils::getCurrentUserId).thenReturn(usuarioAtivo.getId());
 
-            // --- SETUP CORRIGIDO (Gargalos 1 e 2) ---
+            // --- SETUP CORRIGIDO ---
+            
+            // Busca o "Dono" do restaurante 2, criado pelo TestDataConfiguration V15
+            // (Esta era a linha que faltava)
+            Usuario donoRestaurante2 = usuarioRepository.findByEmail("restaurante.dono@email.com")
+                    .orElseThrow(() -> new IllegalStateException("Usuário 'restaurante.dono@email.com' não encontrado. Verifique o TestDataConfiguration V15."));
+
+
             Endereco endOutro = new Endereco();
+            endOutro.setApelido("Restaurante 2"); // (CORRIGIDO)
             endOutro.setCep("11111111");
             endOutro.setRua("Rua do Outro");
-            endOutro.setApelido("Restaurante 2");
             endOutro.setNumero("456");
             endOutro.setBairro("Bairro");
             endOutro.setCidade("Cidade");
             endOutro.setEstado("SP");
+            endOutro.setUsuario(donoRestaurante2); // (CORRIGIDO - Agora 'donoRestaurante2' existe)
             
             Restaurante outroRestaurante = new Restaurante();
             outroRestaurante.setNome("Outro Restaurante");
@@ -188,12 +198,12 @@ class PedidoControllerIntegrationTest {
             outroRestaurante.setAtivo(true);
             outroRestaurante.setTelefone("1188888888");
             outroRestaurante.setCategoria("Italiana");
-            outroRestaurante.setEndereco(endOutro); // <-- CORRIGIDO (Objeto Endereco)
+            outroRestaurante.setEndereco(endOutro); 
             restauranteRepository.saveAndFlush(outroRestaurante);
     
             Produto produtoDeOutro = new Produto();
             produtoDeOutro.setNome("Lasanha");
-            produtoDeOutro.setPrecoBase(BigDecimal.valueOf(25.00)); // <-- CORRIGIDO (precoBase)
+            produtoDeOutro.setPrecoBase(BigDecimal.valueOf(25.00)); 
             produtoDeOutro.setEstoque(5);
             produtoDeOutro.setDisponivel(true);
             produtoDeOutro.setRestaurante(outroRestaurante);
@@ -208,14 +218,16 @@ class PedidoControllerIntegrationTest {
             ItemPedidoDTO item = new ItemPedidoDTO();
             item.setProdutoId(produtoDeOutro.getId()); // Mas pede um produto do OUTRO restaurante
             item.setQuantidade(1);
+            item.setPrecoUnitario(produtoDeOutro.getPrecoBase()); // (CORRIGIDO)
             item.setOpcionaisIds(List.of());
             pedidoDTO.setItens(List.of(item));
     
-            mockMvc.perform(post("/api/pedidos")
+           mockMvc.perform(post("/api/pedidos")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(pedidoDTO)))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.message").value("Produto não pertence ao restaurante selecionado"));
+                    // A mensagem agora inclui o nome do produto.
+                    .andExpect(jsonPath("$.message").value("Produto Lasanha não pertence ao restaurante selecionado")); // <-- 🔥 CORREÇÃO
         }
     }
 
@@ -233,12 +245,13 @@ class PedidoControllerIntegrationTest {
     
             PedidoDTO pedidoDTO = new PedidoDTO();
             pedidoDTO.setRestauranteId(restauranteAtivo.getId());
-            pedidoDTO.setEnderecoEntregaId(enderecoAtivo.getId()); // <-- CORRIGIDO
+            pedidoDTO.setEnderecoEntregaId(enderecoAtivo.getId()); 
             pedidoDTO.setMetodoPagamento("PIX");
     
             ItemPedidoDTO item = new ItemPedidoDTO();
             item.setProdutoId(produtoDisponivel.getId());
             item.setQuantidade(5); // Pedindo 5
+            item.setPrecoUnitario(produtoDisponivel.getPrecoBase()); // (CORRIGIDO)
             item.setOpcionaisIds(List.of());
             pedidoDTO.setItens(List.of(item));
     

@@ -50,7 +50,7 @@ public class TestDataConfiguration {
         usuarioRepository.deleteAll();
 
         // ----------------------------------------------------
-        // CRIAÇÃO DO CLIENTE (MÉTODO CASCADE - FUNCIONOU)
+        // CRIAÇÃO DO CLIENTE (MÉTODO CASCADE - V4)
         // ----------------------------------------------------
 
         // 2️⃣ Cria o USUÁRIO CLIENTE (em memória)
@@ -63,12 +63,12 @@ public class TestDataConfiguration {
         // 3️⃣ Cria o CLIENTE (em memória)
         Cliente cliente = new Cliente();
         cliente.setNome("João Cliente");
-        cliente.setCpf("12345678901");
+        cliente.setCpf("51613751036"); // <-- 🔥 CORREÇÃO (CPF Válido 1)
         cliente.setTelefone("11999999999");
 
         // 4️⃣ Cria o ENDEREÇO (em memória, COM VALIDAÇÃO)
         Endereco enderecoCliente = new Endereco();
-        enderecoCliente.setApelido("Casa Teste");
+        enderecoCliente.setApelido("Casa Teste"); // (Apelido obrigatório)
         enderecoCliente.setRua("Rua dos Testes");
         enderecoCliente.setNumero("123");
         enderecoCliente.setCep("01001000");
@@ -83,24 +83,23 @@ public class TestDataConfiguration {
         usuarioCliente.getEnderecos().add(enderecoCliente);
 
         // 6️⃣ SALVA SÓ O PAI (USUÁRIO)
-        usuarioRepository.save(usuarioCliente); // 🔥 Salva o usuário e seus filhos (Cliente e Endereco)
+        usuarioRepository.save(usuarioCliente); 
 
         // ----------------------------------------------------
         // CRIAÇÃO DO RESTAURANTE (MÉTODO HÍBRIDO - V15)
-        // (Isso corrige o 'TransientPropertyValueException' E o 'Telefone é obrigatório')
         // ----------------------------------------------------
 
-        // 7A 🚀 Cria e SALVA o USUÁRIO DONO (para que ele não seja "transient")
+        // 7A 🚀 Cria e SALVA o USUÁRIO DONO 
         Usuario usuarioRestaurante = new Usuario();
         usuarioRestaurante.setEmail("restaurante.dono@email.com");
         usuarioRestaurante.setSenha(passwordEncoder.encode("123456"));
         usuarioRestaurante.setRole(Role.RESTAURANTE);
         usuarioRestaurante.setAtivo(true);
-        Usuario donoSalvo = usuarioRepository.save(usuarioRestaurante); // Salva e pega a instância
+        Usuario donoSalvo = usuarioRepository.save(usuarioRestaurante);
 
-        // 7B 🚀 Cria o ENDEREÇO (em memória, COM VALIDAÇÃO)
+        // 7B 🚀 Cria o ENDEREÇO (em memória)
         Endereco endRestaurante = new Endereco();
-        endRestaurante.setApelido("Restaurante Teste");
+        endRestaurante.setApelido("Restaurante Teste"); // (Apelido obrigatório)
         endRestaurante.setRua("Rua Fictícia");
         endRestaurante.setNumero("456");
         endRestaurante.setCep("02002000");
@@ -108,22 +107,20 @@ public class TestDataConfiguration {
         endRestaurante.setCidade("São Paulo");
         endRestaurante.setEstado("SP");
         
-        // 7C 🚀 Cria o RESTAURANTE (em memória, COM VALIDAÇÃO)
+        // 7C 🚀 Cria o RESTAURANTE (em memória)
         Restaurante restaurante = new Restaurante();
         restaurante.setNome("Restaurante Teste");
         restaurante.setCategoria("Pizzaria");
         restaurante.setAtivo(true);
         restaurante.setTaxaEntrega(BigDecimal.valueOf(10.00));
-        restaurante.setTelefone("11888889999"); // <-- 🔥 CORREÇÃO FINAL (Telefone obrigatório)
+        restaurante.setTelefone("11888889999"); // (Telefone obrigatório)
 
         // 7D 🚀 CONECTA TUDO (Restaurante)
         endRestaurante.setUsuario(donoSalvo); // Endereço aponta para o Dono (que já está salvo)
-        restaurante.setEndereco(endRestaurante); // Restaurante aponta para o Endereço (que é novo/transient)
+        restaurante.setEndereco(endRestaurante); // Restaurante aponta para o Endereço (novo)
 
         // 7E 🚀 SALVA SÓ O RESTAURANTE
-        // O cascade do Restaurante deve salvar o endRestaurante.
-        // O endRestaurante será salvo com o link para donoSalvo (que já existe no BD).
-        Restaurante restauranteSalvo = restauranteRepository.save(restaurante); // 🔥 Salva Restaurante -> Endereco
+        Restaurante restauranteSalvo = restauranteRepository.save(restaurante); // Salva Restaurante -> Endereco
 
         // 7F 🚀 Cria o PRODUTO
         Produto produto = new Produto();
@@ -132,9 +129,9 @@ public class TestDataConfiguration {
         produto.setPrecoBase(BigDecimal.valueOf(29.90));
         produto.setEstoque(20);
         produto.setDisponivel(true);
-		produto.setRestaurante(restauranteSalvo); // Usa a instância salva pelo cascade
+		produto.setRestaurante(restauranteSalvo); 
         produtoRepository.save(produto);
 
-        System.out.println("✅ Dados de teste (VERSÃO V15 - FINAL) criados com sucesso!");
+        System.out.println("✅ Dados de teste (VERSÃO V16 - CPFs Válidos) criados com sucesso!");
     }
 }
