@@ -1,16 +1,14 @@
 package com.deliverytech.delivery.service.auth;
 
 // --- IMPORTS ADICIONADOS ---
-import com.deliverytech.delivery.dto.auth.RegisterRequest; // (O DTO refatorado)
-import com.deliverytech.delivery.dto.EnderecoDTO;
+import com.deliverytech.delivery.dto.auth.RegisterRequest;
+import com.deliverytech.delivery.dto.request.EnderecoDTO;
 import com.deliverytech.delivery.entity.Cliente;
 import com.deliverytech.delivery.entity.Endereco;
 import com.deliverytech.delivery.enums.Role;
-import com.deliverytech.delivery.repository.ClienteRepository;
-import com.deliverytech.delivery.repository.EnderecoRepository;
-import com.deliverytech.delivery.exception.ConflictException; // (Para validar e-mail)
-import org.modelmapper.ModelMapper; // (Para mapear o EnderecoDTO)
-import org.springframework.transaction.annotation.Transactional; // (Para o @Transactional)
+import com.deliverytech.delivery.exception.ConflictException; 
+import org.modelmapper.ModelMapper; 
+import org.springframework.transaction.annotation.Transactional; 
 // --- FIM DOS IMPORTS ADICIONADOS ---
 
 import com.deliverytech.delivery.entity.Usuario;
@@ -23,21 +21,20 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-@RequiredArgsConstructor // O Lombok injeta todos os campos 'final'
+@RequiredArgsConstructor 
 public class AuthService implements UserDetailsService {
 
-    // --- DEPENDÊNCIAS ANTIGAS (OK) ---
+    // --- DEPENDÊNCIAS ---
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
-
-    // --- NOVAS DEPENDÊNCIAS (NECESSÁRIAS) ---
-    private final ClienteRepository clienteRepository;
-    private final EnderecoRepository enderecoRepository;
-    private final ModelMapper modelMapper; // (Certifique-se que este Bean está configurado)
-
+    private final ModelMapper modelMapper;
     
+    // (Não precisamos mais dos repositórios Cliente/Endereco aqui)
+    // private final ClienteRepository clienteRepository; 
+    // private final EnderecoRepository enderecoRepository;
+
+
     /**
-     * (Seu método original - Está OK)
      * Carrega o usuário pelo email para o Spring Security.
      */
     @Override
@@ -48,7 +45,6 @@ public class AuthService implements UserDetailsService {
 
     
     /**
-     * (Seu método original - Está OK)
      * Verifica se um e-mail já existe.
      */
     public boolean existsByEmail(String email) {
@@ -56,11 +52,11 @@ public class AuthService implements UserDetailsService {
     }
 
     /**
-     * Registra um novo CLIENTE no sistema (VERSÃO REFATORADA).
-     * Cria o Usuário (autenticação), o Cliente (perfil) e o Endereço (entrega)
-     * e os conecta corretamente usando @OneToOne e @ManyToOne.
+     * Registra um novo CLIENTE no sistema (VERSÃO CORRIGIDA).
+     * Salva Usuário, Cliente e Endereço em uma única operação
+     * usando o cascade do JPA.
      *
-     * @param dto O DTO 'RegisterRequest' refatorado (com dados de perfil e endereço).
+     * @param dto O DTO 'RegisterRequest' refatorado.
      * @return A entidade 'Usuario' que foi salva.
      */
     @Transactional // Garante que tudo (Usuário, Cliente, Endereço) seja salvo, ou nada.
@@ -71,46 +67,43 @@ public class AuthService implements UserDetailsService {
             throw new ConflictException("Email já está em uso", "email", dto.getEmail());
         }
 
-        // 2. Criar a entidade de Autenticação (Usuario)
+        // ==========================================================
+        // --- CORREÇÃO DO ERRO 500 (ObjectOptimisticLocking) ---
+        // ==========================================================
+
+        // 2. Criar a entidade de Autenticação (Usuario) - EM MEMÓRIA
         Usuario usuario = new Usuario();
         usuario.setEmail(dto.getEmail());
         usuario.setSenha(passwordEncoder.encode(dto.getSenha()));
-        usuario.setRole(Role.CLIENTE); // Define a Role direto (este método é só para clientes)
+        usuario.setRole(Role.CLIENTE);
         usuario.setAtivo(true);
-        // (O campo 'nome' FOI REMOVIDO daqui - CORRIGE O ERRO `setNome`)
         
-        Usuario usuarioSalvo = usuarioRepository.save(usuario);
-
-        // 3. Criar a entidade de Perfil (Cliente)
+        // 3. Criar a entidade de Perfil (Cliente) - EM MEMÓRIA
         Cliente cliente = new Cliente();
-        cliente.setUsuario(usuarioSalvo); // <-- Conecta ao Usuário
-        cliente.setId(usuarioSalvo.getId()); // <-- Define a PK/FK (@MapsId)
-        
-        cliente.setNome(dto.getNome()); // <-- 'nome' agora fica no Cliente
+        cliente.setNome(dto.getNome());
         cliente.setCpf(dto.getCpf());
         cliente.setTelefone(dto.getTelefone());
         
-        // (Não setamos email/ativo aqui - CORRIGE OS ERROS `setEmail`/`setAtivo`)
-        
-        clienteRepository.save(cliente);
-
-        // 4. Criar a entidade de Endereço (Gargalo 1)
+        // 4. Criar a entidade de Endereço - EM MEMÓRIA
         EnderecoDTO enderecoDTO = dto.getEndereco();
         Endereco endereco = modelMapper.map(enderecoDTO, Endereco.class);
-        endereco.setUsuario(usuarioSalvo); // <-- Conecta o endereço ao Usuário
-        endereco.setApelido("Principal"); // Define o primeiro endereço como 'Principal'
         
-        enderecoRepository.save(endereco);
+        // 5. CONECTAR TUDO (Bidirecional)
+        
+        // Conecta Cliente ao Usuário (e vice-versa)
+        cliente.setUsuario(usuario);
+        usuario.setCliente(cliente);
+        
+        // Conecta Endereço ao Usuário (e vice-versa)
+        endereco.setUsuario(usuario);
+        usuario.getEnderecos().add(endereco); // Adiciona na lista
 
-        // Retorna o Usuário salvo (agora completo com perfil e endereço)
-        return usuarioSalvo;
+        // 6. SALVAR (APENAS O PAI)
+        // O @Transactional e o CascadeType.ALL cuidarão de salvar 
+        // o 'cliente' e o 'endereco' automaticamente.
+        return usuarioRepository.save(usuario);
     }
-
-    // O método 'criarUsuario(RegisterRequest)' antigo (que recebia Role) 
-    // foi substituído por 'registrarCliente(RegisterRequest)'.
-    // Se você precisar de um método para criar ADMIN/RESTAURANTE, 
-    // ele deve ser um método separado.
-
+    
     
     /**
      * (Seu método original - Está OK)

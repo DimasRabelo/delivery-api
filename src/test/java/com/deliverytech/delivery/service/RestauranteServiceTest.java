@@ -1,7 +1,7 @@
 package com.deliverytech.delivery.service; 
 
-import com.deliverytech.delivery.dto.RestauranteDTO;
-import com.deliverytech.delivery.dto.EnderecoDTO; // IMPORT ADICIONADO
+import com.deliverytech.delivery.dto.request.EnderecoDTO;
+import com.deliverytech.delivery.dto.request.RestauranteDTO;
 import com.deliverytech.delivery.dto.response.RestauranteResponseDTO;
 import com.deliverytech.delivery.entity.Restaurante;
 import com.deliverytech.delivery.entity.Endereco; // IMPORT ADICIONADO

@@ -2,6 +2,7 @@ package com.deliverytech.delivery.repository;
 
 import com.deliverytech.delivery.entity.Pedido;
 import com.deliverytech.delivery.entity.Usuario;
+import com.deliverytech.delivery.entity.ItemPedido; // <-- IMPORT NECESSÁRIO
 import com.deliverytech.delivery.enums.StatusPedido;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,24 +21,43 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long>, JpaSpecif
     // =================== PEDIDOS POR CLIENTE ===================
     List<Pedido> findByClienteIdOrderByDataPedidoDesc(Long clienteId);
     List<Pedido> findByClienteOrderByDataPedidoDesc(com.deliverytech.delivery.entity.Cliente cliente);
+    Page<Pedido> findByClienteId(Long clienteId, Pageable pageable);
 
     // =================== PEDIDOS POR STATUS ===================
     Page<Pedido> findByStatus(StatusPedido status, Pageable pageable);
     Page<Pedido> findByStatusAndDataPedidoBetween(StatusPedido status, LocalDateTime inicio, LocalDateTime fim, Pageable pageable);
 
-    // =================== PEDIDOS POR RESTAURANTE ===================
-    Page<Pedido> findByRestauranteId(Long restauranteId, Pageable pageable);
-    Page<Pedido> findByRestauranteIdAndStatus(Long restauranteId, StatusPedido status, Pageable pageable);
-
     // =================== PEDIDOS POR PERÍODO ===================
     Page<Pedido> findByDataPedidoBetween(LocalDateTime inicio, LocalDateTime fim, Pageable pageable);
 
-    // Métodos antigos ainda podem existir, se precisar sem paginação
+    // =================================================================
+    // --- CORREÇÃO DE MULTIPLE BAG FETCH EXCEPTION (JÁ FEITA) ---
+    // =================================================================
+    
+    @Query("SELECT DISTINCT p FROM Pedido p " +
+           "LEFT JOIN FETCH p.restaurante r " +
+           "LEFT JOIN FETCH p.itens i " +
+           "WHERE p.restaurante.id = :restauranteId " +
+           "AND (:status IS NULL OR p.status = :status)")
+    List<Pedido> findPedidosByRestauranteIdAndStatusComItens(
+            @Param("restauranteId") Long restauranteId,
+            @Param("status") StatusPedido status
+    );
+
+    @Query("SELECT DISTINCT ip FROM ItemPedido ip " +
+           "LEFT JOIN FETCH ip.opcionaisSelecionados iso " +
+           "LEFT JOIN FETCH iso.itemOpcional " +
+           "WHERE ip IN :itens")
+    void fetchOpcionaisParaItens(@Param("itens") List<ItemPedido> itens);
+
+    // =================================================================
+    // FIM DA CORREÇÃO
+    // =================================================================
+
+    // Métodos antigos
     List<Pedido> findByStatusOrderByDataPedidoDesc(StatusPedido status);
     List<Pedido> findByDataPedidoBetweenOrderByDataPedidoDesc(LocalDateTime inicio, LocalDateTime fim);
-    List<Pedido> findByRestauranteId(@Param("restauranteId") Long restauranteId);
-
-    Page<Pedido> findByClienteId(Long clienteId, Pageable pageable);
+    // (A linha 'List<Pedido> findByRestauranteId' foi removida pois era duplicada)
 
     // =================== OUTROS ===================
     Pedido findByNumeroPedido(String numeroPedido);
@@ -71,9 +91,27 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long>, JpaSpecif
             @Param("status") StatusPedido status);
 
            
-    /**
-     * Verifica se existe algum pedido atribuído a este entregador
-     * que esteja ATUALMENTE em rota (SAIU_PARA_ENTREGA).
-     */
     boolean existsByEntregadorAndStatus(Usuario entregador, StatusPedido status);
+
+
+    // ==========================================================
+    // --- NOVO MÉTODO PARA A CORREÇÃO DO @PreAuthorize (ERRO 403) ---
+    // (Esta é a linha que estava faltando)
+    // ==========================================================
+    /**
+     * Verifica eficientemente se um pedido pertence a um cliente, restaurante OU entregador.
+     * Usado pelo 'canAccess' para evitar LazyInitializationException.
+     */
+    @Query("SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END FROM Pedido p " +
+           "WHERE p.id = :pedidoId AND (" +
+           "p.cliente.id = :clienteId OR " +
+           "p.restaurante.id = :restauranteId OR " +
+           "(p.entregador IS NOT NULL AND p.entregador.id = :entregadorId)" +
+           ")")
+    boolean isPedidoOwnedBy( 
+            @Param("pedidoId") Long pedidoId, 
+            @Param("clienteId") Long clienteId, 
+            @Param("restauranteId") Long restauranteId,
+            @Param("entregadorId") Long entregadorId 
+    );
 }

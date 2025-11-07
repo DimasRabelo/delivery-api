@@ -1,6 +1,6 @@
 package com.deliverytech.delivery.integration;
 
-import com.deliverytech.delivery.dto.ProdutoDTO;
+import com.deliverytech.delivery.dto.request.ProdutoDTO;
 import com.deliverytech.delivery.dto.response.ProdutoResponseDTO;
 import com.deliverytech.delivery.service.ProdutoService;
 

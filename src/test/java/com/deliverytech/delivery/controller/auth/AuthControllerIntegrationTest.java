@@ -1,8 +1,8 @@
 package com.deliverytech.delivery.controller.auth;
 
-import com.deliverytech.delivery.dto.EnderecoDTO;
 import com.deliverytech.delivery.dto.auth.LoginRequest;
 import com.deliverytech.delivery.dto.auth.RegisterRequest;
+import com.deliverytech.delivery.dto.request.EnderecoDTO;
 import com.deliverytech.delivery.entity.Cliente;
 import com.deliverytech.delivery.entity.Endereco;
 import com.deliverytech.delivery.entity.Usuario;

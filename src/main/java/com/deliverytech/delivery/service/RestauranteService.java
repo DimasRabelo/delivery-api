@@ -1,6 +1,6 @@
 package com.deliverytech.delivery.service;
 
-import com.deliverytech.delivery.dto.RestauranteDTO;
+import com.deliverytech.delivery.dto.request.RestauranteDTO;
 import com.deliverytech.delivery.dto.response.RestauranteResponseDTO;
 
 import org.springframework.data.domain.Page;

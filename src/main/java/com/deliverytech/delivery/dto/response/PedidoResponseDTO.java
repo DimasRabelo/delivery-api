@@ -1,58 +1,60 @@
 package com.deliverytech.delivery.dto.response;
 
-import com.deliverytech.delivery.dto.ItemPedidoDTO;
-import io.swagger.v3.oas.annotations.media.Schema; // Importação para documentação OpenAPI/Swagger
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import java.util.List;
 
-/**
- * DTO (Data Transfer Object) de resposta de um pedido, enviado pelo backend.
- * Esta classe define a estrutura de dados (Schema) que a API retorna
- * ao consultar os detalhes de um pedido.
- */
-@Schema(description = "DTO de resposta com os dados de um pedido") // Documentação a nível de classe
+import com.deliverytech.delivery.dto.request.ItemPedidoDTO;
+
+@Schema(description = "DTO de resposta com os dados de um pedido")
 public class PedidoResponseDTO {
 
     // --- Identificação ---
-
-    @Schema(description = "ID do pedido", example = "1") // Documentação Swagger
+    @Schema(description = "ID do pedido", example = "1")
     private Long id;
 
     // --- Cliente ---
-
-    @Schema(description = "ID do cliente", example = "1") // Documentação Swagger
+    @Schema(description = "ID do cliente", example = "1")
     private Long clienteId;
 
-    @Schema(description = "Nome do cliente", example = "João Silva") // Documentação Swagger
+    @Schema(description = "Nome do cliente", example = "João Silva")
     private String clienteNome;
 
     // --- Restaurante ---
-
-    @Schema(description = "ID do restaurante", example = "2") // Documentação Swagger
+    @Schema(description = "ID do restaurante", example = "2")
     private Long restauranteId;
 
-    @Schema(description = "Nome do restaurante", example = "Pizza Express") // Documentação Swagger
+    @Schema(description = "Nome do restaurante", example = "Pizza Express")
     private String restauranteNome;
 
     // --- Detalhes da Entrega e Status ---
-
-    @Schema(description = "Endereço de entrega", example = "Rua das Flores, 123") // Documentação Swagger
+    @Schema(description = "Endereço de entrega", example = "Rua das Flores, 123")
     private String enderecoEntrega;
 
-    @Schema(description = "Status do pedido", example = "EM_PREPARO") // Documentação Swagger
-    private String status; // Usar String é comum para simplificar o DTO (em vez de Enum)
+    @Schema(description = "Status do pedido", example = "EM_PREPARO")
+    private String status; 
 
-    // --- Valores e Itens ---
-
-    @Schema(description = "Valor total do pedido", example = "55.50") // Documentação Swagger
+    @Schema(description = "Valor total do pedido", example = "55.50")
     private BigDecimal total;
 
-    @Schema(description = "Lista de itens do pedido") // Documentação Swagger
-    private List<ItemPedidoDTO> itens; // Lista aninhada de DTOs
+    @Schema(description = "Lista de itens do pedido")
+    private List<ItemPedidoDTO> itens;
+    
+    // ==========================================================
+    // --- CAMPOS FALTANTES (A CORREÇÃO) ---
+    // ==========================================================
+    @Schema(description = "ID do entregador atribuído (se houver)", example = "6", nullable = true)
+    private Long entregadorId;
+    
+    @Schema(description = "Nome/Email do entregador (se houver)", example = "carlos@entrega.com", nullable = true)
+    private String entregadorNome;
+    // ==========================================================
+    // FIM DA CORREÇÃO
+    // ==========================================================
+
 
     // ===================================================
     // GETTERS E SETTERS
-    // (Necessários pois a classe não usa Lombok @Data)
     // ===================================================
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -80,4 +82,13 @@ public class PedidoResponseDTO {
 
     public List<ItemPedidoDTO> getItens() { return itens; }
     public void setItens(List<ItemPedidoDTO> itens) { this.itens = itens; }
+
+    // ==========================================================
+    // --- GETTERS/SETTERS ADICIONADOS ---
+    // ==========================================================
+    public Long getEntregadorId() { return entregadorId; }
+    public void setEntregadorId(Long entregadorId) { this.entregadorId = entregadorId; }
+
+    public String getEntregadorNome() { return entregadorNome; }
+    public void setEntregadorNome(String entregadorNome) { this.entregadorNome = entregadorNome; }
 }

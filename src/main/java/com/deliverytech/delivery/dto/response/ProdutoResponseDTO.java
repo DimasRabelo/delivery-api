@@ -1,13 +1,12 @@
 package com.deliverytech.delivery.dto.response;
 
+import com.deliverytech.delivery.dto.request.GrupoOpcionalDTO;
+import com.deliverytech.delivery.dto.request.ItemOpcionalDTO;
 import com.deliverytech.delivery.entity.Produto;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.math.BigDecimal;
 import java.io.Serializable;
-// --- IMPORTS ADICIONADOS ---
-import com.deliverytech.delivery.dto.GrupoOpcionalDTO;
-import com.deliverytech.delivery.dto.ItemOpcionalDTO;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.ArrayList; // Adicionado para inicializar a lista

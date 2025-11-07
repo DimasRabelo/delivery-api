@@ -1,6 +1,6 @@
 package com.deliverytech.delivery.service;
 
-import com.deliverytech.delivery.dto.ProdutoDTO;
+import com.deliverytech.delivery.dto.request.ProdutoDTO;
 import com.deliverytech.delivery.dto.response.ProdutoResponseDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

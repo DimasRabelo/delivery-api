@@ -1,7 +1,7 @@
 package com.deliverytech.delivery.controller;
 
 import com.deliverytech.delivery.config.TestDataConfiguration;
-import com.deliverytech.delivery.dto.ClienteDTO;
+import com.deliverytech.delivery.dto.request.ClienteDTO;
 import com.deliverytech.delivery.entity.Usuario;
 import com.deliverytech.delivery.repository.auth.UsuarioRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;

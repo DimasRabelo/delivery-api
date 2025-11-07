@@ -1,8 +1,8 @@
 package com.deliverytech.delivery.service.impl;
 
-import com.deliverytech.delivery.dto.ProdutoDTO;
-import com.deliverytech.delivery.dto.GrupoOpcionalDTO; // IMPORT ADICIONADO
-import com.deliverytech.delivery.dto.ItemOpcionalDTO; // IMPORT ADICIONADO
+import com.deliverytech.delivery.dto.request.GrupoOpcionalDTO;
+import com.deliverytech.delivery.dto.request.ItemOpcionalDTO;
+import com.deliverytech.delivery.dto.request.ProdutoDTO;
 import com.deliverytech.delivery.dto.response.ProdutoResponseDTO;
 import com.deliverytech.delivery.entity.Produto;
 import com.deliverytech.delivery.entity.Restaurante;

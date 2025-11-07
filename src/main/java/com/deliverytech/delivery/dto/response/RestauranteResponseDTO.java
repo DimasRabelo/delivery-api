@@ -1,75 +1,39 @@
 package com.deliverytech.delivery.dto.response;
 
-import io.swagger.v3.oas.annotations.media.Schema; // Importação para documentação OpenAPI/Swagger
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 
-/**
- * DTO (Data Transfer Object) usado para enviar dados do restaurante para o cliente (front-end)
- * sem expor a entidade JPA diretamente.
- * Documentado no Swagger para que quem acessar a API veja claramente os campos retornados.
- */
-@Schema(description = "DTO de resposta com dados do restaurante") // Documentação a nível de classe
+import com.deliverytech.delivery.dto.request.EnderecoDTO;
+
+@Schema(description = "DTO de resposta com dados do restaurante")
 public class RestauranteResponseDTO {
 
-    // ---------------------------------------------------
-    // ID do restaurante
-    // Exemplo: 2
-    // Identifica unicamente o restaurante na base de dados
-    // ---------------------------------------------------
-    @Schema(description = "ID do restaurante", example = "2") // Documentação Swagger
+    @Schema(description = "ID do restaurante", example = "2")
     private Long id;
 
-    // ---------------------------------------------------
-    // Nome do restaurante
-    // Exemplo: "Pizza Express"
-    // Campo principal exibido ao usuário
-    // ---------------------------------------------------
-    @Schema(description = "Nome do restaurante", example = "Pizza Express") // Documentação Swagger
+    @Schema(description = "Nome do restaurante", example = "Pizza Express")
     private String nome;
 
-    // ---------------------------------------------------
-    // Categoria do restaurante
-    // Exemplo: "Italiana"
-    // Para filtros e organização de restaurantes
-    // ---------------------------------------------------
-    @Schema(description = "Categoria do restaurante", example = "Italiana") // Documentação Swagger
+    @Schema(description = "Categoria do restaurante", example = "Italiana")
     private String categoria;
 
     // ---------------------------------------------------
-    // Endereço do restaurante
-    // Exemplo: "Rua das Flores, 123"
-    // Para exibir localização e referência
+    // CORREÇÃO DO BUG "toString()"
     // ---------------------------------------------------
-    @Schema(description = "Endereço do restaurante", example = "Rua das Flores, 123") // Documentação Swagger
-    private String endereco;
+    @Schema(description = "Objeto JSON com o endereço do restaurante")
+    private EnderecoDTO endereco; // <-- 2. TIPO MUDADO DE String PARA EnderecoDTO
 
-    // ---------------------------------------------------
-    // Telefone do restaurante
-    // Exemplo: "11999999999"
-    // Contato direto para o cliente
-    // ---------------------------------------------------
-    @Schema(description = "Telefone do restaurante", example = "11999999999") // Documentação Swagger
+    @Schema(description = "Telefone do restaurante", example = "11999999999")
     private String telefone;
 
-    // ---------------------------------------------------
-    // Taxa de entrega
-    // Exemplo: 5.50
-    // Informativo para o cálculo do pedido e exibição ao cliente
-    // ---------------------------------------------------
-    @Schema(description = "Taxa de entrega", example = "5.50") // Documentação Swagger
+    @Schema(description = "Taxa de entrega", example = "5.50")
     private BigDecimal taxaEntrega;
 
-    // ---------------------------------------------------
-    // Status ativo/inativo
-    // Exemplo: true
-    // Determina se o restaurante está visível e disponível para pedidos
-    // ---------------------------------------------------
-    @Schema(description = "Indica se o restaurante está ativo", example = "true") // Documentação Swagger
+    @Schema(description = "Indica se o restaurante está ativo", example = "true")
     private Boolean ativo;
 
     // ===================================================
-    // GETTERS E SETTERS
-    // (Necessários pois a classe não usa Lombok @Data)
+    // GETTERS E SETTERS (CORRIGIDOS)
     // ===================================================
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -80,8 +44,9 @@ public class RestauranteResponseDTO {
     public String getCategoria() { return categoria; }
     public void setCategoria(String categoria) { this.categoria = categoria; }
 
-    public String getEndereco() { return endereco; }
-    public void setEndereco(String endereco) { this.endereco = endereco; }
+    // 3. GETTER E SETTER ATUALIZADOS
+    public EnderecoDTO getEndereco() { return endereco; }
+    public void setEndereco(EnderecoDTO endereco) { this.endereco = endereco; }
 
     public String getTelefone() { return telefone; }
     public void setTelefone(String telefone) { this.telefone = telefone; }

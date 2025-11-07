@@ -1,6 +1,6 @@
 package com.deliverytech.delivery.service;
 
-import com.deliverytech.delivery.dto.ClienteDTO;
+import com.deliverytech.delivery.dto.request.ClienteDTO;
 import com.deliverytech.delivery.dto.response.ClienteResponseDTO;
 import com.deliverytech.delivery.entity.Cliente;
 import com.deliverytech.delivery.entity.Usuario; // IMPORT ADICIONADO

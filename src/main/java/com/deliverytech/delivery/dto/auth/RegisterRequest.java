@@ -1,10 +1,11 @@
 package com.deliverytech.delivery.dto.auth;
 
-// --- IMPORTS ADICIONADOS ---
-import com.deliverytech.delivery.dto.EnderecoDTO; 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import org.hibernate.validator.constraints.br.CPF;
+
+import com.deliverytech.delivery.dto.request.EnderecoDTO;
+
 import jakarta.validation.constraints.Pattern;
 // --- FIM DOS IMPORTS ---
 

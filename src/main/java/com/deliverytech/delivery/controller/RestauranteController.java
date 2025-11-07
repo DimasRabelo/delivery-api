@@ -1,6 +1,6 @@
 package com.deliverytech.delivery.controller;
 
-import com.deliverytech.delivery.dto.RestauranteDTO;
+import com.deliverytech.delivery.dto.request.RestauranteDTO;
 import com.deliverytech.delivery.dto.response.ApiResponseWrapper;
 import com.deliverytech.delivery.dto.response.PagedResponseWrapper;
 import com.deliverytech.delivery.dto.response.ProdutoResponseDTO;

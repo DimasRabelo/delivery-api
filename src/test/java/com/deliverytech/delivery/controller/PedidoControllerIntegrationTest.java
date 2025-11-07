@@ -2,8 +2,8 @@ package com.deliverytech.delivery.controller;
 
 // --- Imports de Entidades, DTOs e Repos Novos ---
 import com.deliverytech.delivery.config.TestDataConfiguration;
-import com.deliverytech.delivery.dto.ItemPedidoDTO;
-import com.deliverytech.delivery.dto.PedidoDTO;
+import com.deliverytech.delivery.dto.request.ItemPedidoDTO;
+import com.deliverytech.delivery.dto.request.PedidoDTO;
 import com.deliverytech.delivery.entity.*;
 import com.deliverytech.delivery.enums.Role;
 import com.deliverytech.delivery.repository.*;
@@ -104,7 +104,7 @@ class PedidoControllerIntegrationTest {
             ItemPedidoDTO item = new ItemPedidoDTO();
             item.setProdutoId(produtoDisponivel.getId());
             item.setQuantidade(2);
-            item.setPrecoUnitario(produtoDisponivel.getPrecoBase()); // (CORRIGIDO)
+            
             item.setOpcionaisIds(List.of()); // <-- MUDOU (Gargalo 2) - envia lista vazia
             pedidoDTO.setItens(List.of(item));
             // --- FIM DO DTO ---
@@ -154,7 +154,7 @@ class PedidoControllerIntegrationTest {
             ItemPedidoDTO item = new ItemPedidoDTO();
             item.setProdutoId(produtoDisponivel.getId());
             item.setQuantidade(1);
-            item.setPrecoUnitario(produtoDisponivel.getPrecoBase()); // (CORRIGIDO)
+           
             item.setOpcionaisIds(List.of());
             pedidoDTO.setItens(List.of(item));
     
@@ -218,7 +218,7 @@ class PedidoControllerIntegrationTest {
             ItemPedidoDTO item = new ItemPedidoDTO();
             item.setProdutoId(produtoDeOutro.getId()); // Mas pede um produto do OUTRO restaurante
             item.setQuantidade(1);
-            item.setPrecoUnitario(produtoDeOutro.getPrecoBase()); // (CORRIGIDO)
+            
             item.setOpcionaisIds(List.of());
             pedidoDTO.setItens(List.of(item));
     
@@ -251,7 +251,7 @@ class PedidoControllerIntegrationTest {
             ItemPedidoDTO item = new ItemPedidoDTO();
             item.setProdutoId(produtoDisponivel.getId());
             item.setQuantidade(5); // Pedindo 5
-            item.setPrecoUnitario(produtoDisponivel.getPrecoBase()); // (CORRIGIDO)
+           
             item.setOpcionaisIds(List.of());
             pedidoDTO.setItens(List.of(item));
     
