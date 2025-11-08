@@ -9,8 +9,9 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.util.ArrayList;
-import java.util.List;
+//import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Define um grupo de escolhas para um Produto.
@@ -51,7 +52,8 @@ public class GrupoOpcional {
     // Link para as Opções (Ex: "Pequena", "Média", "Grande")
     @OneToMany(mappedBy = "grupoOpcional", cascade = CascadeType.ALL, orphanRemoval = true)
     @Schema(description = "Lista de itens de opção dentro deste grupo (ex: 'Pequena', 'Média', 'Grande')")
-    private List<ItemOpcional> itensOpcionais = new ArrayList<>();
+   // Em GrupoOpcional.java
+    private Set<ItemOpcional> itensOpcionais = new HashSet<>();
 
     public GrupoOpcional() {
     }

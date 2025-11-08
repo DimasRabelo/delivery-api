@@ -13,7 +13,9 @@ import lombok.ToString;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Representa a entidade Produto (item de cardápio).
@@ -72,7 +74,7 @@ public class Produto {
      */
     @OneToMany(mappedBy = "produto", cascade = CascadeType.ALL, orphanRemoval = true)
     @Schema(description = "Lista de grupos de opcionais para este produto (Tamanho, Adicionais, etc.)")
-    private List<GrupoOpcional> gruposOpcionais = new ArrayList<>();
+    private Set<GrupoOpcional> gruposOpcionais = new HashSet<>();
 
     // Relacionamento com ItemPedido (Seu código original)
     @OneToMany(mappedBy = "produto")

@@ -3,35 +3,36 @@ package com.deliverytech.delivery.repository;
 import com.deliverytech.delivery.entity.Produto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query; // <-- IMPORT NECESSÁRIO
+import org.springframework.data.repository.query.Param; // <-- IMPORT NECESSÁRIO
 import org.springframework.stereotype.Repository;
 import java.util.List;
+import java.util.Optional; // <-- IMPORT NECESSÁRIO
 
 @Repository
 public interface ProdutoRepository extends JpaRepository<Produto, Long>, JpaSpecificationExecutor<Produto> {
 
-    // Buscar apenas produtos disponíveis
+    // (Seus métodos existentes... OK)
     List<Produto> findByDisponivelTrue();
-
-    // Buscar produtos por restaurante com filtro de disponibilidade
-    // (Seu método original - OK)
     List<Produto> findByRestauranteIdAndDisponivel(Long restauranteId, Boolean disponivel);
-
-    // Buscar produtos por nome (parcial, case insensitive) apenas disponíveis
-    // (Seu método original - OK)
     List<Produto> findByNomeContainingIgnoreCaseAndDisponivelTrue(String nome);
-
-    // Buscar produtos por categoria apenas disponíveis
-    // (Seu método original - OK)
     List<Produto> findByCategoriaAndDisponivelTrue(String categoria);
-
-    // Verificar se já existe um produto com mesmo nome em um restaurante
-    // (Seu método original - OK)
     boolean existsByNomeAndRestauranteId(String nome, Long restauranteId);
-    
-    // --- MÉTODO FALTANTE (GARGALO) ---
+    List<Produto> findByRestauranteId(Long restauranteId); 
+    List<Produto> findByRestauranteIdAndDisponivelTrue(Long restauranteId);
+
+
+    // ==========================================================
+    // --- NOVO MÉTODO (A CORREÇÃO DO ERRO 500) ---
+    // ==========================================================
     /**
-     * Busca todos os produtos de um restaurante (independentemente da disponibilidade).
-     * Usado pelo 'buscarProdutosPorRestaurante' quando 'disponivel == null'.
+     * Busca um produto pelo ID, forçando o carregamento (JOIN FETCH)
+     * de toda a árvore de grupos e itens opcionais.
+     * Isso evita a LazyInitializationException no Service/DTO.
      */
-    List<Produto> findByRestauranteId(Long restauranteId); // <-- MÉTODO ADICIONADO
+    @Query("SELECT p FROM Produto p " +
+           "LEFT JOIN FETCH p.gruposOpcionais go " +
+           "LEFT JOIN FETCH go.itensOpcionais io " +
+           "WHERE p.id = :id")
+    Optional<Produto> findProdutoCompletoById(@Param("id") Long id);
 }
