@@ -2,7 +2,7 @@ package com.deliverytech.delivery.controller.auth;
 
 import com.deliverytech.delivery.dto.auth.LoginRequest;
 import com.deliverytech.delivery.dto.auth.LoginResponse;
-import com.deliverytech.delivery.dto.auth.RegisterRequest; // (Este é o DTO refatorado)
+import com.deliverytech.delivery.dto.auth.RegisterRequest;
 import com.deliverytech.delivery.dto.auth.UserResponse;
 import com.deliverytech.delivery.entity.Usuario;
 import com.deliverytech.delivery.security.jwt.JwtUtil;
@@ -43,7 +43,6 @@ public class AuthController {
 
     
     /**
-     * (Seu método original - Está OK)
      * Autentica um usuário com email e senha.
      */
     @Operation(summary = "Autentica um usuário (Login)", description = "Valida email/senha e retorna um token JWT.")
@@ -55,6 +54,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest) {
         try {
+            // Tenta autenticar usando o Spring Security AuthenticationManager
             Authentication auth = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             loginRequest.getEmail(),
@@ -62,6 +62,7 @@ public class AuthController {
                     )
             );
 
+            // Se a autenticação for bem-sucedida, gera o token
             Usuario usuario = (Usuario) auth.getPrincipal();
             String token = jwtUtil.generateToken(usuario);
             Date expirationDate = jwtUtil.extractExpiration(token);
@@ -73,6 +74,7 @@ public class AuthController {
             return ResponseEntity.ok(loginResponse);
 
         } catch (BadCredentialsException e) {
+            // Captura falha de autenticação (senha errada, usuário não existe)
             return ResponseEntity.status(401).body(Map.of("message", "Credenciais inválidas"));
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("message", "Erro interno: " + e.getMessage()));
@@ -81,9 +83,9 @@ public class AuthController {
 
 
     /**
-     * Registra um novo CLIENTE no sistema (VERSÃO REFATORADA).
+     * Registra um novo CLIENTE no sistema.
      *
-     * @param registerRequest DTO refatorado (com nome, cpf, telefone, email, senha e EnderecoDTO).
+     * @param registerRequest DTO com os dados do novo cliente.
      * @return ResponseEntity 201 (Created) com o UserResponse do usuário criado.
      */
     @Operation(summary = "Registra um novo Cliente",
@@ -93,28 +95,26 @@ public class AuthController {
                          content = @Content(schema = @Schema(implementation = UserResponse.class))),
             @ApiResponse(responseCode = "400", description = "Email já está em uso ou dados de validação inválidos")
     })
-    @PostMapping("/register") // (Mantivemos o endpoint /register)
-    public ResponseEntity<?> registerCliente(@Valid @RequestBody RegisterRequest registerRequest) { // <-- DTO Refatorado
+    @PostMapping("/register")
+    public ResponseEntity<?> registerCliente(@Valid @RequestBody RegisterRequest registerRequest) {
         
-        // 1. Verifica se o email já está cadastrado (OK)
+        // 1. Validação de e-mail duplicado
         if (authService.existsByEmail(registerRequest.getEmail())) {
             return ResponseEntity.badRequest().body(Map.of(
                     "message", "Email já está em uso"
             ));
         }
 
-        // 2. CORREÇÃO: Chama o novo método do AuthService
-        // (Este método agora cria Usuario + Cliente + Endereco)
+        // 2. Delega a lógica de registro (cria Usuário, Cliente e Endereço) para o serviço
         Usuario novoUsuario = authService.registrarCliente(registerRequest);
         
-        // 3. Retorna o DTO seguro (sem a senha)
+        // 3. Retorna o usuário criado (sem dados sensíveis)
         UserResponse userResponse = new UserResponse(novoUsuario);
         return ResponseEntity.status(201).body(userResponse);
     }
 
     
     /**
-     * (Seu método original - Está OK)
      * Obtém os dados do usuário atualmente autenticado (logado).
      */
     @Operation(summary = "Obtém dados do usuário logado (requer token)",
@@ -127,11 +127,13 @@ public class AuthController {
     @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(Authentication authentication) {
+        // Valida se o usuário está autenticado e se o principal é uma instância de Usuario
         if (authentication == null || !authentication.isAuthenticated() || !(authentication.getPrincipal() instanceof Usuario)) {
             return ResponseEntity.status(401)
                     .body(Map.of("message", "Token ausente ou inválido. Acesso negado."));
         }
 
+        // Obtém o objeto Usuario injetado pelo Spring Security
         Usuario usuario = (Usuario) authentication.getPrincipal();
         return ResponseEntity.ok(new UserResponse(usuario));
     }

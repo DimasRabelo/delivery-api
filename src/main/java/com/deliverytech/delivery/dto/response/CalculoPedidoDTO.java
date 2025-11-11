@@ -1,4 +1,3 @@
-
 package com.deliverytech.delivery.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -10,43 +9,26 @@ import java.util.List;
 
 import com.deliverytech.delivery.dto.request.ItemPedidoDTO;
 
-// ============================================
-// DTO usado para enviar informações de um pedido
-// para cálculo do total sem salvar no banco
-// ============================================
+/**
+ * DTO (Data Transfer Object) que encapsula os dados necessários
+ * para calcular o total de um pedido (itens + taxa) sem
+ * a necessidade de salvá-lo no banco de dados.
+ */
 @Schema(description = "DTO para cálculo do total de um pedido sem persistir no banco")
 public class CalculoPedidoDTO {
 
-    // ------------------------------------------------
-    // ID do restaurante para o qual o cálculo será feito
-    // @Schema → documenta no Swagger o que é esse campo
-    // @NotNull → validação para garantir que não seja nulo
-    // ------------------------------------------------
     @Schema(description = "ID do restaurante onde o pedido será calculado", example = "2", required = true)
     @NotNull(message = "ID do restaurante é obrigatório")
     private Long restauranteId;
 
-    // ------------------------------------------------
-    // Lista de itens do pedido a ser calculado
-    // @NotEmpty → valida que a lista não pode estar vazia
-    // @Valid → valida os itens internos da lista (ItemPedidoDTO)
-    // ------------------------------------------------
     @Schema(description = "Lista de itens para cálculo do pedido", required = true)
     @NotEmpty(message = "Pedido deve ter pelo menos um item")
-    @Valid
+    @Valid // Valida os DTOs (ItemPedidoDTO) dentro da lista
     private List<ItemPedidoDTO> itens = new ArrayList<>();
 
-    // =======================
-    // GETTERS E SETTERS
-    // =======================
-
-    // Retorna o ID do restaurante
     public Long getRestauranteId() { return restauranteId; }
-    // Define o ID do restaurante
     public void setRestauranteId(Long restauranteId) { this.restauranteId = restauranteId; }
 
-    // Retorna a lista de itens do pedido
     public List<ItemPedidoDTO> getItens() { return itens; }
-    // Define a lista de itens do pedido
     public void setItens(List<ItemPedidoDTO> itens) { this.itens = itens; }
 }

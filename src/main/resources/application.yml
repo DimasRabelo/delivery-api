@@ -1,48 +1,72 @@
-# Configuração do Spring Boot Actuator
+# ===================================================================
+# CONFIGURAÇÃO DE OBSERVABILIDADE (Spring Boot Actuator)
+# ===================================================================
+# Este arquivo configura os endpoints de monitoramento, saúde,
+# métricas, tracing (Zipkin) e informações da aplicação.
+
 management:
+  # --- Configuração dos Endpoints WEB ---
   endpoints:
     web:
       exposure:
-        # Inclui os endpoints que serão expostos via HTTP
+        # Expõe endpoints específicos via HTTP.
+        # 'prometheus' é para o Bloco 2.
         include: health,info,metrics,prometheus,env,loggers
-      base-path: /actuator     
+      # Define o caminho base para todos os endpoints do Actuator
+      base-path: /actuator
+      
+  # --- Configuração de Endpoints Individuais ---
   endpoint:
     health:
-      # Mostra detalhes completos e componentes individuais no /health
+      # Mostra detalhes completos (ex: "diskSpace": "UP")
       show-details: always
+      # Mostra os componentes individuais (os HealthIndicators)
       show-components: always
     prometheus:
-      # Habilita explicitamente o endpoint do Prometheus (do Bloco 2)
+      # Habilita o endpoint /actuator/prometheus (do Bloco 2)
       enabled: true
       
-  # Configuração dos Health Indicators específicos
+  # --- Configuração de Health Indicators (Indicadores de Saúde) ---
   health:
     diskspace:
+      # Habilita o health check de espaço em disco
       enabled: true
+      # Define o limite mínimo de espaço livre (se for menor, o health fica 'DOWN')
       threshold: "10GB" # Usar aspas para garantir o formato DataSize
     db:
+      # Habilita o health check do banco de dados (padrão)
       enabled: true
       
-  # Configuração dos Info Contributors específicos
+  # --- Configuração de Info Contributors (Contrib. de Informação) ---
   info:
     env:
+      # Permite que o /actuator/info mostre as propriedades 'info.*' (definidas abaixo)
       enabled: true
     git:
+      # Mostra informações do Git (commit hash, branch) no /info
+      # (Requer o plugin 'git-commit-id-plugin' no Maven/Gradle)
       mode: full
     build:
+      # Mostra informações do build (versão, time) no /info
+      # (Requer o plugin 'spring-boot-maven-plugin' (build-info) no Maven/Gradle)
       enabled: true
 
- 
+  # --- Configuração de Tracing (Rastreamento Distribuído) ---
   tracing:
     sampling:
-      # Define a probabilidade de gravar um trace (1.0 = 100%)
+      # Define a probabilidade de gravar um trace (1.0 = 100% de traces)
       probability: 1.0
   zipkin:
     tracing:
-      # Configura o endpoint do Zipkin
+      # Configura o endpoint do servidor Zipkin
+      # 'host.docker.internal' é usado para o container da app
+      # falar com o Zipkin rodando na máquina host (fora do Docker).
       endpoint: "http://host.docker.internal:9411/api/v2/spans"
 
-# Informações da aplicação (para o endpoint /info)
+# ===================================================================
+# INFORMAÇÕES DA APLICAÇÃO (expostas no /actuator/info)
+# ===================================================================
+# Estas propriedades são lidas pelo Info Contributor 'env' (habilitado acima)
 info:
   app:
     # Usei o nome do Bloco 2, que parecia mais completo
@@ -51,7 +75,7 @@ info:
     version: "1.0.0"
     encoding: "UTF-8"
   java:
-    version: "21.0.5"
+    version: "21.0.5" # (Exemplo, o Spring injeta a versão real)
   team:
     name: "Equipe de Desenvolvimento"
     email: "dev@delivery.com"

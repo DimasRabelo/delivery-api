@@ -1,16 +1,15 @@
 package com.deliverytech.delivery.dto.auth;
 
 import com.deliverytech.delivery.entity.Usuario;
-import com.deliverytech.delivery.entity.Cliente; // IMPORT ADICIONADO
+import com.deliverytech.delivery.entity.Cliente;
 import com.deliverytech.delivery.enums.Role;
-import io.swagger.v3.oas.annotations.media.Schema; // IMPORT ADICIONADO
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDateTime;
 
 /**
  * DTO (Data Transfer Object) para representar os dados de um Usuário
  * de forma segura em respostas de API.
- * (Refatorado para a arquitetura 'Decisão 1')
  */
 @Schema(description = "Dados de resposta segura do usuário")
 public class UserResponse {
@@ -19,7 +18,7 @@ public class UserResponse {
     private Long id;
 
     @Schema(description = "Nome completo do usuário (buscado do perfil Cliente, se existir)", example = "João Silva")
-    private String nome; // O nome ainda existe no DTO
+    private String nome;
 
     @Schema(description = "Email (login) do usuário", example = "joao.silva@email.com")
     private String email;
@@ -45,7 +44,6 @@ public class UserResponse {
 
     /**
      * Construtor de "Mapeamento" (Mapping Constructor)
-     * (Refatorado para buscar o 'nome' do perfil Cliente)
      *
      * @param usuario A entidade 'Usuario' vinda do banco de dados.
      */
@@ -57,20 +55,18 @@ public class UserResponse {
         this.dataCriacao = usuario.getDataCriacao();
         this.restauranteId = usuario.getRestauranteId();
 
-        // --- CORREÇÃO (GARGALO 4 / DECISÃO 1) ---
         // O 'nome' agora é buscado do perfil 'Cliente' associado
         Cliente cliente = usuario.getCliente();
         if (cliente != null) {
-            this.nome = cliente.getNome(); // <-- CORRIGIDO
+            this.nome = cliente.getNome();
         } else {
             // Se for um Admin ou Restaurante (sem perfil Cliente), o nome será nulo
-            // (Ou podemos definir um padrão, ex: "Usuário Admin")
             this.nome = null; 
         }
     }
 
     // -------------------------------------------------------------------------
-    // Getters e Setters (Seu código original - Está OK)
+    // Getters e Setters
     // -------------------------------------------------------------------------
 
     public Long getId() { return id; }

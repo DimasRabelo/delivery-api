@@ -7,6 +7,10 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import java.util.List;
 
+/**
+ * DTO (Data Transfer Object) que representa um grupo de opcionais
+ * de um produto (ex: "Tamanho", "Bordas", "Adicionais").
+ */
 @Schema(description = "DTO para um grupo de opcionais (ex: 'Tamanho')")
 public class GrupoOpcionalDTO {
 
@@ -30,7 +34,6 @@ public class GrupoOpcionalDTO {
     @Schema(description = "Lista de itens de opção dentro deste grupo")
     private List<ItemOpcionalDTO> itensOpcionais;
 
-    // Getters e Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getNome() { return nome; }

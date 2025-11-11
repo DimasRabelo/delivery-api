@@ -3,6 +3,10 @@ package com.deliverytech.delivery.dto.relatorio;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 
+/**
+ * DTO (Data Transfer Object) para agrupar os dados do relatório
+ * de clientes mais ativos (que mais gastaram).
+ */
 @Schema(description = "Relatório dos clientes mais ativos")
 public class RelatorioClientesDTO {
 
@@ -29,6 +33,6 @@ public class RelatorioClientesDTO {
     public int getTotalPedidos() { return totalPedidos; }
     public void setTotalPedidos(int totalPedidos) { this.totalPedidos = totalPedidos; }
 
-    public BigDecimal getTotalGasto() { return totalGasto; } // usado no Comparator
+    public BigDecimal getTotalGasto() { return totalGasto; }
     public void setTotalGasto(BigDecimal totalGasto) { this.totalGasto = totalGasto; }
 }

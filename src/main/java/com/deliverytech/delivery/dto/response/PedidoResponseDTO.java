@@ -7,28 +7,28 @@ import java.util.List;
 
 import com.deliverytech.delivery.dto.request.ItemPedidoDTO;
 
+/**
+ * DTO (Data Transfer Object) de resposta que encapsula
+ * todos os dados de um Pedido a serem exibidos ao cliente.
+ */
 @Schema(description = "DTO de resposta com os dados de um pedido")
 public class PedidoResponseDTO {
 
-    // --- Identificação ---
     @Schema(description = "ID do pedido", example = "1")
     private Long id;
 
-    // --- Cliente ---
     @Schema(description = "ID do cliente", example = "1")
     private Long clienteId;
 
     @Schema(description = "Nome do cliente", example = "João Silva")
     private String clienteNome;
 
-    // --- Restaurante ---
     @Schema(description = "ID do restaurante", example = "2")
     private Long restauranteId;
 
     @Schema(description = "Nome do restaurante", example = "Pizza Express")
     private String restauranteNome;
 
-    // --- Detalhes da Entrega e Status ---
     @Schema(description = "Endereço de entrega", example = "Rua das Flores, 123")
     private String enderecoEntrega;
 
@@ -41,9 +41,6 @@ public class PedidoResponseDTO {
     @Schema(description = "Lista de itens do pedido")
     private List<ItemPedidoDTO> itens;
     
-    // ==========================================================
-    // --- CAMPOS FALTANTES (A CORREÇÃO) ---
-    // ==========================================================
     @Schema(description = "ID do entregador atribuído (se houver)", example = "6", nullable = true)
     private Long entregadorId;
     
@@ -52,14 +49,13 @@ public class PedidoResponseDTO {
 
     @Schema(description = "Data e hora que o pedido foi feito", example = "2025-11-09T08:30:00")
     private LocalDateTime dataPedido;
-    // ==========================================================
-    // FIM DA CORREÇÃO
-    // ==========================================================
+    
+    @Schema(description = "Valor total dos itens (sem a entrega)", example = "50.00")
+    private BigDecimal subtotal;
 
-
-    // ===================================================
-    // GETTERS E SETTERS
-    // ===================================================
+    @Schema(description = "Valor da taxa de entrega", example = "5.00")
+    private BigDecimal taxaEntrega;
+    
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -89,16 +85,7 @@ public class PedidoResponseDTO {
 
     public LocalDateTime getDataPedido() { return dataPedido; }
     public void setDataPedido(LocalDateTime dataPedido) { this.dataPedido = dataPedido; }
-
-    @Schema(description = "Valor total dos itens (sem a entrega)", example = "50.00")
-    private BigDecimal subtotal;
-
-    @Schema(description = "Valor da taxa de entrega", example = "5.00")
-    private BigDecimal taxaEntrega;
-
-    // ==========================================================
-    // --- GETTERS/SETTERS ADICIONADOS ---
-    // ==========================================================
+    
     public Long getEntregadorId() { return entregadorId; }
     public void setEntregadorId(Long entregadorId) { this.entregadorId = entregadorId; }
 

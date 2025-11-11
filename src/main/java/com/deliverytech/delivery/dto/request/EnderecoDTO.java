@@ -5,6 +5,10 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
+/**
+ * DTO (Data Transfer Object) que representa os dados de um
+ * endereço estruturado para cadastro ou atualização.
+ */
 @Schema(description = "DTO para dados de endereço estruturado")
 public class EnderecoDTO {
 
@@ -38,14 +42,9 @@ public class EnderecoDTO {
     private String estado;
 
     @Schema(description = "Apelido do endereço (ex: Casa, Trabalho)", required = true, example = "Casa")
-    @NotBlank(message = "Apelido é obrigatório") // <-- 🔥 ADICIONE ESTA VALIDAÇÃO
-    private String apelido; // <-- 🔥 ADICIONE ESTE CAMPO
+    @NotBlank(message = "Apelido é obrigatório")
+    private String apelido;
     
-    // (Opcional: Latitude e Longitude se o front-end for enviar)
-    // private BigDecimal latitude;
-    // private BigDecimal longitude;
-
-    // Getters e Setters
     public String getCep() { return cep; }
     public void setCep(String cep) { this.cep = cep; }
     public String getRua() { return rua; }

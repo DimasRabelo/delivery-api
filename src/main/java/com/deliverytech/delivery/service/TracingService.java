@@ -1,6 +1,5 @@
-package com.deliverytech.delivery.service; 
+package com.deliverytech.delivery.service;
 
-//  IMPORTS CORRETOS (io.micrometer.tracing) 
 import io.micrometer.tracing.Span;
 import io.micrometer.tracing.Tracer;
 
@@ -9,52 +8,56 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 /**
- * Serviço de exemplo para demonstrar a criação de "Spans" customizados
- * com o Micrometer Tracing (substituto do Sleuth).
- *
- *ATENÇÃO: brave.Tracer está obsoleto.
- * Usamos 'io.micrometer.tracing.Tracer'. A lógica é a mesma.
+ * Serviço responsável por criar spans customizados com Micrometer Tracing.
+ * Substitui o uso obsoleto de 'brave.Tracer' (Sleuth).
+ * 
+ * Cada método demonstra como criar spans pai e filhos para monitoramento detalhado.
  */
 @Service
 public class TracingService {
 
     private static final Logger log = LoggerFactory.getLogger(TracingService.class);
-    
-    // 1. O Tracer injetado agora é do Micrometer
+
     private final Tracer tracer;
 
     public TracingService(Tracer tracer) {
         this.tracer = tracer;
     }
 
+    // ==========================================================
+    // --- MÉTODO PÚBLICO PRINCIPAL (PROCESSAMENTO DE PEDIDO) ---
+    // ==========================================================
     /**
-     * Simula um processo de negócio complexo com múltiplos "Spans" (etapas).
-     * Esta é a tradução 1:1 da lógica do gabarito.
+     * Processa um pedido simulando várias etapas, cada uma com seu Span.
+     * @param pedidoId ID do pedido
      */
     public void processarPedidoComTracing(String pedidoId) {
-        
-        // 1. Cria o "Span" PAI (a operação inteira)
+
+        // --- Span PAI: operação completa ---
         Span spanPai = this.tracer.nextSpan().name("processar-pedido-custom");
-        
-        // Coloca o Span PAI no "escopo" (contexto) atual
+
         try (Tracer.SpanInScope ws = this.tracer.withSpan(spanPai.start())) {
-            
+
             spanPai.tag("pedido.id", pedidoId);
             log.info("Iniciando processamento do pedido (Span PAI)");
 
-            // 2. Chama os métodos que criam "Spans" FILHOS
+            // --- Chamadas de métodos que criam Spans FILHOS ---
             validarPedidoComSpan(pedidoId);
             calcularFreteComSpan(pedidoId);
             processarPagamentoComSpan(pedidoId);
-            
+
             log.info("Finalizando processamento do pedido (Span PAI)");
 
         } catch (Exception e) {
-            spanPai.error(e); // Marca o Span PAI com erro
+            spanPai.error(e); // Marca o Span PAI como erro
         } finally {
-            spanPai.end(); // Fecha o Span PAI
+            spanPai.end();
         }
     }
+
+    // ==========================================================
+    // --- MÉTODOS PRIVADOS (ETAPAS DO PEDIDO) ---
+    // ==========================================================
 
     private void validarPedidoComSpan(String pedidoId) {
         Span spanFilho = this.tracer.nextSpan().name("validar-pedido");

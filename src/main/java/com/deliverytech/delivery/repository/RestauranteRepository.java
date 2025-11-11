@@ -8,59 +8,66 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Repositório Spring Data JPA para a entidade {@link Restaurante}.
+ * Gerencia operações CRUD e consultas por nome, categoria, avaliação, taxa de entrega,
+ * e consultas customizadas para produtos ativos e categorias disponíveis.
+ */
 @Repository
 public interface RestauranteRepository extends JpaRepository<Restaurante, Long> {
 
-    // Buscar por nome exato
+    // =================== CONSULTAS BÁSICAS ===================
+
+    /** Busca um restaurante pelo nome exato */
     Optional<Restaurante> findByNome(String nome);
 
-    // Buscar apenas restaurantes ativos
+    /** Busca todos os restaurantes ativos */
     List<Restaurante> findByAtivoTrue();
 
-    // Buscar por categoria (apenas ativos)
+    /** Busca restaurantes por categoria (todos) */
     List<Restaurante> findByCategoria(String categoria);
 
-    // Buscar por nome parcial (case insensitive, apenas ativos)
+    /** Busca restaurantes cujo nome contenha a string informada (case insensitive), apenas ativos */
     List<Restaurante> findByNomeContainingIgnoreCaseAndAtivoTrue(String nome);
 
-    // Buscar por avaliação mínima (apenas ativos)
+    /** Busca restaurantes com avaliação mínima informada, apenas ativos */
     List<Restaurante> findByAvaliacaoGreaterThanEqualAndAtivoTrue(BigDecimal avaliacao);
 
-    // Ordenar restaurantes ativos por avaliação (descendente)
+    /** Ordena restaurantes ativos por avaliação (descendente) */
     List<Restaurante> findByAtivoTrueOrderByAvaliacaoDesc();
 
-    // Buscar por taxa de entrega menor ou igual
+    /** Busca restaurantes com taxa de entrega menor ou igual ao valor informado */
     List<Restaurante> findByTaxaEntregaLessThanEqual(BigDecimal taxa);
 
-    // Top 5 restaurantes por nome (ordem alfabética)
+    /** Retorna os top 5 restaurantes ordenados por nome (alfabética) */
     List<Restaurante> findTop5ByOrderByNomeAsc();
 
-    // Buscar restaurantes que possuem produtos cadastrados (apenas ativos)
+    // =================== CONSULTAS CUSTOMIZADAS ===================
+
+    /** Busca restaurantes ativos que possuem pelo menos um produto cadastrado */
     @Query("SELECT DISTINCT r FROM Restaurante r JOIN r.produtos p WHERE r.ativo = true")
     List<Restaurante> findRestaurantesComProdutos();
 
-    // Buscar por faixa de taxa de entrega (apenas ativos)
+    /** Busca restaurantes ativos cuja taxa de entrega esteja dentro de um intervalo */
     @Query("SELECT r FROM Restaurante r WHERE r.taxaEntrega BETWEEN :min AND :max AND r.ativo = true")
     List<Restaurante> findByTaxaEntregaBetween(@Param("min") BigDecimal min, @Param("max") BigDecimal max);
 
-    // Buscar categorias distintas de restaurantes ativos
+    /** Retorna as categorias distintas de restaurantes ativos, ordenadas */
     @Query("SELECT DISTINCT r.categoria FROM Restaurante r WHERE r.ativo = true ORDER BY r.categoria")
     List<String> findCategoriasDisponiveis();
 
-    // =================== NOVOS MÉTODOS PAGINADOS ===================
+    // =================== MÉTODOS PAGINADOS ===================
 
-    // Filtrar por categoria e ativo
+    /** Filtra restaurantes por categoria e status ativo/inativo, com paginação */
     Page<Restaurante> findByCategoriaAndAtivo(String categoria, Boolean ativo, Pageable pageable);
 
-    // Filtrar só por categoria
+    /** Filtra restaurantes por categoria, com paginação */
     Page<Restaurante> findByCategoria(String categoria, Pageable pageable);
 
-    // Filtrar só por ativo/inativo
+    /** Filtra restaurantes por status ativo/inativo, com paginação */
     Page<Restaurante> findByAtivo(Boolean ativo, Pageable pageable);
-
 }

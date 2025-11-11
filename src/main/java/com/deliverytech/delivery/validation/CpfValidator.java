@@ -1,10 +1,22 @@
 package com.deliverytech.delivery.validation;
 
-import java.util.InputMismatchException; // Pode ser usado se preferir lançar exceção em vez de retornar false
+import java.util.InputMismatchException;
 
+/**
+ * Classe utilitária estática para validar a lógica
+ * matemática de um CPF (Cadastro de Pessoas Físicas) brasileiro.
+ * <p>
+ * Realiza a verificação dos dígitos verificadores (Módulo 11).
+ */
 public class CpfValidator {
 
-    // Método principal para validar o CPF
+    /**
+     * Método principal para validar o CPF.
+     * Verifica o formato, dígitos repetidos e os dois dígitos verificadores.
+     *
+     * @param cpf O CPF a ser validado (pode conter máscara ou apenas números).
+     * @return true se o CPF for válido, false caso contrário.
+     */
     public static boolean isValid(String cpf) {
         // 1. Tratamento inicial: null, vazio ou formato inválido
         if (cpf == null || cpf.isEmpty()) {
@@ -35,20 +47,26 @@ public class CpfValidator {
             return (dig10 == cpfLimpo.charAt(9)) && (dig11 == cpfLimpo.charAt(10));
 
         } catch (InputMismatchException erro) {
-            // Se ocorrer algum erro na conversão (não deveria, pois já limpamos), considera inválido
+            // Se ocorrer algum erro na conversão (improvável), considera inválido
             return false;
         }
     }
 
-    // Método auxiliar para calcular UM dígito verificador (usado duas vezes)
+    /**
+     * Calcula um dígito verificador do CPF (Módulo 11).
+     *
+     * @param baseCpf A base para o cálculo (os 9 primeiros dígitos para o 1º DV,
+     * ou os 9 + 1º DV para o 2º DV).
+     * @return O dígito verificador (char '0' a '9').
+     */
     private static char calcularDigitoVerificador(String baseCpf) {
         int sm = 0;
-        int peso = baseCpf.length() + 1; // Peso começa em 10 para o 1º dígito, 11 para o 2º
+        int peso = baseCpf.length() + 1; // Peso começa em 10 (se base=9) ou 11 (se base=10)
 
         // Multiplica os dígitos pela sequência de pesos decrescente
         for (int i = 0; i < baseCpf.length(); i++) {
             // Converte o i-ésimo caractere em número e multiplica pelo peso
-            int num = (int) (baseCpf.charAt(i) - 48); // Subtrai 48 para converter char '0'-'9' para int 0-9
+            int num = (int) (baseCpf.charAt(i) - 48); // Subtrai 48 (ASCII '0') para converter char '0'-'9' para int 0-9
             sm = sm + (num * peso);
             peso = peso - 1;
         }
@@ -57,18 +75,18 @@ public class CpfValidator {
         int r = 11 - (sm % 11);
 
         char digVerificador;
-        // Se o resto for 10 ou 11 (ou 0 ou 1 na lógica do mod 11), o dígito é '0'
+        // Se o resto for 10 ou 11, o dígito é '0'
         if ((r == 10) || (r == 11)) {
             digVerificador = '0';
         } else {
             // Senão, o dígito é o próprio resto convertido para char
-            digVerificador = (char) (r + 48); // Adiciona 48 para converter int 0-9 para char '0'-'9'
+            digVerificador = (char) (r + 48); // Adiciona 48 (ASCII '0') para converter int 0-9 para char '0'-'9'
         }
         return digVerificador;
     }
 
-    // --- (Opcional) Método main para testes rápidos ---
     /*
+    // Método main para testes rápidos
     public static void main(String[] args) {
         // Exemplos de CPFs (use geradores online para obter CPFs válidos para teste)
         String cpfValido1 = "111.444.777-35"; // Exemplo válido

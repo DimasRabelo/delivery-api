@@ -1,4 +1,3 @@
-// src/main/java/com/deliverytech/delivery/dto/request/AtribuirEntregadorDTO.java
 package com.deliverytech.delivery.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -6,6 +5,10 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.Data;
 
+/**
+ * DTO (Data Transfer Object) para encapsular o ID do entregador
+ * em requisições de atribuição.
+ */
 @Data
 @Schema(description = "DTO para atribuir um entregador a um pedido")
 public class AtribuirEntregadorDTO {

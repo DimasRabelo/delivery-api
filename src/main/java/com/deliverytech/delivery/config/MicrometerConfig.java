@@ -24,7 +24,7 @@ public class MicrometerConfig {
                     // 1. Adiciona tags globais a TODAS as métricas
                     .commonTags("application", "delivery-api") // Nome da sua app
                     .commonTags("environment", "development") // Ambiente
-                    .commonTags("version", "1.0.0") // Versão (do gabarito)
+                    .commonTags("version", "1.0.0") // Versão
                     
                     // 2. Filtra (ignora) métricas desnecessárias
                     .meterFilter(MeterFilter.deny(id -> {

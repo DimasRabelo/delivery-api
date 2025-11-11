@@ -1,46 +1,62 @@
-# Versão do Docker Compose
+# Define a versão do Docker Compose
 version: '3.8'
 
+# Define os contêineres que compõem a aplicação
 services:
-  # --- 1. Seu serviço de API (Java) ---
+
+  # 1. Serviço da API (Backend Java/Spring Boot)
   app:
-    build: . 
+    # Constrói a imagem a partir do Dockerfile no diretório atual (.)
+    build: .
     container_name: delivery-api-app
     ports:
-      - "8080:8080" 
+      # Expõe a porta 8080 do contêiner para a porta 8080 da máquina host
+      - "8080:8080"
     networks:
+      # Conecta este serviço à rede customizada
       - delivery-network
     environment:
+      # Define variáveis de ambiente para a aplicação Spring Boot
+      # Permite que a API encontre o Redis pelo nome do serviço 'cache'
       - SPRING_REDIS_HOST=cache
       - SPRING_REDIS_PORT=6379
+      # Ativa o perfil 'docker' (ex: para application-docker.properties)
       - SPRING_PROFILES_ACTIVE=docker
     depends_on:
+      # Define a ordem de inicialização. 'app' só sobe DEPOIS
+      # que 'db' e 'cache' estiverem saudáveis (healthcheck OK).
       db:
         condition: service_healthy
       cache:
         condition: service_healthy
     
-    # --- HEATHCHECK COMENTADO (ESTA É A CORREÇÃO) ---
-    #healthcheck:
-    #  test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
-    #  interval: 30s
-    #  timeout: 10s
-    #  retries: 5
-    #  start_period: 120s # 2 minutos
+    # Healthcheck para a API 
+    # O Docker irá verificar este endpoint para saber se a API subiu.
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s    # Tenta a cada 30 segundos
+      timeout: 10s     # Espera no máximo 10 segundos pela resposta
+      retries: 5       # Tenta 5 vezes antes de marcar como 'unhealthy'
+      start_period: 120s # Dá 2 minutos (120s) para o Spring Boot subir antes de começar a testar
 
-  # --- 2. NOVO SERVIÇO DE FRONTEND (React + Nginx) ---
+  # 2. Serviço do Frontend (React/Nginx)
   frontend:
     build:
-      context: ../delivery-frontend 
+      # Constrói a imagem a partir do Dockerfile no diretório ../delivery-frontend
+      context: ../delivery-frontend
     container_name: delivery-frontend-app
     ports:
-      - "80:80" 
+      # Expõe a porta 80 do contêiner (Nginx) para a porta 80 da máquina host
+      - "80:80"
     networks:
       - delivery-network
     depends_on:
-      - app
+      # Espera a 'app' (API) iniciar antes de iniciar o frontend
+      # E agora, graças ao healthcheck, só sobe quando a API estiver 100% pronta.
+      app:
+        condition: service_healthy
 
-  # --- 3. Seus serviços de DB e Cache - Sem alterações ---
+  # 3. Serviço do Banco de Dados (MySQL)
   db:
     image: mysql:8.0
     container_name: delivery-db
@@ -50,34 +66,47 @@ services:
       MYSQL_PASSWORD: password
       MYSQL_ROOT_PASSWORD: root_password
     ports:
+      # Expõe a porta 3306 do MySQL (útil para debug local com DBeaver/etc)
       - "3306:3306"
     volumes:
+      # Persiste os dados do banco na máquina host (usando um volume nomeado)
       - db-data:/var/lib/mysql
     networks:
       - delivery-network
     healthcheck:
+      # Comando para verificar se o MySQL está pronto para aceitar conexões
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$${MYSQL_ROOT_PASSWORD}"]
       interval: 10s
       timeout: 5s
       retries: 10
       
+  # 4. Serviço de Cache (Redis)
   cache:
     image: redis:7-alpine
     container_name: delivery-cache
     volumes:
+      # Persiste os dados do cache na máquina host
       - cache-data:/data
     networks:
       - delivery-network
     healthcheck:
+      # Comando para verificar se o Redis está respondendo
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 2s
       retries: 10
 
-# --- Suas Redes e Volumes - Sem alterações ---
+# ======================================================
+# REDES (Permite a comunicação entre serviços por nome)
+# ======================================================
 networks:
   delivery-network:
-    driver: bridge 
+    driver: bridge # Rede padrão (privada) do Docker
+
+# ======================================================
+# VOLUMES (Garante a persistência dos dados)
+# ======================================================
+# Define os volumes nomeados que serão gerenciados pelo Docker
 volumes:
   db-data:
   cache-data:

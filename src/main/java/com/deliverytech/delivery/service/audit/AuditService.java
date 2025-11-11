@@ -1,4 +1,4 @@
-package com.deliverytech.delivery.service.audit; // Seu novo pacote
+package com.deliverytech.delivery.service.audit;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -11,20 +11,33 @@ import java.util.Map;
 
 /**
  * Serviço centralizado para registrar eventos de auditoria e segurança.
- * Escreve logs no logger "AUDIT", que o logback-spring.xml direciona
- * para o arquivo 'logs/delivery-api-audit.log'.
+ * Logs são enviados para o logger "AUDIT", configurado no logback-spring.xml
+ * para gravar em 'logs/delivery-api-audit.log'.
  */
 @Service
 public class AuditService {
 
-    // 1. Pega o Logger "AUDIT" (não o logger da classe)
+    // ==========================================================
+    // --- LOGGERS E UTILITÁRIOS ---
+    // ==========================================================
+    
+    // 1. Logger específico para auditoria
     private static final Logger auditLogger = LoggerFactory.getLogger("AUDIT");
     
-    // 2. Um ObjectMapper para converter nossos Mapas para JSON
+    // 2. ObjectMapper para converter mapas em JSON
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    // ==========================================================
+    // --- MÉTODOS PÚBLICOS: AÇÕES DE AUDITORIA ---
+    // ==========================================================
 
     /**
      * Loga uma ação genérica do usuário.
+     *
+     * @param userId   ID do usuário
+     * @param action   Ação executada
+     * @param resource Recurso afetado
+     * @param details  Detalhes adicionais (objeto)
      */
     public void logUserAction(String userId, String action, String resource, Object details) {
         try {
@@ -34,13 +47,11 @@ public class AuditService {
             auditEvent.put("action", action);
             auditEvent.put("resource", resource);
             auditEvent.put("details", details);
-            
-            // 3. Enriquecemos o log de auditoria com os dados do MDC (do Filtro)
             auditEvent.put("correlationId", MDC.get("correlationId"));
-            auditEvent.put("sessionId", MDC.get("sessionId")); // <-- Agora existe!
+            auditEvent.put("sessionId", MDC.get("sessionId"));
 
             String jsonLog = objectMapper.writeValueAsString(auditEvent);
-            auditLogger.info(jsonLog); // 4. Loga no nível INFO (para o logger AUDIT)
+            auditLogger.info(jsonLog);
 
         } catch (Exception e) {
             auditLogger.error("Erro ao registrar evento de auditoria", e);
@@ -48,9 +59,16 @@ public class AuditService {
     }
 
     /**
-     * Loga uma mudança de dados (ex: Status do Pedido).
+     * Loga uma mudança de dados (ex: atualização de status de pedido).
+     *
+     * @param userId    ID do usuário que realizou a mudança
+     * @param entity    Nome da entidade alterada
+     * @param entityId  ID da entidade
+     * @param oldValue  Valor antigo
+     * @param newValue  Valor novo
+     * @param operation Tipo de operação (UPDATE, DELETE, CREATE)
      */
-    public void logDataChange(String userId, String entity, String entityId, 
+    public void logDataChange(String userId, String entity, String entityId,
                               Object oldValue, Object newValue, String operation) {
         try {
             Map<String, Object> changeEvent = new HashMap<>();
@@ -72,7 +90,12 @@ public class AuditService {
     }
 
     /**
-     * Loga um evento de segurança (ex: Falha de Login).
+     * Loga eventos de segurança (ex: falha de login, tentativas suspeitas).
+     *
+     * @param userId  ID do usuário
+     * @param event   Nome do evento
+     * @param details Detalhes adicionais
+     * @param success Indica se o evento foi bem-sucedido
      */
     public void logSecurityEvent(String userId, String event, String details, boolean success) {
         try {
@@ -82,11 +105,9 @@ public class AuditService {
             securityEvent.put("event", event);
             securityEvent.put("details", details);
             securityEvent.put("success", success);
-            
-            // 3. Enriquecemos o log de segurança com os dados do MDC (do Filtro)
             securityEvent.put("correlationId", MDC.get("correlationId"));
             securityEvent.put("ipAddress", MDC.get("clientIp"));
-            securityEvent.put("userAgent", MDC.get("userAgent")); // <-- Agora existe!
+            securityEvent.put("userAgent", MDC.get("userAgent"));
 
             String jsonLog = objectMapper.writeValueAsString(securityEvent);
             auditLogger.info(jsonLog);

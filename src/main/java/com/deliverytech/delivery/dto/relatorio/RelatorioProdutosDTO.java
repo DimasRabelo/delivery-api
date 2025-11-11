@@ -3,6 +3,10 @@ package com.deliverytech.delivery.dto.relatorio;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 
+/**
+ * DTO (Data Transfer Object) para agrupar os dados do relatório
+ * de produtos mais vendidos.
+ */
 @Schema(description = "Relatório dos produtos mais vendidos")
 public class RelatorioProdutosDTO {
 
@@ -33,7 +37,7 @@ public class RelatorioProdutosDTO {
     public String getCategoria() { return categoria; }
     public void setCategoria(String categoria) { this.categoria = categoria; }
 
-    public Integer getTotalVendido() { return totalVendido; } // usado no Comparator
+    public Integer getTotalVendido() { return totalVendido; } 
     public void setTotalVendido(Integer totalVendido) { this.totalVendido = totalVendido; }
 
     public BigDecimal getReceitaTotal() { return receitaTotal; }

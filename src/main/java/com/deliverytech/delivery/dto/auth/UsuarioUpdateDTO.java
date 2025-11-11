@@ -21,12 +21,7 @@ import lombok.AllArgsConstructor;
 @Schema(description = "DTO para atualizar dados de autenticação (email) do Usuário")
 public class UsuarioUpdateDTO {
 
-    // --- CAMPO 'nome' REMOVIDO ---
-    // @NotBlank(message = "O nome é obrigatório")
-    // @Size(min = 3, max = 100, message = "O nome deve ter entre 3 e 100 caracteres")
-    // private String nome;
-
-    @Schema(description = "O novo email do usuário", required = true) // Schema adicionado
+      @Schema(description = "O novo email do usuário", required = true) // Schema adicionado
     @NotBlank(message = "O email é obrigatório")
     @Email(message = "O formato do email é inválido")
     private String email;

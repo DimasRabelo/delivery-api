@@ -10,7 +10,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public class EnderecoResponseDTO {
 
     @Schema(description = "ID único do endereço", example = "1")
-    private Long id; // <-- O CAMPO QUE FALTAVA!
+    private Long id; 
 
     @Schema(description = "Nome da rua/logradouro", example = "Rua das Flores")
     private String rua;

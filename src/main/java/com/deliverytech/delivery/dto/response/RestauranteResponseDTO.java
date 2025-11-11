@@ -5,6 +5,13 @@ import java.math.BigDecimal;
 
 import com.deliverytech.delivery.dto.request.EnderecoDTO;
 
+/**
+ * DTO (Data Transfer Object) de resposta que encapsula
+ * os dados públicos de um Restaurante.
+ *
+ * @implNote O campo 'endereco' é retornado como um
+ * objeto EnderecoDTO aninhado, e não mais como uma String.
+ */
 @Schema(description = "DTO de resposta com dados do restaurante")
 public class RestauranteResponseDTO {
 
@@ -17,11 +24,8 @@ public class RestauranteResponseDTO {
     @Schema(description = "Categoria do restaurante", example = "Italiana")
     private String categoria;
 
-    // ---------------------------------------------------
-    // CORREÇÃO DO BUG "toString()"
-    // ---------------------------------------------------
     @Schema(description = "Objeto JSON com o endereço do restaurante")
-    private EnderecoDTO endereco; // <-- 2. TIPO MUDADO DE String PARA EnderecoDTO
+    private EnderecoDTO endereco;
 
     @Schema(description = "Telefone do restaurante", example = "11999999999")
     private String telefone;
@@ -32,9 +36,6 @@ public class RestauranteResponseDTO {
     @Schema(description = "Indica se o restaurante está ativo", example = "true")
     private Boolean ativo;
 
-    // ===================================================
-    // GETTERS E SETTERS (CORRIGIDOS)
-    // ===================================================
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -44,7 +45,6 @@ public class RestauranteResponseDTO {
     public String getCategoria() { return categoria; }
     public void setCategoria(String categoria) { this.categoria = categoria; }
 
-    // 3. GETTER E SETTER ATUALIZADOS
     public EnderecoDTO getEndereco() { return endereco; }
     public void setEndereco(EnderecoDTO endereco) { this.endereco = endereco; }
 

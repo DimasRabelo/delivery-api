@@ -21,23 +21,23 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/relatorios")
-@Tag(name = "7. Relatórios (Admin)", description = "Endpoints para relatórios do sistema. Requer role ADMIN.") // <-- 1. Tag Corrigida
-@Validated // <-- 2. Adicionado para validar parâmetros
-@SecurityRequirement(name = "bearerAuth") // <-- 3. Adicionado cadeado do Swagger
+@Tag(name = "7. Relatórios (Admin)", description = "Endpoints para relatórios do sistema. Requer role ADMIN.")
+@Validated 
+@SecurityRequirement(name = "bearerAuth") 
 public class RelatorioController {
 
     private final RelatorioService relatorioService;
 
-    // Injeção via construtor (ótimo!)
+    /**
+     * Construtor para injeção de dependência do RelatorioService.
+     * @param relatorioService O serviço que gera os relatórios.
+     */
     public RelatorioController(RelatorioService relatorioService) {
         this.relatorioService = relatorioService;
     }
 
-    // ======================================================
-    // Vendas por Restaurante
-    // ======================================================
     @GetMapping("/vendas-por-restaurante")
-    @PreAuthorize("hasRole('ADMIN')") // <-- 4. SEGURANÇA ADICIONADA
+    @PreAuthorize("hasRole('ADMIN')") 
     @Operation(summary = "Relatório de vendas por restaurante (ADMIN)",
                description = "Retorna o total de vendas e pedidos por restaurante. Requer role ADMIN.")
     @ApiResponses({
@@ -54,16 +54,12 @@ public class RelatorioController {
             @RequestParam @NotNull @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim) {
 
         List<RelatorioVendasDTO> relatorio = relatorioService.gerarRelatorioVendas(dataInicio, dataFim);
-        // <-- 5. Mensagem de sucesso simplificada e unificada
         String mensagem = "Relatório de vendas por restaurante gerado com sucesso";
         return ResponseEntity.ok(new ApiResponseWrapper<>(true, relatorio, mensagem));
     }
 
-    // ======================================================
-    // Produtos mais vendidos
-    // ======================================================
     @GetMapping("/produtos-mais-vendidos")
-    @PreAuthorize("hasRole('ADMIN')") // <-- 4. SEGURANÇA ADICIONADA
+    @PreAuthorize("hasRole('ADMIN')") 
     @Operation(summary = "Produtos mais vendidos (ADMIN)",
                description = "Retorna os produtos com maior quantidade vendida. Requer role ADMIN.")
     @ApiResponses({
@@ -80,16 +76,12 @@ public class RelatorioController {
             @RequestParam @NotNull @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim) {
 
         List<RelatorioProdutosDTO> relatorio = relatorioService.gerarRelatorioProdutos(dataInicio, dataFim);
-        // <-- 5. Mensagem de sucesso simplificada e unificada
         String mensagem = "Relatório de produtos mais vendidos gerado com sucesso";
         return ResponseEntity.ok(new ApiResponseWrapper<>(true, relatorio, mensagem));
     }
 
-    // ======================================================
-    // Clientes mais ativos
-    // ======================================================
     @GetMapping("/clientes-ativos")
-    @PreAuthorize("hasRole('ADMIN')") // <-- 4. SEGURANÇA ADICIONADA
+    @PreAuthorize("hasRole('ADMIN')") 
     @Operation(summary = "Clientes mais ativos (ADMIN)",
                description = "Lista os clientes que mais fizeram pedidos. Requer role ADMIN.")
     @ApiResponses({
@@ -106,16 +98,12 @@ public class RelatorioController {
             @RequestParam @NotNull @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim) {
 
         List<RelatorioClientesDTO> relatorio = relatorioService.gerarRelatorioClientes(dataInicio, dataFim);
-        // <-- 5. Mensagem de sucesso simplificada e unificada
         String mensagem = "Relatório de clientes mais ativos gerado com sucesso";
         return ResponseEntity.ok(new ApiResponseWrapper<>(true, relatorio, mensagem));
     }
 
-    // ======================================================
-    // Pedidos por período
-    // ======================================================
     @GetMapping("/pedidos-por-periodo")
-    @PreAuthorize("hasRole('ADMIN')") // <-- 4. SEGURANÇA ADICIONADA
+    @PreAuthorize("hasRole('ADMIN')") 
     @Operation(summary = "Pedidos por período (ADMIN)",
                description = "Retorna todos os pedidos realizados no período. Requer role ADMIN.")
     @ApiResponses({
@@ -132,7 +120,6 @@ public class RelatorioController {
             @RequestParam @NotNull @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim) {
 
         List<RelatorioPedidosDTO> relatorio = relatorioService.gerarRelatorioPedidos(dataInicio, dataFim);
-        // <-- 5. Mensagem de sucesso simplificada e unificada
         String mensagem = "Relatório de pedidos por período gerado com sucesso";
         return ResponseEntity.ok(new ApiResponseWrapper<>(true, relatorio, mensagem));
     }

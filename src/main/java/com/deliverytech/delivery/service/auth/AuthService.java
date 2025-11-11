@@ -1,41 +1,47 @@
 package com.deliverytech.delivery.service.auth;
 
-// --- IMPORTS ADICIONADOS ---
 import com.deliverytech.delivery.dto.auth.RegisterRequest;
 import com.deliverytech.delivery.dto.request.EnderecoDTO;
 import com.deliverytech.delivery.entity.Cliente;
 import com.deliverytech.delivery.entity.Endereco;
-import com.deliverytech.delivery.enums.Role;
-import com.deliverytech.delivery.exception.ConflictException; 
-import org.modelmapper.ModelMapper; 
-import org.springframework.transaction.annotation.Transactional; 
-// --- FIM DOS IMPORTS ADICIONADOS ---
-
 import com.deliverytech.delivery.entity.Usuario;
+import com.deliverytech.delivery.enums.Role;
+import com.deliverytech.delivery.exception.ConflictException;
 import com.deliverytech.delivery.repository.auth.UsuarioRepository;
+
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Serviço de autenticação e registro de usuários.
+ * Implementa UserDetailsService para integração com Spring Security.
+ */
 @Service
-@RequiredArgsConstructor 
+@RequiredArgsConstructor
 public class AuthService implements UserDetailsService {
 
+    // ==========================================================
     // --- DEPENDÊNCIAS ---
+    // ==========================================================
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
     private final ModelMapper modelMapper;
+
+    // ==========================================================
+    // --- MÉTODOS DO SPRING SECURITY ---
+    // ==========================================================
     
-    // (Não precisamos mais dos repositórios Cliente/Endereco aqui)
-    // private final ClienteRepository clienteRepository; 
-    // private final EnderecoRepository enderecoRepository;
-
-
     /**
-     * Carrega o usuário pelo email para o Spring Security.
+     * Carrega o usuário pelo email para autenticação no Spring Security.
+     * @param email Email do usuário
+     * @return UserDetails do Spring Security
+     * @throws UsernameNotFoundException Se o usuário não existir ou estiver inativo
      */
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
@@ -43,71 +49,74 @@ public class AuthService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado: " + email));
     }
 
+    // ==========================================================
+    // --- MÉTODOS AUXILIARES ---
+    // ==========================================================
     
     /**
-     * Verifica se um e-mail já existe.
+     * Verifica se o email já está cadastrado no sistema.
      */
     public boolean existsByEmail(String email) {
         return usuarioRepository.existsByEmail(email);
     }
 
+    // ==========================================================
+    // --- MÉTODOS DE REGISTRO ---
+    // ==========================================================
+    
     /**
-     * Registra um novo CLIENTE no sistema (VERSÃO CORRIGIDA).
-     * Salva Usuário, Cliente e Endereço em uma única operação
-     * usando o cascade do JPA.
+     * Registra um novo cliente no sistema.
+     * Salva Usuário, Cliente e Endereço em uma única operação,
+     * usando CascadeType.ALL para persistência automática.
      *
-     * @param dto O DTO 'RegisterRequest' refatorado.
-     * @return A entidade 'Usuario' que foi salva.
+     * @param dto DTO com os dados de registro
+     * @return Usuário salvo
+     * @throws ConflictException Se o email já estiver em uso
      */
-    @Transactional // Garante que tudo (Usuário, Cliente, Endereço) seja salvo, ou nada.
+    @Transactional
     public Usuario registrarCliente(RegisterRequest dto) {
-        
-        // 1. Validação de E-mail
+
+        // 1. Validação de e-mail
         if (existsByEmail(dto.getEmail())) {
             throw new ConflictException("Email já está em uso", "email", dto.getEmail());
         }
 
-        // ==========================================================
-        // --- CORREÇÃO DO ERRO 500 (ObjectOptimisticLocking) ---
-        // ==========================================================
-
-        // 2. Criar a entidade de Autenticação (Usuario) - EM MEMÓRIA
+        // 2. Criar a entidade Usuario
         Usuario usuario = new Usuario();
         usuario.setEmail(dto.getEmail());
         usuario.setSenha(passwordEncoder.encode(dto.getSenha()));
         usuario.setRole(Role.CLIENTE);
         usuario.setAtivo(true);
-        
-        // 3. Criar a entidade de Perfil (Cliente) - EM MEMÓRIA
+
+        // 3. Criar a entidade Cliente
         Cliente cliente = new Cliente();
         cliente.setNome(dto.getNome());
         cliente.setCpf(dto.getCpf());
         cliente.setTelefone(dto.getTelefone());
-        
-        // 4. Criar a entidade de Endereço - EM MEMÓRIA
+
+        // 4. Criar a entidade Endereco
         EnderecoDTO enderecoDTO = dto.getEndereco();
         Endereco endereco = modelMapper.map(enderecoDTO, Endereco.class);
-        
-        // 5. CONECTAR TUDO (Bidirecional)
-        
-        // Conecta Cliente ao Usuário (e vice-versa)
+
+        // 5. Conectar tudo (bidirecional)
         cliente.setUsuario(usuario);
         usuario.setCliente(cliente);
-        
-        // Conecta Endereço ao Usuário (e vice-versa)
-        endereco.setUsuario(usuario);
-        usuario.getEnderecos().add(endereco); // Adiciona na lista
 
-        // 6. SALVAR (APENAS O PAI)
-        // O @Transactional e o CascadeType.ALL cuidarão de salvar 
-        // o 'cliente' e o 'endereco' automaticamente.
+        endereco.setUsuario(usuario);
+        usuario.getEnderecos().add(endereco);
+
+        // 6. Salvar apenas o "pai" (Usuario). Cascade salva Cliente e Endereco.
         return usuarioRepository.save(usuario);
     }
-    
+
+    // ==========================================================
+    // --- MÉTODOS DE BUSCA ---
+    // ==========================================================
     
     /**
-     * (Seu método original - Está OK)
-     * Busca um usuário pelo seu ID.
+     * Busca um usuário pelo ID.
+     * @param id ID do usuário
+     * @return Usuario encontrado
      */
     public Usuario buscarPorId(Long id) {
         return usuarioRepository.findById(id)
@@ -115,8 +124,9 @@ public class AuthService implements UserDetailsService {
     }
 
     /**
-     * (Seu método original - Está OK)
-     * Busca um usuário pelo seu email.
+     * Busca um usuário pelo email.
+     * @param email Email do usuário
+     * @return Usuario encontrado
      */
     public Usuario buscarPorEmail(String email) {
         return usuarioRepository.findByEmail(email)

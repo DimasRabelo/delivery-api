@@ -1,8 +1,7 @@
 package com.deliverytech.delivery.controller;
 
-
 import com.deliverytech.delivery.dto.request.PedidoDTO;
-import com.deliverytech.delivery.dto.request.StatusPedidoDTO; // Import já deve existir
+import com.deliverytech.delivery.dto.request.StatusPedidoDTO;
 import com.deliverytech.delivery.dto.response.*;
 import com.deliverytech.delivery.enums.StatusPedido;
 import com.deliverytech.delivery.service.PedidoService;
@@ -16,7 +15,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
-import org.springdoc.core.annotations.ParameterObject; 
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -41,7 +40,6 @@ public class PedidoController {
     @Autowired
     private PedidoService pedidoService;
 
-    // (Método criarPedido... OK, sem mudanças)
     @PostMapping
     @PreAuthorize("hasRole('CLIENTE')")
     @Operation(summary = "Criar pedido (CLIENTE)", description = "Cria um novo pedido no sistema. Requer role 'CLIENTE'.")
@@ -61,7 +59,6 @@ public class PedidoController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    // (Método buscarPorId... OK, sem mudanças)
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or @pedidoService.canAccess(#id)")
     @Operation(summary = "Buscar pedido por ID (ADMIN ou Dono/Restaurante)", description = "Recupera um pedido específico. Requer ADMIN ou ser o cliente/restaurante do pedido.")
@@ -79,7 +76,6 @@ public class PedidoController {
         return ResponseEntity.ok(response);
     }
 
-    // (Método listar... OK, sem mudanças)
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Listar todos os pedidos (ADMIN)", description = "Lista todos os pedidos com filtros e paginação. Requer role 'ADMIN'.")
@@ -95,14 +91,13 @@ public class PedidoController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicio,
             @Parameter(description = "Data final do filtro (YYYY-MM-DD)", example = "2025-10-23")
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim,
-            @ParameterObject Pageable pageable) { 
+            @ParameterObject Pageable pageable) {
 
         Page<PedidoResponseDTO> pedidos = pedidoService.listarPedidos(status, dataInicio, dataFim, pageable);
         PagedResponseWrapper<PedidoResponseDTO> response = new PagedResponseWrapper<>(pedidos);
         return ResponseEntity.ok(response);
     }
 
-    // (Método listarMeusPedidos... OK, sem mudanças)
     @GetMapping("/meus")
     @PreAuthorize("hasRole('CLIENTE')")
     @Operation(summary = "Listar meus pedidos (CLIENTE)", description = "Lista os pedidos do cliente autenticado com paginação. Requer role 'CLIENTE'.")
@@ -112,16 +107,13 @@ public class PedidoController {
             @ApiResponse(responseCode = "403", description = "Acesso negado (não é CLIENTE)")
     })
     public ResponseEntity<PagedResponseWrapper<PedidoResponseDTO>> listarMeusPedidos(
-            @ParameterObject Pageable pageable) { 
+            @ParameterObject Pageable pageable) {
 
         Page<PedidoResponseDTO> pedidos = pedidoService.listarMeusPedidos(pageable);
         PagedResponseWrapper<PedidoResponseDTO> response = new PagedResponseWrapper<>(pedidos);
         return ResponseEntity.ok(response);
     }
 
-    // ==========================================================
-    // --- 1. MÉTODO ATUALIZAR STATUS (CORRIGIDO) ---
-    // ==========================================================
     @PatchMapping("/{id}/status")
     @PreAuthorize("hasRole('ADMIN') or @pedidoService.canAccess(#id)")
     @Operation(summary = "Atualizar status do pedido (ADMIN ou Dono/Restaurante)", description = "Atualiza o status de um pedido (ex: EM_PREPARO, ENTREGUE, CANCELADO).")
@@ -135,30 +127,17 @@ public class PedidoController {
     public ResponseEntity<ApiResponseWrapper<PedidoResponseDTO>> atualizarStatus(
             @Parameter(description = "ID do pedido que será atualizado", required = true, example = "1")
             @PathVariable @Min(value = 1, message = "O ID do pedido deve ser maior que zero") Long id,
-            
+
             @Parameter(description = "Novo status e (opcionalmente) ID do entregador", required = true, content = @Content(schema = @Schema(implementation = StatusPedidoDTO.class)))
-            @Valid @RequestBody StatusPedidoDTO statusDTO) { // <-- Recebe o DTO
-        
-        // --- CÓDIGO ANTIGO (REMOVIDO) ---
-        // StatusPedido novoStatus;
-        // try {
-        //     novoStatus = StatusPedido.valueOf(statusDTO.getStatus().toUpperCase());
-        // } catch (IllegalArgumentException e) { ... }
-        
-        // --- NOVA CHAMADA (CORRETA) ---
-        // Passa o DTO *inteiro* para o Service, que agora aceita
-        // (graças ao Passo 2, que fizemos na interface)
+            @Valid @RequestBody StatusPedidoDTO statusDTO) {
+
+        // Passa o DTO inteiro para o Service, que contém a lógica de transição e atribuição
         PedidoResponseDTO pedido = pedidoService.atualizarStatusPedido(id, statusDTO);
-        
+
         ApiResponseWrapper<PedidoResponseDTO> response = new ApiResponseWrapper<>(true, pedido, "Status atualizado com sucesso");
         return ResponseEntity.ok(response);
     }
-    // ==========================================================
-    // FIM DA CORREÇÃO
-    // ==========================================================
 
-
-    // (Método cancelarPedido... OK, sem mudanças)
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or @pedidoService.canAccess(#id)")
     @Operation(summary = "Cancelar pedido (ADMIN ou Dono/Restaurante)", description = "Cancela um pedido. Requer ADMIN ou ser o cliente/restaurante do pedido.")
@@ -176,7 +155,6 @@ public class PedidoController {
         return ResponseEntity.noContent().build();
     }
 
-    // (Método buscarPorCliente... OK, sem mudanças)
     @GetMapping("/cliente/{clienteId}")
     @PreAuthorize("hasRole('ADMIN') or (hasRole('CLIENTE') and #clienteId == principal.id)")
     @Operation(summary = "Histórico de pedidos do cliente (ADMIN ou Dono)", description = "Retorna todos os pedidos de um cliente. Requer ADMIN ou ser o próprio cliente.")
@@ -194,7 +172,6 @@ public class PedidoController {
         return ResponseEntity.ok(response);
     }
 
-    // (Método buscarPorRestaurante... OK, sem mudanças)
     @GetMapping("/restaurante/{restauranteId}")
     @PreAuthorize("hasRole('ADMIN') or (hasRole('RESTAURANTE') and #restauranteId == principal.restauranteId)")
     @Operation(summary = "Pedidos por restaurante (ADMIN ou Dono)", description = "Lista todos os pedidos de um restaurante. Requer ADMIN ou ser o dono do restaurante.")
@@ -214,7 +191,6 @@ public class PedidoController {
         return ResponseEntity.ok(response);
     }
 
-    // (Método calcularTotal... OK, sem mudanças)
     @PostMapping("/calcular")
     @Operation(summary = "Calcular total do pedido (Público)", description = "Calcula o total de um pedido (itens + taxa) sem salvar no banco.")
     @ApiResponses({
@@ -226,8 +202,12 @@ public class PedidoController {
     public ResponseEntity<ApiResponseWrapper<CalculoPedidoResponseDTO>> calcularTotal(
             @Parameter(description = "Itens do pedido para cálculo", required = true)
             @Valid @RequestBody CalculoPedidoDTO dto) {
+        
         CalculoPedidoResponseDTO calculo = pedidoService.calcularTotalPedido(dto);
+        
+        // Agora sim, com o nome correto: CalculoPedidoResponseDTO
         ApiResponseWrapper<CalculoPedidoResponseDTO> response = new ApiResponseWrapper<>(true, calculo, "Total calculado com sucesso");
+        
         return ResponseEntity.ok(response);
     }
 }

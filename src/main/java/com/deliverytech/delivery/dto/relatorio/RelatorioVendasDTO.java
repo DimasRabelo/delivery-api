@@ -3,6 +3,10 @@ package com.deliverytech.delivery.dto.relatorio;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 
+/**
+ * DTO (Data Transfer Object) para agrupar os dados do relatório
+ * de vendas por restaurante.
+ */
 @Schema(description = "Relatório de vendas por restaurante")
 public class RelatorioVendasDTO {
 
@@ -10,7 +14,7 @@ public class RelatorioVendasDTO {
     private String restauranteNome;
 
     @Schema(description = "Quantidade total de pedidos realizados")
-    private int totalPedidos; // int porque service usa size()
+    private int totalPedidos; 
 
     @Schema(description = "Valor total das vendas")
     private BigDecimal totalVendas;

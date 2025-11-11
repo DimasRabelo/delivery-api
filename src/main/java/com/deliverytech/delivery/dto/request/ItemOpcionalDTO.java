@@ -6,6 +6,10 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import java.math.BigDecimal;
 
+/**
+ * DTO (Data Transfer Object) que representa um item individual
+ * dentro de um GrupoOpcional (ex: "Média", "Grande", "+Bacon").
+ */
 @Schema(description = "DTO para um item opcional (ex: 'Média' ou '+Bacon')")
 public class ItemOpcionalDTO {
 
@@ -21,7 +25,6 @@ public class ItemOpcionalDTO {
     @Schema(description = "Preço adicional deste item", example = "5.00", required = true)
     private BigDecimal precoAdicional;
 
-    // Getters e Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getNome() { return nome; }

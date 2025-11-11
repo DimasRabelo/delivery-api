@@ -5,13 +5,20 @@ import jakarta.validation.constraints.*;
 import com.deliverytech.delivery.validation.ValidTelefone;
 import com.deliverytech.delivery.validation.ValidCategoria;
 import com.deliverytech.delivery.validation.ValidHorarioFuncionamento;
-import jakarta.validation.Valid; // IMPORT ADICIONADO
+import jakarta.validation.Valid;
 import java.math.BigDecimal;
 
-@Schema(description = "Dados para cadastro ou atualização de um Restaurante (Refatorado)")
+/**
+ * DTO (Data Transfer Object) para o cadastro ou atualização
+ * de um Restaurante.
+ *
+ * @implNote O campo 'endereco' é um DTO aninhado (EnderecoDTO) e não
+ * mais uma String simples. O campo 'email' foi omitido deste DTO
+ * por simplicidade.
+ */
+@Schema(description = "Dados para cadastro ou atualização de um Restaurante")
 public class RestauranteDTO {
 
-    // --- Informações Básicas ---
     @Schema(description = "Nome do restaurante", example = "Pizza Frango", required = true)
     @NotBlank(message = "Nome é obrigatório")
     @Size(min = 2, max = 100)
@@ -22,21 +29,16 @@ public class RestauranteDTO {
     @ValidCategoria
     private String categoria;
 
-    // --- MUDANÇA (GARGALO 1) ---
-    // O 'String endereco' foi removido e substituído pelo DTO aninhado
     @Schema(description = "Endereço estruturado do restaurante", required = true)
     @NotNull(message = "Endereço é obrigatório")
     @Valid // <-- Adicionado: Valida o EnderecoDTO aninhado
-    private EnderecoDTO endereco; // <-- MUDANÇA
+    private EnderecoDTO endereco;
 
-
-    // --- Informações de Contato ---
     @Schema(description = "Telefone para contato", example = "11999999999")
     @NotBlank(message = "Telefone é obrigatório")
     @ValidTelefone
     private String telefone;
 
-    // --- Informações Operacionais ---
     @Schema(description = "Taxa de entrega em reais", example = "5.50")
     @NotNull(message = "Taxa de entrega é obrigatória")
     @DecimalMin(value = "0.00", inclusive = true) // Permite taxa zero (frete grátis)
@@ -62,17 +64,11 @@ public class RestauranteDTO {
     @DecimalMin(value = "0.0", inclusive = true)
     private BigDecimal avaliacao;
     
-    // (O campo 'email' foi removido por simplicidade, pode manter se quiser)
-
-    // ===================================================
-    // GETTERS E SETTERS
-    // ===================================================
     public String getNome() { return nome; }
     public void setNome(String nome) { this.nome = nome; }
     public String getCategoria() { return categoria; }
     public void setCategoria(String categoria) { this.categoria = categoria; }
     
-    // Getter/Setter para EnderecoDTO
     public EnderecoDTO getEndereco() { return endereco; }
     public void setEndereco(EnderecoDTO endereco) { this.endereco = endereco; }
 

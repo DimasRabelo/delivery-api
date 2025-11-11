@@ -12,7 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-// --- 1. ADICIONAR IMPORTS NECESSÁRIOS ---
+// Imports necessários
 import com.deliverytech.delivery.enums.Role;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,7 +29,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     /**
-     * (Seu método original - Está OK)
+     * Busca uma lista paginada de todos os usuários.
      */
     @Override
     @Transactional(readOnly = true)
@@ -39,7 +39,8 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     /**
-     * (Seu método original - Está OK)
+     * Busca a entidade Usuario completa pelo ID.
+     * Lança EntityNotFoundException se não encontrado.
      */
     @Override
     @Transactional(readOnly = true)
@@ -49,7 +50,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     /**
-     * (Seu método original - Está OK)
+     * Busca um usuário pelo ID e o retorna como um DTO (UserResponse).
      */
     @Override
     @Transactional(readOnly = true)
@@ -59,13 +60,14 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     /**
-     * (Seu método original - Está OK)
+     * Atualiza os dados de um usuário (atualmente, apenas o e-mail).
      */
     @Override
     public UserResponse atualizar(Long id, UsuarioUpdateDTO dto) {
         Usuario usuario = this.buscarPorId(id);
 
-        if (!dto.getEmail().equalsIgnoreCase(usuario.getEmail()) && 
+        // Valida se o novo e-mail já está em uso por outro usuário
+        if (!dto.getEmail().equalsIgnoreCase(usuario.getEmail()) &&
              usuarioRepository.existsByEmail(dto.getEmail())) {
             
             throw new ConflictException("Email já está em uso por outro usuário");
@@ -78,27 +80,22 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     /**
-     * (Seu método original - Está OK)
+     * Realiza uma "deleção lógica" de um usuário, marcando-o como inativo.
      */
     @Override
     public void deletar(Long id) {
         Usuario usuario = this.buscarPorId(id);
-        usuario.setAtivo(false); 
+        usuario.setAtivo(false); // Deleção lógica
         usuarioRepository.save(usuario);
     }
 
-    // ==========================================================
-    // --- 2. IMPLEMENTAÇÃO DO NOVO MÉTODO ---
-    // ==========================================================
     /**
      * Busca todos os usuários que são ENTREGADORES e estão ATIVOS.
-     * Chama o novo método do repositório e mapeia para DTOs.
      */
     @Override
     @Transactional(readOnly = true)
     public List<UserResponse> buscarEntregadoresAtivos() {
-        // 1. Busca as entidades do banco usando o novo método do repo
-        // (Ele busca por Role.ENTREGADOR e Ativo = true)
+        // 1. Busca as entidades do banco (Role.ENTREGADOR e Ativo = true)
         List<Usuario> entregadores = usuarioRepository.findByRoleAndAtivo(Role.ENTREGADOR, true);
         
         // 2. Converte a lista de Entidade (Usuario) para DTO (UserResponse)

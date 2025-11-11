@@ -7,18 +7,13 @@ import org.hibernate.validator.constraints.br.CPF;
 import com.deliverytech.delivery.dto.request.EnderecoDTO;
 
 import jakarta.validation.constraints.Pattern;
-// --- FIM DOS IMPORTS ---
-
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-// import jakarta.validation.constraints.NotNull; // (Não precisamos mais de NotNull para 'role')
 import jakarta.validation.constraints.Size;
-// import com.deliverytech.delivery.enums.Role; // (Não precisamos mais de 'Role' no DTO)
 
 /**
  * DTO (Data Transfer Object) para o registro de um novo CLIENTE.
- * (Refatorado para incluir dados de Perfil e Endereço)
  */
 @Schema(description = "DTO completo para registro de um novo Cliente")
 public class RegisterRequest {
@@ -50,15 +45,11 @@ public class RegisterRequest {
     @Size(min = 6, message = "Senha deve ter pelo menos 6 caracteres")
     private String senha;
 
-    // --- Dados de Endereço (vão para a entidade Endereco - Gargalo 1) ---
+    // --- Dados de Endereço (vão para a entidade Endereco) ---
     @Schema(description = "Endereço principal (obrigatório no cadastro)", required = true)
     @NotNull(message = "Endereço principal é obrigatório")
     @Valid // Instrui o Spring a validar os campos dentro do EnderecoDTO
     private EnderecoDTO endereco;
-
-    // --- CAMPOS ANTIGOS REMOVIDOS ---
-    // private Role role; (Será 'CLIENTE' por padrão no serviço)
-    // private Long restauranteId; (Não se aplica ao cadastro de cliente)
 
     // -------------------------------------------------------------------------
     // Construtores

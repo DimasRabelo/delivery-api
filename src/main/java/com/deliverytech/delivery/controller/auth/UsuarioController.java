@@ -6,7 +6,6 @@ import com.deliverytech.delivery.dto.response.ApiResponseWrapper;
 import com.deliverytech.delivery.dto.response.PagedResponseWrapper;
 import com.deliverytech.delivery.service.auth.UsuarioService;
 import io.swagger.v3.oas.annotations.Operation;
-//import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -21,11 +20,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List; // <-- 1. ADICIONAR IMPORT 'List'
+import java.util.List; 
 
 /**
  * Controller para operações de Gerenciamento (CRUD) de Usuários.
- * (Seu código original)
+ * O acesso a estes endpoints é geralmente restrito a ADMINS.
  */
 @Tag(name = "6. Usuários (Admin)", description = "Gerenciamento de usuários. Requer role ADMIN.")
 @RestController
@@ -40,7 +39,7 @@ public class UsuarioController {
 
     /**
      * Lista todos os usuários cadastrados no sistema (paginado).
-     * (Seu método original - Acesso ADMIN)
+     * Requer role ADMIN.
      */
     @Operation(summary = "Lista todos os usuários (ADMIN, Paginado)")
     @GetMapping
@@ -50,9 +49,6 @@ public class UsuarioController {
         return ResponseEntity.ok(new PagedResponseWrapper<>(usuariosPage));
     }
 
-    // ==========================================================
-    // --- 2. ADICIONAR NOVO ENDPOINT PARA O PAINEL DO RESTAURANTE ---
-    // ==========================================================
     /**
      * Lista todos os usuários ENTREGADORES que estão ATIVOS.
      * Acesso restrito a usuários com role 'ADMIN' ou 'RESTAURANTE'.
@@ -65,13 +61,12 @@ public class UsuarioController {
             @ApiResponse(responseCode = "403", description = "Acesso negado (não é ADMIN ou RESTAURANTE)")
     })
     @GetMapping("/entregadores")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('RESTAURANTE')") // <-- A segurança-chave!
+    @PreAuthorize("hasRole('ADMIN') or hasRole('RESTAURANTE')") // Define a permissão de acesso
     public ResponseEntity<ApiResponseWrapper<List<UserResponse>>> listarEntregadoresAtivos() {
         
-        // 1. Chama o novo método do service
         List<UserResponse> entregadores = usuarioService.buscarEntregadoresAtivos(); 
         
-        // 2. Envelopa a resposta (padrão do seu app)
+        // Envelopa a resposta no formato padrão da API
         ApiResponseWrapper<List<UserResponse>> response = new ApiResponseWrapper<>(true, entregadores, "Entregadores ativos listados com sucesso");
         
         return ResponseEntity.ok(response);
@@ -80,7 +75,7 @@ public class UsuarioController {
 
     /**
      * Busca um usuário específico pelo seu ID.
-     * (Seu método original - OK)
+     * Requer role ADMIN ou que o usuário seja o dono da conta.
      */
     @Operation(summary = "Busca um usuário por ID (Admin ou Próprio)")
     @GetMapping("/{id}")
@@ -92,8 +87,8 @@ public class UsuarioController {
     }
 
     /**
-     * Atualiza os dados de um usuário existente (ex: nome, email).
-     * (Seu método original - OK)
+     * Atualiza os dados de um usuário existente (ex: email).
+     * Requer role ADMIN ou que o usuário seja o dono da conta.
      */
     @Operation(summary = "Atualiza um usuário por ID (Admin ou Próprio)")
     @PutMapping("/{id}")
@@ -106,8 +101,8 @@ public class UsuarioController {
     }
 
     /**
-     * Deleta um usuário do sistema (soft ou hard delete).
-     * (Seu método original - OK)
+     * Deleta (logicamente) um usuário do sistema.
+     * Requer role ADMIN.
      */
     @Operation(summary = "Deleta um usuário por ID (ADMIN)")
     @DeleteMapping("/{id}")

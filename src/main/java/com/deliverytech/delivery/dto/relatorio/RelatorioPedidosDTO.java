@@ -5,6 +5,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+/**
+ * DTO (Data Transfer Object) que representa uma linha individual
+ * no relatório de pedidos por período.
+ */
 @Schema(description = "Relatório de pedidos por período")
 public class RelatorioPedidosDTO {
 
@@ -38,7 +42,7 @@ public class RelatorioPedidosDTO {
         this.restauranteNome = restauranteNome;
         this.clienteNome = clienteNome;
         this.valorTotal = valorTotal;
-        // status pode ser enum; guardamos como string aqui
+        // Converte o status (provavelmente um Enum) para String
         this.status = status != null ? status.toString() : null;
         this.dataPedido = dataPedido;
     }

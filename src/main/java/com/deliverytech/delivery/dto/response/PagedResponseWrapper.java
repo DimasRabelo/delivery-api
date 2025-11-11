@@ -4,35 +4,40 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.data.domain.Page;
 import java.util.List;
 
-// ==================================================
-// Wrapper genérico para respostas paginadas da API
-// Permite padronizar a resposta de listas paginadas
-// ==================================================
+/**
+ * DTO (Data Transfer Object) genérico para padronizar
+ * respostas paginadas da API, em conformidade com o
+ * objeto Page do Spring Data.
+ *
+ * @param <T> O tipo de dado (DTO) do conteúdo da página.
+ */
 @Schema(description = "Wrapper para respostas paginadas")
 public class PagedResponseWrapper<T> {
 
-    // --------------------------------------------------
-    // Conteúdo da página atual
-    // Lista de elementos genéricos (T)
-    // --------------------------------------------------
+    /**
+     * O conteúdo da página atual (a lista de itens).
+     */
     @Schema(description = "Lista de itens da página atual")
     private List<T> content;
 
-    // --------------------------------------------------
-    // Informações sobre paginação (número, tamanho, total, etc.)
-    // --------------------------------------------------
+    /**
+     * Informações detalhadas sobre a paginação (número, tamanho, total, etc.).
+     */
     @Schema(description = "Informações de paginação")
     private PageInfo page;
 
-    // --------------------------------------------------
-    // Links de navegação para facilitar a iteração entre páginas
-    // --------------------------------------------------
+    /**
+     * Links de navegação para facilitar a iteração entre páginas (primeira, última, próxima, anterior).
+     */
     @Schema(description = "Links de navegação")
     private PageLinks links;
 
-    // ==================================================
-    // Construtor que recebe Page<T> do Spring Data
-    // ==================================================
+    /**
+     * Construtor que transforma um objeto Page (do Spring Data)
+     * nesta resposta padronizada.
+     *
+     * @param page O objeto Page retornado pelo repositório.
+     */
     public PagedResponseWrapper(Page<T> page) {
         this.content = page.getContent();
         this.page = new PageInfo(
@@ -46,10 +51,9 @@ public class PagedResponseWrapper<T> {
         this.links = new PageLinks(page);
     }
 
-    // =======================
-    // CLASSE INTERNA: PageInfo
-    // Contém detalhes da página atual
-    // =======================
+    /**
+     * Classe interna que contém os metadados da página.
+     */
     @Schema(description = "Informações de paginação")
     public static class PageInfo {
         @Schema(description = "Número da página atual (base 0)", example = "0")
@@ -88,10 +92,9 @@ public class PagedResponseWrapper<T> {
         public boolean isLast() { return last; }
     }
 
-    // =======================
-    // CLASSE INTERNA: PageLinks
-    // Contém links para navegar entre páginas (first, last, next, prev)
-    // =======================
+    /**
+     * Classe interna que contém os links de navegação (simulando HATEOAS).
+     */
     @Schema(description = "Links de navegação")
     public static class PageLinks {
         @Schema(description = "Link para primeira página")
@@ -127,9 +130,7 @@ public class PagedResponseWrapper<T> {
         public String getPrev() { return prev; }
     }
 
-    // =======================
-    // GETTERS DA CLASSE PRINCIPAL
-    // =======================
+    // Getters
     public List<T> getContent() { return content; }
     public PageInfo getPage() { return page; }
     public PageLinks getLinks() { return links; }

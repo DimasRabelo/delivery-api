@@ -9,21 +9,31 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Anotação para validar o formato do horário de funcionamento.
- * Espera uma string no formato "HH:mm-HH:mm".
+ * Anotação de validação customizada {@code @ValidHorarioFuncionamento}.
+ * <p>
+ * Usada para marcar campos (geralmente {@code String}) que devem ser
+ * validados no formato "HH:mm-HH:mm".
+ * <p>
+ * A lógica de validação é implementada pela classe {@link HorarioFuncionamentoValidator}.
  */
-@Documented // Para incluir na documentação JavaDoc
-@Constraint(validatedBy = HorarioFuncionamentoValidator.class) // Liga a anotação à classe de lógica
+@Documented // Indica que esta anotação deve ser incluída no Javadoc
+@Constraint(validatedBy = HorarioFuncionamentoValidator.class) // Liga esta anotação à sua classe de lógica
 @Target({ ElementType.METHOD, ElementType.FIELD, ElementType.ANNOTATION_TYPE, ElementType.PARAMETER, ElementType.TYPE_USE }) // Onde a anotação pode ser usada
-@Retention(RetentionPolicy.RUNTIME) // A anotação precisa estar disponível em tempo de execução
+@Retention(RetentionPolicy.RUNTIME) // A anotação estará disponível em tempo de execução
 public @interface ValidHorarioFuncionamento {
 
-    // Mensagem de erro padrão que será usada se a validação falhar
+    /**
+     * @return A mensagem de erro padrão que será usada se a validação falhar.
+     */
     String message() default "Formato inválido para horário de funcionamento. Use HH:mm-HH:mm.";
 
-    // Permite agrupar validações (padrão vazio)
+    /**
+     * @return Os grupos de validação aos quais esta restrição pertence (padrão de Bean Validation).
+     */
     Class<?>[] groups() default {};
 
-    // Permite carregar informações extras na validação (padrão vazio)
+    /**
+     * @return A carga útil (payload) associada à restrição (padrão de Bean Validation).
+     */
     Class<? extends Payload>[] payload() default {};
 }

@@ -2,6 +2,10 @@ package com.deliverytech.delivery.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
+/**
+ * DTO (Data Transfer Object) genérico usado para
+ * retornar um valor de contagem (long).
+ */
 public class ContagemDTO {
 
     @Schema(description = "A contagem total de itens", example = "5")
@@ -11,7 +15,6 @@ public class ContagemDTO {
         this.contagem = contagem;
     }
 
-    // Getter e Setter
     public long getContagem() {
         return contagem;
     }

@@ -9,12 +9,12 @@ import java.math.BigDecimal;
 import java.io.Serializable;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.ArrayList; // Adicionado para inicializar a lista
-// --- FIM DOS IMPORTS ---
+import java.util.ArrayList;
 
 /**
- * DTO (Data Transfer Object) usado para enviar informações de produtos para o cliente.
- * (Refatorado para suportar precoBase e gruposOpcionais)
+ * DTO (Data Transfer Object) de resposta que encapsula
+ * todos os dados de um Produto, incluindo seu preço base
+ * e a lista de grupos de opcionais.
  */
 @Schema(description = "DTO de resposta com dados do produto (incluindo opcionais)")
 public class ProdutoResponseDTO implements Serializable {
@@ -30,9 +30,8 @@ public class ProdutoResponseDTO implements Serializable {
     @Schema(description = "Descrição do produto", example = "Pizza de massa fina...")
     private String descricao;
 
-    // --- MUDANÇA (GARGALO 2) ---
     @Schema(description = "Preço BASE do produto (sem opcionais)", example = "35.50")
-    private BigDecimal precoBase; // <-- RENOMEADO (era 'preco')
+    private BigDecimal precoBase;
 
     @Schema(description = "Indica se o produto está disponível", example = "true")
     private Boolean disponivel;
@@ -46,15 +45,14 @@ public class ProdutoResponseDTO implements Serializable {
     @Schema(description = "Quantidade em estoque", example = "50")
     private int estoque;
     
-    // --- MUDANÇA 2 (GARGALO 2) ---
     @Schema(description = "Lista de grupos de opcionais para este produto (Tamanho, Adicionais, etc.)")
-    private List<GrupoOpcionalDTO> gruposOpcionais = new ArrayList<>(); // <-- CAMPO NOVO
+    private List<GrupoOpcionalDTO> gruposOpcionais = new ArrayList<>();
 
 
     public ProdutoResponseDTO() {}
 
     /**
-     * Construtor de Mapeamento (VERSÃO REFATORADA)
+     * Construtor de Mapeamento.
      * Converte a Entidade 'Produto' (com 'precoBase' e 'gruposOpcionais') 
      * para este DTO de resposta.
      */
@@ -67,10 +65,8 @@ public class ProdutoResponseDTO implements Serializable {
         this.categoria = produto.getCategoria();
         this.estoque = produto.getEstoque();
 
-        // --- CORREÇÃO (GARGALO 2) ---
-        this.precoBase = produto.getPrecoBase(); // <-- CORRIGIDO (era 'getPreco()')
+        this.precoBase = produto.getPrecoBase();
 
-        // --- CORREÇÃO 2 (GARGALO 2) ---
         // Mapeia as entidades de opcionais para DTOs de opcionais
         if (produto.getGruposOpcionais() != null) {
             this.gruposOpcionais = produto.getGruposOpcionais().stream()
@@ -97,10 +93,6 @@ public class ProdutoResponseDTO implements Serializable {
         }
     }
 
-    // ===================================================
-    // GETTERS E SETTERS
-    // ===================================================
-    
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getNome() { return nome; }
@@ -108,7 +100,6 @@ public class ProdutoResponseDTO implements Serializable {
     public String getDescricao() { return descricao; }
     public void setDescricao(String descricao) { this.descricao = descricao; }
 
-    // --- Getters/Setters Atualizados ---
     public BigDecimal getPrecoBase() { return precoBase; }
     public void setPrecoBase(BigDecimal precoBase) { this.precoBase = precoBase; }
 
@@ -121,7 +112,6 @@ public class ProdutoResponseDTO implements Serializable {
     public int getEstoque() { return estoque; }
     public void setEstoque(int estoque) { this.estoque = estoque; }
 
-    // --- Novo Getter/Setter ---
     public List<GrupoOpcionalDTO> getGruposOpcionais() { return gruposOpcionais; }
     public void setGruposOpcionais(List<GrupoOpcionalDTO> gruposOpcionais) { this.gruposOpcionais = gruposOpcionais; }
 }

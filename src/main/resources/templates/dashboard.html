@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="pt-br" data-bs-theme="dark"> <head>
+<html lang="pt-br" data-bs-theme="dark">
+<head>
 <title>Dashboard - Sistema de Delivery</title>
 
 <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/darkly/bootstrap.min.css" rel="stylesheet">
@@ -7,7 +8,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-  /* Apenas um pequeno ajuste para o gráfico não estourar */
+  /* Ajuste para o gráfico não estourar o contêiner em telas menores */
   .chart-container {
     position: relative;
     height: 300px;
@@ -108,8 +109,14 @@
     </div>
   </div>
 
-</div> <script>
-  // Função para buscar métricas (Correta)
+</div> 
+
+<script>
+  
+  /**
+   * Busca os dados mais recentes do endpoint de métricas da API.
+   * Em caso de sucesso, chama 'updateDashboard'.
+   */
   async function fetchMetrics() {
     try {
       const response = await fetch('/dashboard/api/metrics');
@@ -120,7 +127,10 @@
     }
   }
 
-  // Função para atualizar os cards (Correta)
+  /**
+   * Atualiza os valores dos cards de KPI (Pedidos, Receita, Usuários, Tempo).
+   * @param {object} data O JSON de métricas retornado pela API.
+   */
   function updateDashboard(data) {
     document.getElementById('pedidos-total').textContent = Math.round(data.pedidos_total || 0);
     document.getElementById('receita-total').textContent = 'R$ ' + (data.receita_total || 0).toFixed(2);
@@ -137,7 +147,7 @@
       labels: ['Sucesso', 'Erro'],
       datasets: [{
         data: [0, 0],
-        backgroundColor: ['#4CAF50', '#F44336'] // Cores do gabarito
+        backgroundColor: ['#4CAF50', '#F44336'] // Cores
       }]
     },
     options: {
@@ -157,18 +167,18 @@
   const performanceChart = new Chart(document.getElementById('performance-chart'), {
       type: 'line', 
       data: {
-          labels: [], 
+          labels: [], // O eixo X (tempo)
           datasets: [
           {
               label: 'Tempo Médio Pedido (ms)',
-              data: [], 
+              data: [], // Os dados de tempo de pedido
               borderColor: '#2196F3',
               fill: false,
               tension: 0.1
           },
           {
               label: 'Tempo Médio Banco (ms)',
-              data: [], 
+              data: [], // Os dados de tempo de banco
               borderColor: '#FFC107',
               fill: false,
               tension: 0.1
@@ -199,13 +209,17 @@
       }
   });
 
-  // Limite de pontos no gráfico
+  // Define o limite de pontos de dados a serem exibidos no gráfico de linha
   const MAX_DATA_POINTS = 20;
 
-  // --- FUNÇÃO DE ATUALIZAÇÃO (MODIFICADA) ---
+  /**
+   * Atualiza os dados de ambos os gráficos (Pizza e Linha)
+   * com os novos dados recebidos da API.
+   * @param {object} data O JSON de métricas retornado pela API.
+   */
   function updateCharts(data) {
       
-      // 1. Atualiza o Gráfico de Pizza (como antes)
+      // 1. Atualiza o Gráfico de Pizza (Pedidos)
       pedidosChart.data.datasets[0].data = [
           data.pedidos_sucesso || 0,
           data.pedidos_erro || 0
@@ -215,10 +229,12 @@
       // 2. Atualiza o Gráfico de Linha (Performance)
       const now = new Date().toLocaleTimeString(); 
 
+      // Adiciona o novo ponto de dado
       performanceChart.data.labels.push(now);
       performanceChart.data.datasets[0].data.push(data.tempo_medio_pedido || 0);
       performanceChart.data.datasets[1].data.push(data.tempo_medio_banco || 0);
 
+      // Remove o ponto de dado mais antigo se o limite for atingido
       if (performanceChart.data.labels.length > MAX_DATA_POINTS) {
           performanceChart.data.labels.shift(); 
           performanceChart.data.datasets[0].data.shift(); 
@@ -228,8 +244,10 @@
       performanceChart.update();
   }
 
-  // Inicia os timers (Correto)
+  // --- Inicialização ---
+  // Define um timer (polling) para buscar as métricas a cada 5 segundos
   setInterval(fetchMetrics, 5000);
+  // Busca as métricas imediatamente ao carregar a página
   fetchMetrics();
 </script>
 

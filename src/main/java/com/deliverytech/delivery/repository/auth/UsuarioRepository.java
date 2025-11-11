@@ -1,50 +1,27 @@
 package com.deliverytech.delivery.repository.auth;
 
 import com.deliverytech.delivery.entity.Usuario;
-import com.deliverytech.delivery.enums.Role; // <-- 1. IMPORTAR O 'Role'
+import com.deliverytech.delivery.enums.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-
-import java.util.List; // <-- 2. IMPORTAR 'List'
+import java.util.List;
 import java.util.Optional;
 
 /**
- * Repositório Spring Data JPA para a entidade {@link Usuario}.
- *
- * Esta interface gerencia todas as operações de banco de dados (CRUD) para a
- * entidade Usuario, além de fornecer métodos de consulta personalizados.
+ * Repositório responsável pelas operações de acesso a dados da entidade Usuario.
  */
 @Repository
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
-    /**
-     * Busca um usuário pelo seu endereço de email.
-     * (seu método original)
-     */
+    /** Busca um usuário pelo e-mail. */
     Optional<Usuario> findByEmail(String email);
 
-    /**
-     * Verifica de forma otimizada se já existe um usuário cadastrado com o email fornecido.
-     * (seu método original)
-     */
+    /** Verifica se já existe um usuário cadastrado com o e-mail informado. */
     boolean existsByEmail(String email);
 
-    /**
-     * Busca um usuário pelo email, mas somente se ele estiver com o status "ativo".
-     * (seu método original)
-     */
+    /** Busca um usuário ativo pelo e-mail. */
     Optional<Usuario> findByEmailAndAtivo(String email, Boolean ativo);
 
-    // ==========================================================
-    // --- 3. MÉTODO ADICIONADO PARA O PAINEL DO RESTAURANTE ---
-    // ==========================================================
-    /**
-     * Busca todos os usuários que possuem uma role específica e estão ativos.
-     * Usado pelo painel do restaurante para listar os entregadores disponíveis.
-     *
-     * @param role O {@link Role} a ser buscado (ex: Role.ENTREGADOR).
-     * @param ativo O status de ativação (sempre 'true').
-     * @return Uma lista de {@link Usuario} que correspondem aos critérios.
-     */
+    /** Lista usuários ativos por função (ex: ENTREGADOR, CLIENTE, etc.). */
     List<Usuario> findByRoleAndAtivo(Role role, Boolean ativo);
 }

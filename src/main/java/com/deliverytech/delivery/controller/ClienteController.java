@@ -3,7 +3,7 @@ package com.deliverytech.delivery.controller;
 import com.deliverytech.delivery.dto.request.ClienteDTO;
 import com.deliverytech.delivery.dto.response.ApiResponseWrapper;
 import com.deliverytech.delivery.dto.response.ClienteResponseDTO;
-import com.deliverytech.delivery.dto.response.PagedResponseWrapper; // Importe o Wrapper Paginado
+import com.deliverytech.delivery.dto.response.PagedResponseWrapper; 
 import com.deliverytech.delivery.service.ClienteService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -16,7 +16,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Positive;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable; // Importe o Pageable correto
+import org.springframework.data.domain.Pageable; 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;

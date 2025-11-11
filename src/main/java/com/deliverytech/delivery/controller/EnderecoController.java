@@ -7,7 +7,7 @@ import com.deliverytech.delivery.entity.Usuario;
 import com.deliverytech.delivery.service.EnderecoService;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter; // --- 1. IMPORTADO ---
+import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
@@ -15,14 +15,16 @@ import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication; // --- 2. IMPORTADO ---
-import org.springframework.validation.annotation.Validated; // --- 3. IMPORTADO ---
+import org.springframework.security.core.Authentication;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-// --- 4. ADICIONADO ---
+/**
+ * Controller para gerenciar os endereços associados aos usuários (Clientes).
+ */
 @Validated 
 @RestController
 @RequestMapping("/api/enderecos") 
@@ -33,8 +35,10 @@ public class EnderecoController {
     private final ModelMapper modelMapper;
 
     /**
-     * Endpoint para listar os endereços do usuário logado (ex: Cliente)
+     * Lista os endereços do usuário logado (ex: Cliente)
      */
+    @Operation(summary = "Lista os endereços do usuário logado",
+               description = "Retorna uma lista de todos os endereços salvos pelo cliente autenticado. Requer role CLIENTE.")
     @GetMapping("/meus")
     @PreAuthorize("hasRole('CLIENTE')")
     public ResponseEntity<List<EnderecoResponseDTO>> listarMeusEnderecos() {
@@ -49,8 +53,10 @@ public class EnderecoController {
     }
 
     /**
-     * Endpoint para criar um novo endereço para o usuário logado
+     * Cria um novo endereço para o usuário logado
      */
+    @Operation(summary = "Adiciona um novo endereço (Próprio)",
+               description = "Cria um novo endereço e o associa ao cliente autenticado. Requer role CLIENTE.")
     @PostMapping
     @PreAuthorize("hasRole('CLIENTE')")
     public ResponseEntity<EnderecoDTO> adicionarNovoEndereco(@Valid @RequestBody EnderecoDTO enderecoDTO) {
@@ -64,8 +70,7 @@ public class EnderecoController {
 
     
     /**
-     * Endpoint para DELETAR um endereço existente do usuário logado
-     * (Seu código estava correto, só faltavam os imports)
+     * Deleta um endereço existente do usuário logado
      */
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('CLIENTE')") 
@@ -80,7 +85,6 @@ public class EnderecoController {
         Usuario usuarioLogado = (Usuario) authentication.getPrincipal();
 
         // 2. Chama o serviço, que fará a verificação de propriedade e a exclusão
-        // (Lembre-se de implementar 'deletarEndereco' no seu EnderecoService!)
         enderecoService.deletarEndereco(id, usuarioLogado.getId());
 
         // 3. Retorna 204 No Content (Sucesso, sem corpo)

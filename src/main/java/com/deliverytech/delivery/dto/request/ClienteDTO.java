@@ -4,6 +4,13 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import org.hibernate.validator.constraints.br.CPF;
 
+/**
+ * DTO (Data Transfer Object) para a criação ou atualização
+ * dos dados de PERFIL de um Cliente.
+ *
+ * @implNote Este DTO não contém 'email', que é gerenciado pelo
+ * UsuarioService, nem 'enderecos', que são gerenciados pelo EnderecoService.
+ */
 @Schema(description = "Dados para ATUALIZAÇÃO do perfil de um cliente")
 public class ClienteDTO {
 
@@ -22,11 +29,6 @@ public class ClienteDTO {
     @CPF(message = "CPF inválido")
     private String cpf;
 
-    // --- CAMPOS REMOVIDOS ---
-    // 'email' agora é atualizado pelo UsuarioService
-    // 'endereco' (String) agora é gerenciado pelo EnderecoService
-    
-    // --- Getters e Setters ---
     public String getNome() { return nome; }
     public void setNome(String nome) { this.nome = nome; }
     public String getTelefone() { return telefone; }
