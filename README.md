@@ -141,9 +141,6 @@ Endpoint de Saúde (Actuator): http://localhost:8080/actuator/health
 
 <h2>🏗️ Estrutura de Pastas (Atualizada)</h2>
 
-(Sua estrutura de pastas original foi mantida, pois deletamos o CacheConfig.java e a estrutura não mudou permanentemente).
-<h2>🏗️ Estrutura de Pastas (Atualizada)</h2>
-
 A estrutura do projeto foi atualizada com os novos pacotes de observabilidade:
 
 
