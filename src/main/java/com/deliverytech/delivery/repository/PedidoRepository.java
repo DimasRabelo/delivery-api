@@ -36,7 +36,7 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long>, JpaSpecif
     
     @Query("SELECT DISTINCT p FROM Pedido p " +
            "LEFT JOIN FETCH p.restaurante r " +
-           "LEFT JOIN FETCH p.itens i " +
+           "LEFT JOIN FETCH p.itens i " + // 
            "WHERE p.restaurante.id = :restauranteId " +
            "AND (:status IS NULL OR p.status = :status)")
     List<Pedido> findPedidosByRestauranteIdAndStatusComItens(
@@ -45,10 +45,10 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long>, JpaSpecif
     );
 
     @Query("SELECT DISTINCT ip FROM ItemPedido ip " +
-           "LEFT JOIN FETCH ip.opcionaisSelecionados iso " +
-           "LEFT JOIN FETCH iso.itemOpcional " +
-           "WHERE ip IN :itens")
-    void fetchOpcionaisParaItens(@Param("itens") List<ItemPedido> itens);
+       "LEFT JOIN FETCH ip.opcionaisSelecionados iso " +
+       "LEFT JOIN FETCH iso.itemOpcional " +
+       "WHERE ip IN :itens")
+List<ItemPedido> fetchOpcionaisParaItens(@Param("itens") List<ItemPedido> itens);
 
     // =================================================================
     // FIM DA CORREÇÃO

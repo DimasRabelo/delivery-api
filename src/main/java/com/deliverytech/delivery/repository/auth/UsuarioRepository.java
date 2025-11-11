@@ -1,9 +1,11 @@
 package com.deliverytech.delivery.repository.auth;
 
 import com.deliverytech.delivery.entity.Usuario;
+import com.deliverytech.delivery.enums.Role; // <-- 1. IMPORTAR O 'Role'
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List; // <-- 2. IMPORTAR 'List'
 import java.util.Optional;
 
 /**
@@ -17,30 +19,32 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
     /**
      * Busca um usuário pelo seu endereço de email.
-     * Este método é útil para consultas gerais que não envolvem login.
-     *
-     * @param email O email a ser buscado.
-     * @return Um {@link Optional} contendo o {@link Usuario} se encontrado, ou vazio caso contrário.
+     * (seu método original)
      */
     Optional<Usuario> findByEmail(String email);
 
     /**
      * Verifica de forma otimizada se já existe um usuário cadastrado com o email fornecido.
-     * É mais performático do que buscar a entidade inteira.
-     *
-     * @param email O email a ser verificado.
-     * @return 'true' se o email já estiver em uso, 'false' caso contrário.
+     * (seu método original)
      */
     boolean existsByEmail(String email);
 
     /**
      * Busca um usuário pelo email, mas somente se ele estiver com o status "ativo".
-     * Este é o método preferencial para autenticação (usado pelo {@link UserDetailsService}),
-     * garantindo que usuários desativados não consigam logar.
-     *
-     * @param email O email do usuário.
-     * @param ativo O status de ativação (geralmente 'true' para login).
-     * @return Um {@link Optional} contendo o {@link Usuario} ativo se encontrado, ou vazio caso contrário.
+     * (seu método original)
      */
     Optional<Usuario> findByEmailAndAtivo(String email, Boolean ativo);
+
+    // ==========================================================
+    // --- 3. MÉTODO ADICIONADO PARA O PAINEL DO RESTAURANTE ---
+    // ==========================================================
+    /**
+     * Busca todos os usuários que possuem uma role específica e estão ativos.
+     * Usado pelo painel do restaurante para listar os entregadores disponíveis.
+     *
+     * @param role O {@link Role} a ser buscado (ex: Role.ENTREGADOR).
+     * @param ativo O status de ativação (sempre 'true').
+     * @return Uma lista de {@link Usuario} que correspondem aos critérios.
+     */
+    List<Usuario> findByRoleAndAtivo(Role role, Boolean ativo);
 }

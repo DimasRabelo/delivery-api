@@ -18,15 +18,15 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Representa a entidade Produto (item de cardápio).
- * Agora suporta um 'precoBase' e 'gruposOpcionais' para personalização.
+ * Representa um produto do cardápio de um restaurante.
+ * Possui preço base e grupos opcionais para personalização.
  */
 @Entity
-@Getter // Usando Getter/Setter explícito para evitar problemas do @Data com relacionamentos
+@Getter
 @Setter
 @ToString(exclude = {"restaurante", "itensPedido", "gruposOpcionais"})
 @EqualsAndHashCode(of = "id")
-@Schema(description = "Entidade que representa um produto (item de cardápio) de um restaurante")
+@Schema(description = "Entidade que representa um produto do cardápio de um restaurante")
 public class Produto {
 
     @Id
@@ -43,13 +43,11 @@ public class Produto {
     @Schema(description = "Descrição detalhada do produto", example = "Molho de tomate fresco, mozzarella e manjericão")
     private String descricao;
 
-    // --- MUDANÇA CRÍTICA ---
-    // O campo 'preco' foi renomeado para 'precoBase'
     @NotNull(message = "Preço base é obrigatório")
     @PositiveOrZero(message = "Preço base deve ser zero ou positivo")
-    @Column(name = "preco_base") // Renomeado no banco
-    @Schema(description = "Preço base do produto (opcionais podem somar a este valor)", example = "40.00", required = true, minimum = "0")
-    private BigDecimal precoBase; // Ex: Preço da Pizza Pequena (o menor)
+    @Column(name = "preco_base")
+    @Schema(description = "Preço base do produto (opcionais podem somar a este valor)", example = "40.00", required = true)
+    private BigDecimal precoBase;
 
     @Schema(description = "Categoria do produto", example = "Pizzas Tradicionais")
     private String categoria;
@@ -61,26 +59,21 @@ public class Produto {
     @Schema(description = "Quantidade em estoque (se aplicável)", example = "50", minimum = "0")
     private int estoque;
 
-    // Relacionamento com Restaurante (Seu código original)
+    /** Restaurante ao qual o produto pertence */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "restaurante_id")
-    @Schema(description = "Restaurante ao qual este produto pertence")
+    @Schema(description = "Restaurante responsável por este produto")
     private Restaurante restaurante;
 
-    // --- MUDANÇA 2: LINK PARA OS GRUPOS DE OPÇÕES ---
-    /**
-     * Define os grupos de personalização do produto.
-     * Ex: 'Grupo 1: Tamanho', 'Grupo 2: Adicionais', 'Grupo 3: Remover ingredientes'.
-     */
+    /** Grupos de personalização (ex: Tamanho, Adicionais) */
     @OneToMany(mappedBy = "produto", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Schema(description = "Lista de grupos de opcionais para este produto (Tamanho, Adicionais, etc.)")
+    @Schema(description = "Lista de grupos opcionais do produto")
     private Set<GrupoOpcional> gruposOpcionais = new HashSet<>();
 
-    // Relacionamento com ItemPedido (Seu código original)
+    /** Itens de pedido que contêm este produto */
     @OneToMany(mappedBy = "produto")
-    @Schema(description = "Lista de itens de pedido associados a este produto")
+    @Schema(description = "Itens de pedido associados a este produto")
     private List<ItemPedido> itensPedido = new ArrayList<>();
 
-    public Produto() {
-    }
+    public Produto() {}
 }

@@ -8,7 +8,9 @@ import java.util.List;
 
 @Repository
 public interface EnderecoRepository extends JpaRepository<Endereco, Long> {
-
-    // (Opcional, mas útil) Método para listar todos os endereços de um usuário
+// Método antigo (você pode apagar se quiser)
     List<Endereco> findByUsuarioId(Long usuarioId);
+
+    // Novo método para buscar apenas endereços ATIVOS de um usuário
+    List<Endereco> findByUsuarioIdAndAtivoIsTrue(Long usuarioId);
 }

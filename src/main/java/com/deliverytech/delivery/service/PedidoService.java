@@ -9,6 +9,13 @@ import java.time.LocalDate;
 import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
+// ==========================================================
+// <-- 1. ADICIONE ESTE IMPORT
+// (Baseado no pacote do seu StatusPedidoDTO)
+// ==========================================================
+import com.deliverytech.delivery.dto.request.StatusPedidoDTO;
+
     
 public interface PedidoService {
     
@@ -18,7 +25,17 @@ public interface PedidoService {
     
     List<PedidoResponseDTO> buscarPedidosPorCliente(Long clienteId);
     
-    PedidoResponseDTO atualizarStatusPedido(Long id, StatusPedido status);
+    // ==========================================================
+    // <-- 2. AQUI ESTÁ A MUDANÇA
+    // ==========================================================
+    
+    // MÉTODO ANTIGO (com erro de compilação):
+    //PedidoResponseDTO atualizarStatusPedido(Long id, StatusPedido status);
+
+    // MÉTODO NOVO (corrigido para aceitar o DTO):
+    PedidoResponseDTO atualizarStatusPedido(Long id, StatusPedidoDTO statusPedidoDTO);
+    
+    // ==========================================================
     
     CalculoPedidoResponseDTO calcularTotalPedido(CalculoPedidoDTO dto);
 
@@ -30,16 +47,5 @@ public interface PedidoService {
     
     Page<PedidoResponseDTO> listarMeusPedidos(Pageable pageable);
 
-    // ==========================================================
-    // --- MÉTODO ADICIONADO (A CORREÇÃO) ---
-    // ==========================================================
-    /**
-     * Verifica se o usuário autenticado pode acessar/modificar um pedido.
-     * Usado pela segurança @PreAuthorize para verificar se o usuário logado
-     * é o cliente dono do pedido ou o restaurante associado ao pedido.
-     *
-     * @param pedidoId O ID do pedido
-     * @return true se o usuário tiver permissão, false caso contrário
-     */
     boolean canAccess(Long pedidoId);
 }

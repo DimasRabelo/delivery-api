@@ -5,6 +5,8 @@ import com.deliverytech.delivery.dto.request.PedidoDTO;
 import com.deliverytech.delivery.dto.response.CalculoPedidoDTO;
 import com.deliverytech.delivery.dto.response.CalculoPedidoResponseDTO;
 import com.deliverytech.delivery.dto.response.PedidoResponseDTO;
+// Import NECESSÁRIO (Baseado no seu arquivo de DTO)
+import com.deliverytech.delivery.dto.request.StatusPedidoDTO; 
 
 // Imports de Entidades e Enums
 import com.deliverytech.delivery.entity.*;
@@ -63,7 +65,6 @@ public class PedidoServiceImpl implements PedidoService {
     @Autowired private GrupoOpcionalRepository grupoOpcionalRepository; 
 
 
-    // (Método criarPedido... OK)
     @Override
     @Transactional
     public PedidoResponseDTO criarPedido(PedidoDTO dto) {
@@ -209,7 +210,6 @@ public class PedidoServiceImpl implements PedidoService {
     }
     
     
-    // (Método calcularTotalPedido... OK)
     @Override
     @Transactional(readOnly = true)
     public CalculoPedidoResponseDTO calcularTotalPedido(CalculoPedidoDTO dto) {
@@ -284,7 +284,6 @@ public class PedidoServiceImpl implements PedidoService {
     }
 
 
-    // (Método buscarPedidoPorId... OK)
     @Override
     @Transactional(readOnly = true)
     public PedidoResponseDTO buscarPedidoPorId(Long id) {
@@ -298,7 +297,6 @@ public class PedidoServiceImpl implements PedidoService {
         }
     }
 
-    // (Método buscarPedidosPorCliente... OK)
     @Override
     @Transactional(readOnly = true)
     public List<PedidoResponseDTO> buscarPedidosPorCliente(Long clienteId) {
@@ -308,28 +306,75 @@ public class PedidoServiceImpl implements PedidoService {
                 .collect(Collectors.toList());
     }
 
-    // (Método atualizarStatusPedido... OK)
+    // ==========================================================
+    // --- MÉTODO ATUALIZAR STATUS (AJUSTADO E DESCOMENTADO) ---
+    // ==========================================================
     @Override
     @Transactional
-    public PedidoResponseDTO atualizarStatusPedido(Long id, StatusPedido novoStatus) {
+    public PedidoResponseDTO atualizarStatusPedido(Long id, StatusPedidoDTO dto) { // <-- Assinatura correta
+        // 1. Busca o pedido
         Pedido pedido = pedidoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Pedido não encontrado"));
-        if (!isTransicaoValida(pedido.getStatus(), novoStatus)) {
+
+        // 2. Converte a string do DTO para o Enum
+        StatusPedido novoStatusEnum;
+        try {
+            // Garante que o status vindo do DTO seja comparável ao Enum (ex: "preparando" -> "PREPARANDO")
+            novoStatusEnum = StatusPedido.valueOf(dto.getStatus().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new BusinessException("Status inválido: " + dto.getStatus());
+        }
+
+        // 3. Valida a transição
+        if (!isTransicaoValida(pedido.getStatus(), novoStatusEnum)) {
             throw new BusinessException("Transição de status inválida: " +
-                    pedido.getStatus() + " -> " + novoStatus);
+                    pedido.getStatus() + " -> " + novoStatusEnum);
         }
-        if (novoStatus == StatusPedido.SAIU_PARA_ENTREGA) {
-            if (pedido.getEntregador() == null) {
-                Usuario entregador = encontrarEntregadorDisponivel();
-                pedido.setEntregador(entregador);
+
+        // 4. Lógica de Atribuição MANUAL para "SAIU_PARA_ENTREGA"
+        if (novoStatusEnum == StatusPedido.SAIU_PARA_ENTREGA) {
+
+            // 5. Valida se o ID do entregador foi enviado no DTO
+            //    (Requer que StatusPedidoDTO tenha o getEntregadorId())
+            if (dto.getEntregadorId() == null) {
+                throw new BusinessException("É obrigatório selecionar um entregador para o status SAIU_PARA_ENTREGA.");
             }
+
+            // 6. Busca o entregador enviado pelo front-end
+            Usuario entregador = usuarioRepository.findById(dto.getEntregadorId())
+                    .orElseThrow(() -> new EntityNotFoundException("Entregador não encontrado: " + dto.getEntregadorId()));
+
+            // 7. Valida se o usuário encontrado é de fato um entregador
+            if (entregador.getRole() != Role.ENTREGADOR) {
+                throw new BusinessException("Usuário selecionado não é um entregador.");
+            }
+
+            // 8. Opcional: Checa se esse entregador já está em outra entrega
+            // (Descomente se esta regra de negócio for necessária)
+            // boolean estaEmEntrega = pedidoRepository.existsByEntregadorAndStatus(
+            //         entregador, StatusPedido.SAIU_PARA_ENTREGA
+            // );
+            // if (estaEmEntrega) {
+            //     throw new BusinessException("Este entregador já está em uma entrega no momento.");
+            // }
+
+            // 9. ATRIBUI O ENTREGADOR MANUALMENTE ao pedido
+            pedido.setEntregador(entregador);
         }
-        pedido.setStatus(novoStatus);
+
+        // 10. Salva o novo status no pedido
+        pedido.setStatus(novoStatusEnum);
         Pedido pedidoAtualizado = pedidoRepository.save(pedido);
+
+        // 11. Retorna o DTO de resposta, conforme solicitado
         return mapToPedidoResponseDTO(pedidoAtualizado);
     }
+    // ==========================================================
+    // FIM DA CORREÇÃO
+    // ==========================================================
 
-    // (Método cancelarPedido... OK)
+
+    // (Método cancelarPedido... PRESENTE E CORRETO)
     @Override
     @Transactional
     public void cancelarPedido(Long id) {
@@ -342,7 +387,6 @@ public class PedidoServiceImpl implements PedidoService {
         pedidoRepository.save(pedido);
     }
 
-    // (Método listarPedidos... OK)
     @Override
     @Transactional(readOnly = true)
     public Page<PedidoResponseDTO> listarPedidos(StatusPedido status, LocalDate dataInicio, LocalDate dataFim, Pageable pageable) {
@@ -364,7 +408,6 @@ public class PedidoServiceImpl implements PedidoService {
         return pedidos.map(this::mapToPedidoResponseDTO);
     }
 
-    // (Método listarMeusPedidos... OK)
     @Override
     @Transactional(readOnly = true)
     public Page<PedidoResponseDTO> listarMeusPedidos(Pageable pageable) {
@@ -377,7 +420,6 @@ public class PedidoServiceImpl implements PedidoService {
     }
 
     
-    // (Método buscarPedidosPorRestaurante... OK)
     @Override
     @Transactional(readOnly = true)
     public List<PedidoResponseDTO> buscarPedidosPorRestaurante(Long restauranteId, StatusPedido status) {
@@ -396,13 +438,12 @@ public class PedidoServiceImpl implements PedidoService {
     }
 
 
-    // (Método canAccess... OK)
     @Override
     @Transactional(readOnly = true)
     public boolean canAccess(Long pedidoId) {
         try {
-            Long usuarioLogadoId = SecurityUtils.getCurrentUserId();
-            if (usuarioLogadoId == null) {
+            Long usuarioIdLogado = SecurityUtils.getCurrentUserId();
+            if (usuarioIdLogado == null) {
                 return false; 
             }
             
@@ -411,11 +452,11 @@ public class PedidoServiceImpl implements PedidoService {
             Long entregadorId = null;
 
             if (SecurityUtils.isCliente()) {
-                clienteId = usuarioLogadoId;
+                clienteId = usuarioIdLogado;
             } else if (SecurityUtils.isRestaurante()) {
                 restauranteLogadoId = SecurityUtils.getCurrentRestauranteId();
             } else if (SecurityUtils.isEntregador()) {
-                entregadorId = usuarioLogadoId;
+                entregadorId = usuarioIdLogado;
             }
             
             return pedidoRepository.isPedidoOwnedBy(
@@ -451,16 +492,16 @@ public class PedidoServiceImpl implements PedidoService {
         }
     }
 
+    // (Método usado por 'cancelarPedido', agora correto)
     private boolean podeSerCancelado(StatusPedido status) {
         return status == StatusPedido.PENDENTE || status == StatusPedido.CONFIRMADO;
     }
 
-    // ==========================================================
-    // --- MÉTODO mapToPedidoResponseDTO (A CORREÇÃO) ---
-    // ==========================================================
     private PedidoResponseDTO mapToPedidoResponseDTO(Pedido pedido) {
+        // Mapeia campos com nomes iguais (id, dataPedido, status, subtotal, taxaEntrega, etc.)
         PedidoResponseDTO dto = modelMapper.map(pedido, PedidoResponseDTO.class);
         
+        // Mapeamentos Manuais
         if (pedido.getCliente() != null) {
             dto.setClienteId(pedido.getCliente().getId());
             dto.setClienteNome(pedido.getCliente().getNome()); 
@@ -476,20 +517,17 @@ public class PedidoServiceImpl implements PedidoService {
             dto.setEnderecoEntrega(enderecoFormatado); 
         }
         
-        // --- CORREÇÃO (Lógica que faltava) ---
+        // Mapeamento do Entregador (agora preenchido)
         if (pedido.getEntregador() != null) {
             Usuario entregador = pedido.getEntregador();
             dto.setEntregadorId(entregador.getId());
-            
-            // O 'Usuario' do entregador não tem 'nome'. Usamos o email como fallback.
-            // Se você criar uma entidade 'Entregador' (como 'Cliente') com um 'nome',
-            // essa lógica deve ser atualizada.
-            dto.setEntregadorNome(entregador.getEmail()); 
+            dto.setEntregadorNome(entregador.getEmail()); // ou getNome() se 'Usuario' tiver nome
         }
-        // --- FIM DA CORREÇÃO ---
         
+        // Mapeamento do Total
         dto.setTotal(pedido.getValorTotal());
         
+        // Mapeamento dos Itens
         dto.setItens(pedido.getItens().stream()
                 .map(item -> {
                     ItemPedidoDTO iDTO = new ItemPedidoDTO(); 
@@ -505,26 +543,6 @@ public class PedidoServiceImpl implements PedidoService {
                 }).collect(Collectors.toList()));
         return dto;
     }
-    // ==========================================================
-    // FIM DA CORREÇÃO
-    // ==========================================================
     
-    private Usuario encontrarEntregadorDisponivel() {
-        
-        List<Usuario> entregadoresDisponiveis = usuarioRepository.findAll().stream()
-                .filter(u -> u.getRole() == Role.ENTREGADOR && u.getAtivo())
-                .filter(u -> {
-                    boolean estaEmEntrega = pedidoRepository.existsByEntregadorAndStatus(
-                            u, StatusPedido.SAIU_PARA_ENTREGA
-                    );
-                    return !estaEmEntrega; 
-                })
-                .collect(Collectors.toList());
-
-        if (entregadoresDisponiveis.isEmpty()) {
-            throw new BusinessException("Nenhum entregador disponível no momento.");
-        }
-
-        return entregadoresDisponiveis.get(0); 
-    }
+   
 }

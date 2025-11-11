@@ -2,6 +2,7 @@ package com.deliverytech.delivery.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import com.deliverytech.delivery.dto.request.ItemPedidoDTO;
@@ -48,6 +49,9 @@ public class PedidoResponseDTO {
     
     @Schema(description = "Nome/Email do entregador (se houver)", example = "carlos@entrega.com", nullable = true)
     private String entregadorNome;
+
+    @Schema(description = "Data e hora que o pedido foi feito", example = "2025-11-09T08:30:00")
+    private LocalDateTime dataPedido;
     // ==========================================================
     // FIM DA CORREÇÃO
     // ==========================================================
@@ -83,6 +87,15 @@ public class PedidoResponseDTO {
     public List<ItemPedidoDTO> getItens() { return itens; }
     public void setItens(List<ItemPedidoDTO> itens) { this.itens = itens; }
 
+    public LocalDateTime getDataPedido() { return dataPedido; }
+    public void setDataPedido(LocalDateTime dataPedido) { this.dataPedido = dataPedido; }
+
+    @Schema(description = "Valor total dos itens (sem a entrega)", example = "50.00")
+    private BigDecimal subtotal;
+
+    @Schema(description = "Valor da taxa de entrega", example = "5.00")
+    private BigDecimal taxaEntrega;
+
     // ==========================================================
     // --- GETTERS/SETTERS ADICIONADOS ---
     // ==========================================================
@@ -91,4 +104,20 @@ public class PedidoResponseDTO {
 
     public String getEntregadorNome() { return entregadorNome; }
     public void setEntregadorNome(String entregadorNome) { this.entregadorNome = entregadorNome; }
+
+    public BigDecimal getSubtotal() {
+        return subtotal;
+    }
+
+    public void setSubtotal(BigDecimal subtotal) {
+        this.subtotal = subtotal;
+    }
+
+    public BigDecimal getTaxaEntrega() {
+        return taxaEntrega;
+    }
+
+    public void setTaxaEntrega(BigDecimal taxaEntrega) {
+        this.taxaEntrega = taxaEntrega;
+    }
 }

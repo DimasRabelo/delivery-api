@@ -12,6 +12,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+// --- 1. ADICIONAR IMPORTS NECESSÁRIOS ---
+import com.deliverytech.delivery.enums.Role;
+import java.util.List;
+import java.util.stream.Collectors;
+
+
 @Service
 @Transactional
 public class UsuarioServiceImpl implements UsuarioService {
@@ -24,7 +30,6 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     /**
      * (Seu método original - Está OK)
-     * O 'UserResponse::new' funciona porque já corrigimos o UserResponse.java
      */
     @Override
     @Transactional(readOnly = true)
@@ -54,46 +59,51 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     /**
-     * Atualiza os dados de autenticação de um usuário (VERSÃO REFATORADA).
-     * Agora atualiza APENAS os campos que pertencem ao 'Usuario' (email).
-     * A atualização do 'nome' é feita pelo ClienteService.
+     * (Seu método original - Está OK)
      */
     @Override
     public UserResponse atualizar(Long id, UsuarioUpdateDTO dto) {
-        // 1. Busca o usuário existente
         Usuario usuario = this.buscarPorId(id);
 
-        // 2. Validação: Verifica se o novo email já está em uso
         if (!dto.getEmail().equalsIgnoreCase(usuario.getEmail()) && 
              usuarioRepository.existsByEmail(dto.getEmail())) {
             
             throw new ConflictException("Email já está em uso por outro usuário");
         }
 
-        // 3. --- CORREÇÃO (GARGALO 4 / DECISÃO 1) ---
-        // A linha 'usuario.setNome(dto.getNome());' FOI REMOVIDA.
-        // Este serviço só atualiza o 'email'.
         usuario.setEmail(dto.getEmail());
         
-        // 4. Salva o usuário atualizado
         Usuario usuarioSalvo = usuarioRepository.save(usuario);
-
-        // 5. Retorna o DTO de resposta
-        // (O construtor do UserResponse já sabe buscar o 'nome' no Cliente)
         return new UserResponse(usuarioSalvo);
     }
 
     /**
      * (Seu método original - Está OK)
-     * Realiza a "exclusão lógica" (soft delete) de um usuário.
      */
     @Override
     public void deletar(Long id) {
         Usuario usuario = this.buscarPorId(id);
-        
-        // Soft Delete: Apenas desativa o usuário
         usuario.setAtivo(false); 
-        
         usuarioRepository.save(usuario);
+    }
+
+    // ==========================================================
+    // --- 2. IMPLEMENTAÇÃO DO NOVO MÉTODO ---
+    // ==========================================================
+    /**
+     * Busca todos os usuários que são ENTREGADORES e estão ATIVOS.
+     * Chama o novo método do repositório e mapeia para DTOs.
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserResponse> buscarEntregadoresAtivos() {
+        // 1. Busca as entidades do banco usando o novo método do repo
+        // (Ele busca por Role.ENTREGADOR e Ativo = true)
+        List<Usuario> entregadores = usuarioRepository.findByRoleAndAtivo(Role.ENTREGADOR, true);
+        
+        // 2. Converte a lista de Entidade (Usuario) para DTO (UserResponse)
+        return entregadores.stream()
+                .map(UserResponse::new) // Usa o construtor 'new UserResponse(usuario)'
+                .collect(Collectors.toList());
     }
 }

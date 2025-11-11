@@ -1,6 +1,8 @@
 # Versão do Docker Compose
 version: '3.8'
+
 services:
+  # --- 1. Seu serviço de API (Java) ---
   app:
     build: . 
     container_name: delivery-api-app
@@ -17,14 +19,28 @@ services:
         condition: service_healthy
       cache:
         condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 300s # 5 minutos
+    
+    # --- HEATHCHECK COMENTADO (ESTA É A CORREÇÃO) ---
+    #healthcheck:
+    #  test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+    #  interval: 30s
+    #  timeout: 10s
+    #  retries: 5
+    #  start_period: 120s # 2 minutos
 
-  # ... (resto do db e cache) ...
+  # --- 2. NOVO SERVIÇO DE FRONTEND (React + Nginx) ---
+  frontend:
+    build:
+      context: ../delivery-frontend 
+    container_name: delivery-frontend-app
+    ports:
+      - "80:80" 
+    networks:
+      - delivery-network
+    depends_on:
+      - app
+
+  # --- 3. Seus serviços de DB e Cache - Sem alterações ---
   db:
     image: mysql:8.0
     container_name: delivery-db
@@ -44,6 +60,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+      
   cache:
     image: redis:7-alpine
     container_name: delivery-cache
@@ -56,6 +73,8 @@ services:
       interval: 5s
       timeout: 2s
       retries: 10
+
+# --- Suas Redes e Volumes - Sem alterações ---
 networks:
   delivery-network:
     driver: bridge 

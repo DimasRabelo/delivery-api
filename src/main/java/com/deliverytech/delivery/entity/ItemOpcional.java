@@ -1,4 +1,4 @@
-package com.deliverytech.delivery.entity; // (Ou o seu pacote 'model')
+package com.deliverytech.delivery.entity;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
@@ -9,42 +9,45 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-
 import java.math.BigDecimal;
 
 /**
- * Define um item de escolha dentro de um GrupoOpcional.
- * Ex: "Pequena" (Preço: 0.00), "Média" (Preço: 5.00), "+Borda" (Preço: 8.00).
+ * Entidade que representa um item opcional dentro de um grupo de opções.
+ * Exemplo: "Pequena" (R$ 0,00), "Média" (R$ 5,00), "+Borda" (R$ 8,00).
  */
 @Entity
 @Table(name = "item_opcional")
 @Getter
 @Setter
-@ToString(exclude = {"grupoOpcional"})
+@ToString(exclude = "grupoOpcional")
 @EqualsAndHashCode(of = "id")
-@Schema(description = "Um item de opção dentro de um grupo (ex: 'Média' ou '+Bacon')")
+@Schema(description = "Item de opção pertencente a um grupo (ex: 'Grande' ou '+Bacon')")
 public class ItemOpcional {
 
+    /** Identificador único do item opcional */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Schema(description = "Identificador único do item opcional", example = "1")
     private Long id;
 
+    /** Nome do item de opção */
     @NotBlank
-    @Schema(description = "Nome do item de opção", example = "Grande", required = true)
+    @Schema(description = "Nome do item opcional", example = "Grande", required = true)
     private String nome;
 
+    /** Preço adicional cobrado pelo item (pode ser zero) */
     @NotNull
     @PositiveOrZero
-    @Schema(description = "Preço adicional deste item (pode ser 0.00)", example = "15.00", required = true, minimum = "0")
-    private BigDecimal precoAdicional; // Valor a somar ao 'precoBase' do produto
+    @Schema(description = "Preço adicional deste item", example = "15.00", required = true, minimum = "0")
+    private BigDecimal precoAdicional;
 
-    // Link para o Grupo (Dono desta opção)
+    /** Grupo de opções ao qual o item pertence */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "grupo_opcional_id", nullable = false)
-    @Schema(description = "Grupo ao qual este item opcional pertence")
+    @Schema(description = "Grupo ao qual este item pertence")
     private GrupoOpcional grupoOpcional;
 
+    /** Construtor padrão */
     public ItemOpcional() {
     }
 }

@@ -1,13 +1,12 @@
 /*
  * =================================================================
  * SCRIPT DE CARGA INICIAL (PÓS-REFATORAÇÃO)
- * (Versão turbinada, com pedidos já criados)
+ * (Versão corrigida para H2, com nomes de tabela em minúsculo)
  * =================================================================
  */
 
 -- ==============================
 -- 1. USUÁRIOS
--- Senha para todos: "123456" (Hash: $2a$10$AkKArXqwoK8Ocri.T5C8B.4qi4FmFwDWI2aV2zTXFH3CQYwzOQULa)
 -- ==============================
 INSERT INTO usuario (id, email, senha, role, ativo, data_criacao, restaurante_id) VALUES
 (1, 'admin@delivery.com', '$2a$10$AkKArXqwoK8Ocri.T5C8B.4qi4FmFwDWI2aV2zTXFH3CQYwzOQULa', 'ADMIN', true, NOW(), null),
@@ -20,12 +19,12 @@ INSERT INTO usuario (id, email, senha, role, ativo, data_criacao, restaurante_id
 -- ==============================
 -- 2. ENDEREÇOS
 -- ==============================
-INSERT INTO ENDERECO (ID, USUARIO_ID, RUA, NUMERO, BAIRRO, CIDADE, ESTADO, CEP, APELIDO) 
-VALUES
-(1, 4, 'Rua das Pizzas', '123', 'Centro', 'CidadePizza', 'SP', '01001000', 'Restaurante Pizza Palace'),
-(2, 5, 'Av. dos Hambúrgueres', '456', 'BairroLanche', 'CidadeBurger', 'SP', '04538133', 'Restaurante Burger King'),
-(3, 2, 'Rua Fictícia do João', '10', 'BairroJoao', 'CidadeJoao', 'RJ', '20031912', 'Casa João'),
-(4, 3, 'Avenida da Maria', '20', 'BairroMaria', 'CidadeMaria', 'MG', '30112010', 'Casa Maria');
+INSERT INTO endereco (id, usuario_id, rua, numero, bairro, cidade, estado, cep, apelido, ativo) 
+VALUES 
+(1, 4, 'Rua das Pizzas', '123', 'Centro', 'CidadePizza', 'SP', '01001000', 'Restaurante Pizza Palace', true), 
+(2, 5, 'Av. dos Hambúrgueres', '456', 'BairroLanche', 'CidadeBurger', 'SP', '04538133', 'Restaurante Burger King', true), 
+(3, 2, 'Rua Fictícia do João', '10', 'BairroJoao', 'CidadeJoao', 'RJ', '20031912', 'Casa João', true), 
+(4, 3, 'Avenida da Maria', '20', 'BairroMaria', 'CidadeMaria', 'MG', '30112010', 'Casa Maria', true);
 
 -- ==============================
 -- 3. RESTAURANTES
@@ -92,52 +91,37 @@ INSERT INTO item_opcional (id, nome, grupo_opcional_id, preco_adicional) VALUES
 (17, 'Suco de Laranja', 7, 7.00);
 
 -- ==========================================================
--- 9. PEDIDOS (NOVA SEÇÃO - PARA EVITAR O "LOOP DE TESTE")
+-- 9. PEDIDOS
 -- ==========================================================
-
--- Pedido 1: Do João (ID 2), PENDENTE, no Pizza Palace (ID 1)
--- Total = 60.90 (Pizza 35.90 + Borda 8.00 + Coca 12.00 + Taxa 5.00)
 INSERT INTO pedido (id, numero_pedido, cliente_id, restaurante_id, endereco_entrega_id, data_pedido, status, metodo_pagamento, subtotal, taxa_entrega, valor_total) VALUES
 (1, 'uuid-joao-001', 2, 1, 3, NOW(), 'PENDENTE', 'PIX', 55.90, 5.00, 60.90);
 
--- Itens do Pedido 1
 INSERT INTO itens_pedido (id, pedido_id, produto_id, quantidade, preco_unitario, subtotal) VALUES
-(1, 1, 1, 1, 55.90, 55.90); -- (Preço 35.90 + 8.00 + 12.00)
+(1, 1, 1, 1, 55.90, 55.90);
 
--- Opcionais do Item 1
 INSERT INTO item_pedido_opcional (id, item_pedido_id, item_opcional_id, preco_registrado) VALUES
-(1, 1, 2, 8.00), -- Borda Catupiry
-(2, 1, 6, 12.00); -- Coca-Cola 2L
+(1, 1, 2, 8.00),
+(2, 1, 6, 12.00);
 
-
--- Pedido 2: Da Maria (ID 3), SAIU_PARA_ENTREGA, no Burger King (ID 2)
--- Atribuído ao Carlos (Entregador ID 6)
--- Total = 44.40 (Whopper 28.90 + Bacon 4.00 + Maionese 2.50 + Maionese 2.50 + Taxa 3.50)
 INSERT INTO pedido (id, numero_pedido, cliente_id, restaurante_id, endereco_entrega_id, data_pedido, status, metodo_pagamento, entregador_id, subtotal, taxa_entrega, valor_total) VALUES
 (2, 'uuid-maria-001', 3, 2, 4, NOW(), 'SAIU_PARA_ENTREGA', 'CARTAO_CREDITO', 6, 40.90, 3.50, 44.40);
 
--- Itens do Pedido 2
 INSERT INTO itens_pedido (id, pedido_id, produto_id, quantidade, preco_unitario, subtotal) VALUES
-(2, 2, 3, 1, 40.90, 40.90); -- (Preço 28.90 + 4.00 + 2.50 + 2.50)
+(2, 2, 3, 1, 40.90, 40.90);
 
--- Opcionais do Item 2 (Whopper com Bacon Extra e 2x Maionese)
 INSERT INTO item_pedido_opcional (id, item_pedido_id, item_opcional_id, preco_registrado) VALUES
-(3, 2, 14, 4.00), -- Bacon Extra
-(4, 2, 10, 2.50), -- Maionese Temperada
-(5, 2, 10, 2.50); -- Maionese Temperada (de novo)
+(3, 2, 14, 4.00);
 
 
 -- ==============================
--- 10. RESETAR AS SEQUÊNCIAS DO H2
+-- 10. RESETAR AS SEQUÊNCIAS (SINTAXE CORRIGIDA PARA H2)
 -- ==============================
-ALTER TABLE USUARIO ALTER COLUMN ID RESTART WITH 7;
-ALTER TABLE ENDERECO ALTER COLUMN ID RESTART WITH 5;
-ALTER TABLE RESTAURANTE ALTER COLUMN ID RESTART WITH 3;
-ALTER TABLE PRODUTO ALTER COLUMN ID RESTART WITH 5;
-ALTER TABLE GRUPO_OPCIONAL ALTER COLUMN ID RESTART WITH 9;
-ALTER TABLE ITEM_OPCIONAL ALTER COLUMN ID RESTART WITH 18;
-
--- Agora também resetamos as tabelas de Pedido
-ALTER TABLE PEDIDO ALTER COLUMN ID RESTART WITH 3;
-ALTER TABLE ITENS_PEDIDO ALTER COLUMN ID RESTART WITH 3;
-ALTER TABLE ITEM_PEDIDO_OPCIONAL ALTER COLUMN ID RESTART WITH 6;
+ALTER TABLE usuario ALTER COLUMN ID RESTART WITH 7;
+ALTER TABLE endereco ALTER COLUMN ID RESTART WITH 5;
+ALTER TABLE restaurante ALTER COLUMN ID RESTART WITH 3;
+ALTER TABLE produto ALTER COLUMN ID RESTART WITH 5;
+ALTER TABLE grupo_opcional ALTER COLUMN ID RESTART WITH 9;
+ALTER TABLE item_opcional ALTER COLUMN ID RESTART WITH 18;
+ALTER TABLE pedido ALTER COLUMN ID RESTART WITH 3;
+ALTER TABLE itens_pedido ALTER COLUMN ID RESTART WITH 3;
+ALTER TABLE item_pedido_opcional ALTER COLUMN ID RESTART WITH 6;

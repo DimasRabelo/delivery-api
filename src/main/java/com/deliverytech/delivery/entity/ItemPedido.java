@@ -15,9 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Representa a "linha" de um pedido.
- * Agora armazena o 'precoUnitario' calculado (base + opcionais) e a lista de
- * opcionais que foram selecionados para este item.
+ * Entidade que representa um item dentro de um pedido.
  */
 @Entity
 @Getter
@@ -25,69 +23,52 @@ import java.util.List;
 @ToString(exclude = {"pedido", "produto", "opcionaisSelecionados"})
 @EqualsAndHashCode(of = "id")
 @Table(name = "itens_pedido")
-@Schema(description = "Entidade que representa um item dentro de um pedido")
+@Schema(description = "Item pertencente a um pedido")
 public class ItemPedido {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Schema(description = "Identificador único do item no pedido", example = "501")
+    @Schema(description = "Identificador único do item", example = "501")
     private Long id;
 
     @NotNull(message = "Quantidade é obrigatória")
     @Min(value = 1, message = "A quantidade deve ser de pelo menos 1")
-    @Schema(description = "Quantidade deste produto no pedido", example = "2", required = true, minimum = "1")
+    @Schema(description = "Quantidade do produto no pedido", example = "2", required = true, minimum = "1")
     private Integer quantidade;
 
-    // --- MUDANÇA CRÍTICA ---
-    // Este preço não vem mais direto do Produto. Ele deve ser CALCULADO 
-    // (precoBase + precoAdicional dos opcionais) pelo seu Service.
     @NotNull(message = "Preço unitário é obrigatório")
     @PositiveOrZero(message = "Preço unitário não pode ser negativo")
-    @Schema(description = "Preço unitário JÁ CALCULADO (com opcionais) no momento da compra (snapshot)", example = "63.00", required = true, minimum = "0")
-    private BigDecimal precoUnitario; 
+    @Schema(description = "Preço unitário calculado (produto + opcionais)", example = "63.00", required = true, minimum = "0")
+    private BigDecimal precoUnitario;
 
     @NotNull(message = "Subtotal é obrigatório")
     @PositiveOrZero(message = "Subtotal não pode ser negativo")
-    @Schema(description = "Subtotal (quantidade * precoUnitario)", example = "126.00", required = true, minimum = "0")
-    private BigDecimal subtotal; // (quantidade * precoUnitario)
+    @Schema(description = "Subtotal = quantidade * preço unitário", example = "126.00", required = true, minimum = "0")
+    private BigDecimal subtotal;
 
-    // --- Relacionamentos (Seu código original) ---
-
+    // Relação com o pedido ao qual o item pertence
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pedido_id")
     @NotNull(message = "O item deve estar associado a um pedido")
-    @Schema(description = "O Pedido ao qual este item pertence")
     private Pedido pedido;
 
+    // Produto associado ao item
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "produto_id")
     @NotNull(message = "O item deve estar associado a um produto")
-    @Schema(description = "O Produto que está sendo comprado")
     private Produto produto;
 
-    // --- MUDANÇA 2: LINK PARA OS OPCIONAIS ESCOLHIDOS ---
-    /**
-     * Registra quais 'ItemOpcional' foram selecionados pelo cliente
-     * para ESTE 'ItemPedido' específico.
-     */
+    // Opcionais selecionados para este item
     @OneToMany(mappedBy = "itemPedido", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Schema(description = "Lista de opcionais que foram selecionados para este item")
+    @Schema(description = "Lista de opcionais selecionados")
     private List<ItemPedidoOpcional> opcionaisSelecionados = new ArrayList<>();
 
-    // --- Construtores ---
-
-    /**
-     * Construtor padrão (vazio).
-     * Necessário para o funcionamento da JPA.
-     */
     public ItemPedido() {
     }
 
-    // --- Lógica de Negócio ---
-
     /**
-     * Lógica de Negócio: Calcula (ou recalcula) o subtotal deste item.
-     * Deve ser chamado pelo Service DEPOIS de definir o 'precoUnitario' calculado.
+     * Calcula o subtotal do item (quantidade * preço unitário).
+     * Deve ser chamado após definir o preço unitário.
      */
     public void calcularSubtotal() {
         if (precoUnitario != null && quantidade != null && quantidade > 0) {
