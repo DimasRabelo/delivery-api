@@ -141,9 +141,6 @@ Endpoint de Saúde (Actuator): http://localhost:8080/actuator/health
 
 <h2>🏗️ Estrutura de Pastas (Atualizada)</h2>
 
-(Sua estrutura de pastas original foi mantida, pois deletamos o CacheConfig.java e a estrutura não mudou permanentemente).
-<h2>🏗️ Estrutura de Pastas (Atualizada)</h2>
-
 A estrutura do projeto foi atualizada com os novos pacotes de observabilidade:
 
 
@@ -157,6 +154,7 @@ A estrutura do projeto foi atualizada com os novos pacotes de observabilidade:
  ┃ ┃ ┃ ┃ ┃ ┣ 📂config
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜MicrometerConfig.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ModelMapperConfig.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜RedisConfig.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜SecurityConfig.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜SwaggerConfig.java
  ┃ ┃ ┃ ┃ ┃ ┣ 📂controller
@@ -165,6 +163,7 @@ A estrutura do projeto foi atualizada com os novos pacotes de observabilidade:
  ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜UsuarioController.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ClienteController.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜DashboardController.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜EnderecoController.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜PedidoController.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ProdutoController.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜RelatorioController.java
@@ -181,25 +180,36 @@ A estrutura do projeto foi atualizada com os novos pacotes de observabilidade:
  ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜RelatorioPedidosDTO.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜RelatorioProdutosDTO.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜RelatorioVendasDTO.java
- ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂response
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂request
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜AtribuirEntregadorDTO.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ClienteDTO.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜EnderecoDTO.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜GrupoOpcionalDTO.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ItemOpcionalDTO.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ItemPedidoDTO.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜PedidoDTO.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ProdutoDTO.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜RestauranteDTO.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜StatusPedidoDTO.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📂response
  ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ApiResponseWrapper.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜CalculoPedidoDTO.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜CalculoPedidoResponseDTO.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ClienteResponseDTO.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ContagemDTO.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜EnderecoResponseDTO.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ErrorResponse.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜PagedResponseWrapper.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜PedidoResponseDTO.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ProdutoResponseDTO.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜RestauranteResponseDTO.java
- ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ClienteDTO.java
- ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ItemPedidoDTO.java
- ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜PedidoDTO.java
- ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ProdutoDTO.java
- ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜RestauranteDTO.java
- ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜StatusPedidoDTO.java
  ┃ ┃ ┃ ┃ ┃ ┣ 📂entity
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜Cliente.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜Endereco.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜GrupoOpcional.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ItemOpcional.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ItemPedido.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ItemPedidoOpcional.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜Pedido.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜Produto.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜Restaurante.java
@@ -222,6 +232,10 @@ A estrutura do projeto foi atualizada com os novos pacotes de observabilidade:
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂auth
  ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜UsuarioRepository.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ClienteRepository.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜EnderecoRepository.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜GrupoOpcionalRepository.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ItemOpcionalRepository.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ItemPedidoOpcionalRepository.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜PedidoRepository.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ProdutoRepository.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜RestauranteRepository.java
@@ -240,6 +254,7 @@ A estrutura do projeto foi atualizada com os novos pacotes de observabilidade:
  ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜UsuarioService.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂impl
  ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ClienteServiceImpl.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜EnderecoServiceImpl.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜PedidoServiceImpl.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ProdutoServiceImpl.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜RelatorioServiceImpl.java
@@ -248,6 +263,7 @@ A estrutura do projeto foi atualizada com os novos pacotes de observabilidade:
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂metrics
  ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜MetricsService.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ClienteService.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜EnderecoService.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜PedidoService.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ProdutoService.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜RelatorioService.java
@@ -263,15 +279,15 @@ A estrutura do projeto foi atualizada com os novos pacotes de observabilidade:
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ValidCategoria.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ValidHorarioFuncionamento.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜ValidTelefone.java
- ┃ ┃ ┃ ┃ ┃ ┣ 📜DeliveryApiApplication.java
- ┃ ┃ ┃ ┃ ┃ ┗ 📜GerarSenha.java
- ┃ 📂resources
- ┃ ┣ 📂templates
- ┃ ┃ ┗ 📜dashboard.html
- ┃ ┣ 📜application.properties
- ┃ ┣ 📜application.yml
- ┃ ┣ 📜data.sql
- ┃ ┗ 📜logback-spring.xml
+ ┃ ┃ ┃ ┃ ┃ ┗ 📜DeliveryApiApplication.java
+ ┃ ┗ 📂resources
+ ┃ ┃ ┣ 📂templates
+ ┃ ┃ ┃ ┗ 📜dashboard.html
+ ┃ ┃ ┣ 📜application-docker.properties
+ ┃ ┃ ┣ 📜application.properties
+ ┃ ┃ ┣ 📜application.yml
+ ┃ ┃ ┣ 📜data.sql
+ ┃ ┃ ┗ 📜logback-spring.xml
  ┣ 📂postman
  ┃ ┣ 📜DeliveryApi.postman_collection.json
  ┃ ┣ 📜DeliveryApiLogin.postman_collection.json
@@ -294,6 +310,8 @@ A estrutura do projeto foi atualizada com os novos pacotes de observabilidade:
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ProdutoTest.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜RestauranteTest.java
  ┃ ┃ ┃ ┃ ┃ ┣ 📂integration
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜EnderecoControllerIntegrationTest.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ProdutoServiceCacheTest.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜SwaggerIntegrationTest.java
  ┃ ┃ ┃ ┃ ┃ ┣ 📂security
  ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📂jwt
@@ -302,13 +320,14 @@ A estrutura do projeto foi atualizada com os novos pacotes de observabilidade:
  ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜SecurityUtilsTest.java
  ┃ ┃ ┃ ┃ ┃ ┣ 📂service
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ClienteServiceTest.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜EnderecoServiceImplTest.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜PedidoServiceTest.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ProdutoServiceTest.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜RestauranteServiceTest.java
  ┃ ┃ ┃ ┃ ┃ ┗ 📂validation
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜CpfValidatorTest.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜HorarioFuncionamentoValidatorTest.java
- ┃ ┗📂resources
+ ┃ ┗ 📂resources
  ┃ ┃ ┗ 📜application-test.properties
 ```
 <h2>⚙️ Funcionalidades Implementadas</h2>
