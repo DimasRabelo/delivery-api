@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import com.deliverytech.delivery.dto.request.ItemPedidoDTO;
+
 
 /**
  * DTO (Data Transfer Object) de resposta que encapsula
@@ -39,7 +39,7 @@ public class PedidoResponseDTO {
     private BigDecimal total;
 
     @Schema(description = "Lista de itens do pedido")
-    private List<ItemPedidoDTO> itens;
+   private List<ItemPedidoResponseDTO> itens;
     
     @Schema(description = "ID do entregador atribuído (se houver)", example = "6", nullable = true)
     private Long entregadorId;
@@ -80,8 +80,8 @@ public class PedidoResponseDTO {
     public BigDecimal getTotal() { return total; }
     public void setTotal(BigDecimal total) { this.total = total; }
 
-    public List<ItemPedidoDTO> getItens() { return itens; }
-    public void setItens(List<ItemPedidoDTO> itens) { this.itens = itens; }
+    public List<ItemPedidoResponseDTO> getItens() { return itens; }
+    public void setItens(List<ItemPedidoResponseDTO> itens) { this.itens = itens; }
 
     public LocalDateTime getDataPedido() { return dataPedido; }
     public void setDataPedido(LocalDateTime dataPedido) { this.dataPedido = dataPedido; }

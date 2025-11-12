@@ -1,7 +1,7 @@
 package com.deliverytech.delivery.service;
 
 import com.deliverytech.delivery.dto.request.PedidoDTO;
-import com.deliverytech.delivery.dto.request.StatusPedidoDTO; // <-- Import necessário
+import com.deliverytech.delivery.dto.request.StatusPedidoDTO; 
 import com.deliverytech.delivery.dto.response.CalculoPedidoDTO;
 import com.deliverytech.delivery.dto.response.CalculoPedidoResponseDTO;
 import com.deliverytech.delivery.dto.response.PedidoResponseDTO;
@@ -110,4 +110,13 @@ public interface PedidoService {
      * @return true se pode acessar, false caso contrário
      */
     boolean canAccess(Long pedidoId);
+
+    // ==========================================================
+    // --- NOVO MÉTODO (Faltava este aqui!) ---
+    // ==========================================================
+    /**
+     * Conta quantos pedidos ativos o cliente tem no momento.
+     * @return Quantidade de pedidos (Long)
+     */
+    Long contarPedidosAtivosDoCliente();
 }

@@ -97,6 +97,14 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long>, JpaSpecif
             @Param("status") StatusPedido status
     );
 
+    // --- [NOVO] MÉTODO PARA O CONTADOR DO HEADER ---
+    // Recebe uma lista de status para ignorar (ex: ENTREGUE, CANCELADO)
+    @Query("SELECT COUNT(p) FROM Pedido p WHERE p.cliente.id = :clienteId AND p.status NOT IN :statusIgnorados")
+    Long contarPedidosAtivosPorCliente(
+        @Param("clienteId") Long clienteId, 
+        @Param("statusIgnorados") List<StatusPedido> statusIgnorados
+    );
+
     // =================== MÉTODOS RELACIONADOS A ENTREGADOR ===================
     boolean existsByEntregadorAndStatus(Usuario entregador, StatusPedido status);
 

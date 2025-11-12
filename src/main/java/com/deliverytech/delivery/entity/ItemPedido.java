@@ -46,6 +46,10 @@ public class ItemPedido {
     @Schema(description = "Subtotal = quantidade * preço unitário", example = "126.00", required = true, minimum = "0")
     private BigDecimal subtotal;
 
+    @Schema(description = "Observações específicas deste item", example = "Sem cebola, bem passado")
+    @Column(length = 255) // Opcional: define tamanho no banco
+    private String observacoes;
+
     // Relação com o pedido ao qual o item pertence
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pedido_id")

@@ -114,6 +114,24 @@ public class PedidoController {
         return ResponseEntity.ok(response);
     }
 
+    // --- O MÉTODO QUE FALTAVA ---
+    @GetMapping("/meus/contagem")
+    @PreAuthorize("hasRole('CLIENTE')")
+    @Operation(summary = "Contar pedidos ativos (CLIENTE)", description = "Retorna a quantidade de pedidos não finalizados (Pendentes/Preparo/Entrega) do cliente logado.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Contagem realizada com sucesso"),
+            @ApiResponse(responseCode = "401", description = "Token ausente ou inválido")
+    })
+    public ResponseEntity<ApiResponseWrapper<Long>> contarMeusPedidos() {
+        // Chama o serviço que implementamos
+        Long contagem = pedidoService.contarPedidosAtivosDoCliente();
+        
+        // Retorna o wrapper com o número (ex: data: 1)
+        ApiResponseWrapper<Long> response = new ApiResponseWrapper<>(true, contagem, "Contagem obtida com sucesso");
+        return ResponseEntity.ok(response);
+    }
+    // ----------------------------
+
     @PatchMapping("/{id}/status")
     @PreAuthorize("hasRole('ADMIN') or @pedidoService.canAccess(#id)")
     @Operation(summary = "Atualizar status do pedido (ADMIN ou Dono/Restaurante)", description = "Atualiza o status de um pedido (ex: EM_PREPARO, ENTREGUE, CANCELADO).")
@@ -205,7 +223,6 @@ public class PedidoController {
         
         CalculoPedidoResponseDTO calculo = pedidoService.calcularTotalPedido(dto);
         
-        // Agora sim, com o nome correto: CalculoPedidoResponseDTO
         ApiResponseWrapper<CalculoPedidoResponseDTO> response = new ApiResponseWrapper<>(true, calculo, "Total calculado com sucesso");
         
         return ResponseEntity.ok(response);
