@@ -19,6 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable; 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -88,7 +89,7 @@ public class ClienteController {
     })
     public ResponseEntity<ApiResponseWrapper<ClienteResponseDTO>> buscarPorId(
             @Parameter(description = "ID do cliente a ser buscado", required = true, example = "1") 
-            @PathVariable @Positive Long id) {
+            @PathVariable  @NonNull @Positive Long id) {
         
         ClienteResponseDTO cliente = clienteService.buscarClientePorId(id);
         ApiResponseWrapper<ClienteResponseDTO> response = 

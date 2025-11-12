@@ -37,7 +37,7 @@ services:
       interval: 30s    # Tenta a cada 30 segundos
       timeout: 10s     # Espera no máximo 10 segundos pela resposta
       retries: 5       # Tenta 5 vezes antes de marcar como 'unhealthy'
-      start_period: 120s # Dá 2 minutos (120s) para o Spring Boot subir antes de começar a testar
+      start_period: 300s # Dá 2 minutos (120s) para o Spring Boot subir antes de começar a testar
 
   # 2. Serviço do Frontend (React/Nginx)
   frontend:

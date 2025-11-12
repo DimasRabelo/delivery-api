@@ -4,6 +4,7 @@ import com.deliverytech.delivery.dto.request.ClienteDTO;
 import com.deliverytech.delivery.dto.response.ClienteResponseDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.lang.NonNull;
 
 import java.util.List;
 
@@ -31,7 +32,7 @@ public interface ClienteService {
      * @param id Identificador único do cliente.
      * @return ClienteResponseDTO com os dados do cliente encontrado.
      */
-    ClienteResponseDTO buscarClientePorId(Long id);
+    ClienteResponseDTO buscarClientePorId(@NonNull Long id);
 
     /**
      * Busca um cliente pelo email do usuário associado.

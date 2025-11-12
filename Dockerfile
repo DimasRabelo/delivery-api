@@ -4,44 +4,41 @@
 # ===================================================================
 FROM eclipse-temurin:21-jdk-alpine AS build
 
-# Define o diretório de trabalho
 WORKDIR /app
 
+# Instala o curl (útil para testes, se precisar)
 RUN apk add --no-cache curl
 
-# Copia os arquivos do Maven Wrapper
+# Copia os arquivos do Maven Wrapper e o pom.xml
 COPY .mvn/ .mvn
 COPY mvnw pom.xml ./
 
-# Baixa as dependências (camada de cache)
-# Isso só será executado novamente se o pom.xml mudar
+# Baixa as dependências (cache)
 RUN ./mvnw dependency:go-offline
 
-# Copia o código-fonte
+# Copia o código-fonte e compila o projeto
 COPY src ./src
-
-# Compila o projeto, gera o .jar e pula os testes
 RUN ./mvnw clean package -DskipTests
 
 # ===================================================================
 # ESTÁGIO 2: "Final"
-# Usa uma imagem JRE (Runtime) leve, pois não precisamos mais do JDK
+# Usa uma imagem JRE leve, mas agora com curl instalado
 # ===================================================================
-# Usando eclipse-temurin que é uma JRE Alpine comum e leve
 FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
 
-# Define a variável de ambiente para ativar o perfil "docker"
-# Isso fará o Spring Boot ler o 'application-docker.properties'
+# ✅ Instala o curl para que o healthcheck funcione
+RUN apk add --no-cache curl
+
+# Define o perfil ativo para o Spring Boot
 ENV SPRING_PROFILES_ACTIVE=docker
 
-# Expõe a porta que sua aplicação usa (definida no application.properties)
+# Expõe a porta da aplicação
 EXPOSE 8080
 
-# Copia o .jar gerado no estágio "build" para a imagem final
-# Note o nome do jar, pego do seu pom.xml
+# Copia o .jar da etapa de build
 COPY --from=build /app/target/delivery-api-0.0.1-SNAPSHOT.jar app.jar
 
-# Comando para executar a aplicação
+# Comando de inicialização
 ENTRYPOINT ["java", "-jar", "app.jar"]

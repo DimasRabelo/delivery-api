@@ -1,7 +1,10 @@
 package com.deliverytech.delivery.dto.response;
 
-import io.swagger.v3.oas.annotations.media.Schema; // Importação para documentação OpenAPI/Swagger
-import java.time.LocalDateTime; // Importação para o campo 'dataCadastro'
+import io.swagger.v3.oas.annotations.media.Schema;
+
+
+import java.time.LocalDateTime; 
+
 
 /**
  * DTO (Data Transfer Object) de resposta para enviar dados do Cliente.
@@ -9,9 +12,11 @@ import java.time.LocalDateTime; // Importação para o campo 'dataCadastro'
  * omitindo informações sensíveis (como senha, se houvesse) e
  * formatando dados para o front-end.
  */
+
 @Schema(description = "DTO de resposta com dados do cliente") // Documentação a nível de classe
 public class ClienteResponseDTO {
 
+   
     @Schema(description = "ID do cliente", example = "1")
     private Long id;
 

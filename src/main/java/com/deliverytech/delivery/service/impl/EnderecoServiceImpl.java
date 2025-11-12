@@ -68,7 +68,7 @@ public class EnderecoServiceImpl implements EnderecoService {
     public Endereco salvarNovoEndereco(EnderecoDTO enderecoDTO) {
         Long usuarioId = SecurityUtils.getCurrentUserId();
 
-        Usuario usuario = usuarioRepository.findById(usuarioId)
+        Usuario usuario = usuarioRepository.findById( usuarioId)
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Usuário com ID " + usuarioId + " não encontrado."));
 

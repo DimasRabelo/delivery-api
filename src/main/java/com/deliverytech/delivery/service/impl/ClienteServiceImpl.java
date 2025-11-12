@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.lang.NonNull;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -64,7 +65,7 @@ public class ClienteServiceImpl implements ClienteService {
     // ==========================================================
     @Override
     @Transactional(readOnly = true)
-    public ClienteResponseDTO buscarClientePorId(Long id) {
+    public ClienteResponseDTO buscarClientePorId(@NonNull Long id) {
         Cliente cliente = clienteRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado com ID: " + id));
         return mapToClienteResponse(cliente);
@@ -82,7 +83,7 @@ public class ClienteServiceImpl implements ClienteService {
     // MÉTODOS DE ATUALIZAÇÃO
     // ==========================================================
     @Override
-    public ClienteResponseDTO atualizarCliente(Long id, ClienteDTO dto) {
+    public ClienteResponseDTO atualizarCliente(@NonNull Long id, ClienteDTO dto) {
         Cliente cliente = clienteRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado com ID: " + id));
 
@@ -113,8 +114,8 @@ public class ClienteServiceImpl implements ClienteService {
     // MÉTODOS DE ATIVAÇÃO/DESATIVAÇÃO
     // ==========================================================
     @Override
-    public ClienteResponseDTO ativarDesativarCliente(Long id) {
-        Cliente cliente = clienteRepository.findById(id)
+    public ClienteResponseDTO ativarDesativarCliente(@NonNull Long id) {
+        Cliente cliente = clienteRepository.findById( id)
                 .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado com ID: " + id));
 
         Usuario usuario = cliente.getUsuario();

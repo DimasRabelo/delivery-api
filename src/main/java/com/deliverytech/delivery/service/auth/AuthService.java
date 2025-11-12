@@ -11,6 +11,7 @@ import com.deliverytech.delivery.repository.auth.UsuarioRepository;
 
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.lang.NonNull;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -118,7 +119,8 @@ public class AuthService implements UserDetailsService {
      * @param id ID do usuário
      * @return Usuario encontrado
      */
-    public Usuario buscarPorId(Long id) {
+   
+    public Usuario buscarPorId(@NonNull Long id) {
         return usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
     }
