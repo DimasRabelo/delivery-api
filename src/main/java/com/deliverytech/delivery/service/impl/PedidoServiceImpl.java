@@ -28,12 +28,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+// IMPORT NECESSÁRIO PARA A LISTA DE STATUS
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-
-// IMPORT NECESSÁRIO PARA A LISTA DE STATUS
-import java.util.Arrays; 
+import java.util.stream.Collectors; 
 
 @Service("pedidoService")
 public class PedidoServiceImpl implements PedidoService {
@@ -219,7 +217,29 @@ public class PedidoServiceImpl implements PedidoService {
         }
     }
 
-    // --- O MÉTODO QUE FALTAVA (CONTADOR) ---
+@Override
+    @Transactional(readOnly = true)
+    public List<PedidoResponseDTO> buscarPedidosPendentesEntregador() {
+        // 1. Pega o ID do usuário logado (assumindo que é o entregador)
+        Long entregadorId = SecurityUtils.getCurrentUserId();
+        
+        if (entregadorId == null) {
+            throw new BusinessException("Usuário não autenticado.");
+        }
+
+        // 2. Busca no banco apenas os pedidos que estão "SAIU_PARA_ENTREGA" para este ID
+        List<Pedido> pedidos = pedidoRepository.findByEntregadorIdAndStatus(
+            entregadorId, 
+            StatusPedido.SAIU_PARA_ENTREGA
+        );
+
+        // 3. Converte para DTO
+        return pedidos.stream()
+                .map(this::mapToPedidoResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    // --- O MÉTODO (CONTADOR) ---
     @Override
     @Transactional(readOnly = true)
     public Long contarPedidosAtivosDoCliente() {
@@ -435,54 +455,72 @@ public class PedidoServiceImpl implements PedidoService {
     /**
      * Método central de conversão Entity -> DTO.
      */
-    private PedidoResponseDTO mapToPedidoResponseDTO(Pedido pedido) {
-        PedidoResponseDTO dto = new PedidoResponseDTO();
-        
-        dto.setId(pedido.getId());
-        dto.setStatus(pedido.getStatus().name());
-        // CORREÇÃO: Usando dataPedido (e não dataHora)
-        dto.setDataPedido(pedido.getDataPedido());
-        
-        dto.setTotal(pedido.getValorTotal());
-        dto.setSubtotal(pedido.getSubtotal());
-        dto.setTaxaEntrega(pedido.getTaxaEntrega());
+   private PedidoResponseDTO mapToPedidoResponseDTO(Pedido pedido) {
+    PedidoResponseDTO dto = new PedidoResponseDTO();
+    
+    // Mapeamento Básico de Pedido
+    dto.setId(pedido.getId());
+    dto.setStatus(pedido.getStatus().name());
+    dto.setDataPedido(pedido.getDataPedido());
+    
+    // Valores Totais
+    dto.setTotal(pedido.getValorTotal());
+    dto.setSubtotal(pedido.getSubtotal());
+    dto.setTaxaEntrega(pedido.getTaxaEntrega());
 
-        if (pedido.getCliente() != null) {
-            dto.setClienteId(pedido.getCliente().getId());
-            dto.setClienteNome(pedido.getCliente().getNome());
+    // Cliente (Null Safety)
+    if (pedido.getCliente() != null) {
+        dto.setClienteId(pedido.getCliente().getId());
+        dto.setClienteNome(pedido.getCliente().getNome());
+    } else {
+        dto.setClienteNome("Cliente Desconhecido"); 
+    }
+    
+    // Restaurante
+    if (pedido.getRestaurante() != null) {
+        dto.setRestauranteId(pedido.getRestaurante().getId());
+        dto.setRestauranteNome(pedido.getRestaurante().getNome());
+    }
+    
+    // Endereço
+    if (pedido.getEnderecoEntrega() != null) {
+        Endereco end = pedido.getEnderecoEntrega();
+        dto.setEnderecoEntrega(String.format("%s, %s - %s", end.getRua(), end.getNumero(), end.getBairro()));
+    }
+    
+    // --- Entregador (Null Safety + Priorização de Nome/Email) ---
+    if (pedido.getEntregador() != null) {
+        Usuario entregador = pedido.getEntregador();
+        dto.setEntregadorId(entregador.getId());
+        
+        // Pega o NOME do entregador, se não tiver nome, usa o email
+        String nomeEntregador = entregador.getNome();
+        if (nomeEntregador == null || nomeEntregador.trim().isEmpty()) {
+            nomeEntregador = entregador.getEmail();
         }
         
-        if (pedido.getRestaurante() != null) {
-            dto.setRestauranteId(pedido.getRestaurante().getId());
-            dto.setRestauranteNome(pedido.getRestaurante().getNome());
-        }
-        
-        if (pedido.getEnderecoEntrega() != null) {
-            Endereco end = pedido.getEnderecoEntrega();
-            dto.setEnderecoEntrega(String.format("%s, %s - %s", end.getRua(), end.getNumero(), end.getBairro()));
-        }
-        
-        if (pedido.getEntregador() != null) {
-            dto.setEntregadorId(pedido.getEntregador().getId());
-            dto.setEntregadorNome(pedido.getEntregador().getEmail());
-        }
+        dto.setEntregadorNome(nomeEntregador);
+    } else {
+        dto.setEntregadorNome("Aguardando atribuição");
+    }
 
-        List<ItemPedidoResponseDTO> itensResponse = pedido.getItens().stream()
-            .map(item -> {
-                ItemPedidoResponseDTO iDTO = new ItemPedidoResponseDTO();
+    // Itens (Mapeamento e Cálculo do Subtotal)
+    List<ItemPedidoResponseDTO> itensResponse = pedido.getItens().stream()
+        .map(item -> {
+            ItemPedidoResponseDTO iDTO = new ItemPedidoResponseDTO();
+            // Dados essenciais para o Front
+            iDTO.setNomeProduto(item.getProduto().getNome());
+            iDTO.setQuantidade(item.getQuantidade());
+            iDTO.setPrecoUnitario(item.getPrecoUnitario());
+            iDTO.setObservacao(item.getObservacoes());
 
-                iDTO.setNomeProduto(item.getProduto().getNome());
-                iDTO.setQuantidade(item.getQuantidade());
-                iDTO.setPrecoUnitario(item.getPrecoUnitario());
-                iDTO.setObservacao(item.getObservacoes());
-
-                if (item.getPrecoUnitario() != null) {
-                    BigDecimal sub = item.getPrecoUnitario().multiply(new BigDecimal(item.getQuantidade()));
-                    iDTO.setSubtotal(sub); 
-                } else {
-                    iDTO.setSubtotal(BigDecimal.ZERO);
-                }
-
+            // Cálculo do Subtotal do item
+            if (item.getPrecoUnitario() != null) {
+                BigDecimal sub = item.getPrecoUnitario().multiply(new BigDecimal(item.getQuantidade()));
+                iDTO.setSubtotal(sub); 
+            } else {
+                iDTO.setSubtotal(BigDecimal.ZERO);
+            }
                 return iDTO;
             }).collect(Collectors.toList());
 

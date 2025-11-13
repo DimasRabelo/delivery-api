@@ -191,7 +191,7 @@ public class PedidoController {
     }
 
     @GetMapping("/restaurante/{restauranteId}")
-    @PreAuthorize("hasRole('ADMIN') or (hasRole('RESTAURANTE') and #restauranteId == principal.restauranteId)")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('RESTAURANTE') and #restauranteId == principal.restaurante.id)") 
     @Operation(summary = "Pedidos por restaurante (ADMIN ou Dono)", description = "Lista todos os pedidos de um restaurante. Requer ADMIN ou ser o dono do restaurante.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Pedidos recuperados com sucesso"),
@@ -225,6 +225,17 @@ public class PedidoController {
         
         ApiResponseWrapper<CalculoPedidoResponseDTO> response = new ApiResponseWrapper<>(true, calculo, "Total calculado com sucesso");
         
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/entregador/pendentes")
+    @PreAuthorize("hasRole('ENTREGADOR')")
+    @Operation(summary = "Minhas entregas pendentes (ENTREGADOR)", description = "Lista pedidos atribuídos ao entregador logado com status SAIU_PARA_ENTREGA.")
+    public ResponseEntity<ApiResponseWrapper<List<PedidoResponseDTO>>> buscarPendentesEntregador() {
+        
+        List<PedidoResponseDTO> pedidos = pedidoService.buscarPedidosPendentesEntregador();
+        
+        ApiResponseWrapper<List<PedidoResponseDTO>> response = new ApiResponseWrapper<>(true, pedidos, "Entregas pendentes recuperadas");
         return ResponseEntity.ok(response);
     }
 }

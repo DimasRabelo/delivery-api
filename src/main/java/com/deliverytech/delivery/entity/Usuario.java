@@ -15,10 +15,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.time.LocalDateTime;
 import java.util.*;
 
-/**
- * Entidade responsável pela autenticação e autorização do sistema.
- * Implementa UserDetails para integração com o Spring Security.
- */
 @Entity
 @Table(name = "usuario")
 @Schema(description = "Entidade de autenticação e autorização (usuário do sistema)")
@@ -28,6 +24,11 @@ public class Usuario implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Schema(description = "Identificador único do usuário", example = "1")
     private Long id;
+
+    // --- 1. MAPEANDO A COLUNA 'NOME' QUE JÁ EXISTE NO BANCO ---
+    @Column(name = "nome") 
+    @Schema(description = "Nome de exibição do usuário", example = "João Silva")
+    private String nome;
 
     @Column(nullable = false, unique = true)
     @NotBlank(message = "Email é obrigatório")
@@ -55,9 +56,12 @@ public class Usuario implements UserDetails {
     @Schema(description = "Data e hora de criação do usuário", example = "2024-06-05T10:30:00")
     private LocalDateTime dataCriacao = LocalDateTime.now();
 
-    @Column(name = "restaurante_id")
-    @Schema(description = "ID do restaurante vinculado (caso role seja RESTAURANTE)", example = "5")
-    private Long restauranteId;
+    // --- 2. MAPEANDO 'RESTAURANTE_ID' COMO OBJETO ---
+    // Isso permite acessar usuario.getRestaurante().getId()
+    @OneToOne
+    @JoinColumn(name = "restaurante_id") 
+    @Schema(description = "Restaurante vinculado (caso role seja RESTAURANTE)")
+    private Restaurante restaurante;
 
     /** Dados do cliente (usado apenas se a role for CLIENTE) */
     @OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -94,23 +98,35 @@ public class Usuario implements UserDetails {
     @Override public boolean isCredentialsNonExpired() { return true; }
     @Override public boolean isEnabled() { return ativo; }
 
-    // --- Getters e Setters ---
+    // --- Getters e Setters Manuais (Caso não use Lombok @Data) ---
+    
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+    
+    public String getNome() { return nome; }
+    public void setNome(String nome) { this.nome = nome; }
+
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
+    
     public String getSenha() { return senha; }
     public void setSenha(String senha) { this.senha = senha; }
+    
     public Role getRole() { return role; }
     public void setRole(Role role) { this.role = role; }
+    
     public Boolean getAtivo() { return ativo; }
     public void setAtivo(Boolean ativo) { this.ativo = ativo; }
+    
     public LocalDateTime getDataCriacao() { return dataCriacao; }
     public void setDataCriacao(LocalDateTime dataCriacao) { this.dataCriacao = dataCriacao; }
-    public Long getRestauranteId() { return restauranteId; }
-    public void setRestauranteId(Long restauranteId) { this.restauranteId = restauranteId; }
+    
+    public Restaurante getRestaurante() { return restaurante; }
+    public void setRestaurante(Restaurante restaurante) { this.restaurante = restaurante; }
+    
     public Cliente getCliente() { return cliente; }
     public void setCliente(Cliente cliente) { this.cliente = cliente; }
+    
     public List<Endereco> getEnderecos() { return enderecos; }
     public void setEnderecos(List<Endereco> enderecos) { this.enderecos = enderecos; }
 }

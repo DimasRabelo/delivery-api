@@ -41,11 +41,14 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long>, JpaSpecif
      * Busca pedidos de um restaurante específico, incluindo itens e dados do restaurante,
      * evitando problemas de LazyInitializationException.
      */
-    @Query("SELECT DISTINCT p FROM Pedido p " +
+  @Query("SELECT DISTINCT p FROM Pedido p " +
            "LEFT JOIN FETCH p.restaurante r " +
            "LEFT JOIN FETCH p.itens i " +
+           "LEFT JOIN FETCH p.cliente c " +       // CRÍTICO: Traz o Cliente
+           "LEFT JOIN FETCH p.entregador e " +    // CRÍTICO: Traz o Entregador
            "WHERE p.restaurante.id = :restauranteId " +
-           "AND (:status IS NULL OR p.status = :status)")
+           "AND (:status IS NULL OR p.status = :status) " +
+           "ORDER BY p.dataPedido DESC")          
     List<Pedido> findPedidosByRestauranteIdAndStatusComItens(
             @Param("restauranteId") Long restauranteId,
             @Param("status") StatusPedido status
@@ -124,5 +127,12 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long>, JpaSpecif
             @Param("clienteId") Long clienteId,
             @Param("restauranteId") Long restauranteId,
             @Param("entregadorId") Long entregadorId
+    );
+
+    // --- BUSCA DE PEDIDOS DO ENTREGADOR ---
+    @Query("SELECT p FROM Pedido p WHERE p.entregador.id = :entregadorId AND p.status = :status ORDER BY p.dataPedido ASC")
+    List<Pedido> findByEntregadorIdAndStatus(
+        @Param("entregadorId") Long entregadorId, 
+        @Param("status") StatusPedido status
     );
 }

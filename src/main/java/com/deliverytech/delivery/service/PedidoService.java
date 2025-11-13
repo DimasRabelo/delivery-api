@@ -119,4 +119,9 @@ public interface PedidoService {
      * @return Quantidade de pedidos (Long)
      */
     Long contarPedidosAtivosDoCliente();
+
+
+
+    // --- NOVO MÉTODO PARA O ENTREGADOR ---
+    List<PedidoResponseDTO> buscarPedidosPendentesEntregador();
 }
