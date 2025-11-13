@@ -3,6 +3,8 @@ package com.deliverytech.delivery.service.impl;
 import com.deliverytech.delivery.dto.relatorio.*;
 import com.deliverytech.delivery.entity.*;
 import com.deliverytech.delivery.repository.PedidoRepository;
+import com.deliverytech.delivery.repository.RestauranteRepository; // Adicionado
+import com.deliverytech.delivery.repository.auth.UsuarioRepository; // Adicionado
 import com.deliverytech.delivery.service.RelatorioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,47 @@ public class RelatorioServiceImpl implements RelatorioService {
     @Autowired
     private PedidoRepository pedidoRepository;
 
+    // --- DEPENDÊNCIAS ADICIONADAS PARA O DASHBOARD ---
+    @Autowired 
+    private UsuarioRepository usuarioRepository; 
+    @Autowired 
+    private RestauranteRepository restauranteRepository;
+    // ---------------------------------------------------
+
+    // ==========================================================
+    // --- MÉTODOS DO DASHBOARD (Contagem NATIVA) ---
+    // ==========================================================
+
+   @Override
+    @Transactional(readOnly = true)
+    public Long contarTotalUsuarios() {
+        // CHAMA O MÉTODO NATIVO CORRETO (Implementado no Repository)
+        return usuarioRepository.contarTodosUsuariosNative(); 
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public Long contarTotalRestaurantes() {
+        // CHAMA O MÉTODO NATIVO CORRETO (Implementado no Repository)
+        return restauranteRepository.contarTodosRestaurantesNative(); 
+    }
+
+   @Override
+    public BigDecimal calcularVendasUltimos30Dias() {
+        // 1. Define o período: Hoje e 30 dias atrás
+        LocalDateTime trintaDiasAtras = LocalDateTime.now().minusDays(30);
+        LocalDateTime agora = LocalDateTime.now();
+        
+        // 2. Chama o método do Repositório
+        BigDecimal vendas = pedidoRepository.calcularVendasPorPeriodo(trintaDiasAtras, agora);
+        
+        // 3. Retorna o valor real (ou 0.00 se o resultado for NULL, o que é comum quando não há vendas)
+        return vendas != null ? vendas : BigDecimal.ZERO; 
+    }
+    // ==========================================================
+    // --- RELATÓRIO DE VENDAS (Existente) ---
+    // ==========================================================
+    
     /**
      * Gera um relatório de vendas agregado por restaurante dentro de um período.
      */
@@ -64,8 +107,7 @@ public class RelatorioServiceImpl implements RelatorioService {
     }
 
     /**
-     * Gera um relatório de produtos mais vendidos, calculando a receita
-     * real (incluindo opcionais) de cada item.
+     * Gera um relatório de produtos mais vendidos, calculando a receita.
      */
     @Override
     @Transactional(readOnly = true)
@@ -88,7 +130,7 @@ public class RelatorioServiceImpl implements RelatorioService {
         // Mapas para agregar os dados dos produtos
         Map<Long, Integer> contagemProdutos = new HashMap<>(); // ID do Produto -> Qtd Total
         Map<Long, BigDecimal> receitaProdutos = new HashMap<>(); // ID do Produto -> Receita Total (com opcionais)
-        Map<Long, Produto> produtosMap = new HashMap<>(); // ID do Produto -> Objeto Produto (para dados como nome)
+        Map<Long, Produto> produtosMap = new HashMap<>(); // ID do Produto -> Objeto Produto
 
         // Itera sobre todos os itens de todos os pedidos filtrados
         for (Pedido pedido : pedidos) {
@@ -97,13 +139,8 @@ public class RelatorioServiceImpl implements RelatorioService {
                     if (item != null && item.getProduto() != null && item.getQuantidade() != null) {
                         Long produtoId = item.getProduto().getId();
                         
-                        // Soma a quantidade total vendida do produto
                         contagemProdutos.merge(produtoId, item.getQuantidade(), Integer::sum);
-                        
-                        // Soma a receita real (subtotal do item, que inclui opcionais)
                         receitaProdutos.merge(produtoId, item.getSubtotal(), BigDecimal::add);
-                        
-                        // Armazena a referência ao produto para buscar o nome/categoria
                         produtosMap.put(produtoId, item.getProduto());
                     }
                 }
@@ -121,17 +158,16 @@ public class RelatorioServiceImpl implements RelatorioService {
                     Produto produto = produtosMap.get(produtoId);
                     Integer totalVendido = entry.getValue();
                     
-                    // Busca a receita total real que foi somada
                     BigDecimal receitaTotal = receitaProdutos.getOrDefault(produtoId, BigDecimal.ZERO);
                     
                     return new RelatorioProdutosDTO(
                             produto.getNome(),
                             produto.getCategoria(),
                             totalVendido,
-                            receitaTotal // Usa a receita real calculada
+                            receitaTotal
                     );
                 })
-                .sorted(Comparator.comparing(RelatorioProdutosDTO::getTotalVendido).reversed()) // Ordena por mais vendidos
+                .sorted(Comparator.comparing(RelatorioProdutosDTO::getTotalVendido).reversed())
                 .collect(Collectors.toList());
     }
 
@@ -175,7 +211,7 @@ public class RelatorioServiceImpl implements RelatorioService {
                             totalGasto
                     );
                 })
-                .sorted(Comparator.comparing(RelatorioClientesDTO::getTotalGasto).reversed()) // Ordena por quem gastou mais
+                .sorted(Comparator.comparing(RelatorioClientesDTO::getTotalGasto).reversed())
                 .collect(Collectors.toList());
     }
 

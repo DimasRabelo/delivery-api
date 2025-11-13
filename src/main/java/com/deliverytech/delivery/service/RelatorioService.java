@@ -1,6 +1,8 @@
 package com.deliverytech.delivery.service;
 
 import com.deliverytech.delivery.dto.relatorio.*;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -9,6 +11,33 @@ import java.util.List;
  * Contém métodos para relatórios de vendas, produtos, clientes e pedidos.
  */
 public interface RelatorioService {
+
+    
+    
+    // ==========================================================
+    // --- MÉTODOS DE CONTAGEM PARA O DASHBOARD (Adicionados) ---
+    // ==========================================================
+    /**
+     * Conta o total de usuários cadastrados na plataforma.
+     * @return O número total de usuários (Long).
+     */
+    Long contarTotalUsuarios();
+
+    /**
+     * Conta o total de restaurantes cadastrados na plataforma.
+     * @return O número total de restaurantes (Long).
+     */
+    Long contarTotalRestaurantes();
+
+    /**
+     * Calcula o valor total das vendas no último período (ex: 30 dias).
+     * @return O total de vendas (BigDecimal).
+     */
+    BigDecimal calcularVendasUltimos30Dias();
+    
+    
+    
+    
 
     // ==========================================================
     // --- RELATÓRIOS DE VENDAS ---

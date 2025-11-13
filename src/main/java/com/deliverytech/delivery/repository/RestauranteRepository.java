@@ -60,6 +60,10 @@ public interface RestauranteRepository extends JpaRepository<Restaurante, Long> 
     @Query("SELECT DISTINCT r.categoria FROM Restaurante r WHERE r.ativo = true ORDER BY r.categoria")
     List<String> findCategoriasDisponiveis();
 
+    // --- NOVO MÉTODO CUSTOMIZADO PARA CONTAGEM ---
+    @Query(value = "SELECT COUNT(*) FROM RESTAURANTE", nativeQuery = true)
+    Long contarTodosRestaurantesNative();
+
     // =================== MÉTODOS PAGINADOS ===================
 
     /** Filtra restaurantes por categoria e status ativo/inativo, com paginação */
