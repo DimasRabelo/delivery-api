@@ -117,15 +117,28 @@
    * Busca os dados mais recentes do endpoint de métricas da API.
    * Em caso de sucesso, chama 'updateDashboard'.
    */
-  async function fetchMetrics() {
-    try {
-      const response = await fetch('/dashboard/api/metrics');
-      const data = await response.json();
-      updateDashboard(data);
-    } catch (error) {
-      console.error('Erro ao buscar métricas:', error);
+async function fetchMetrics() {
+  try {
+    const token = localStorage.getItem("token");
+
+    const response = await fetch('/dashboard/api/metrics', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      console.error('Erro ao buscar métricas:', response.status);
+      return;
     }
+
+    const data = await response.json();
+    updateDashboard(data);
+  } catch (error) {
+    console.error('Erro ao buscar métricas:', error);
   }
+}
 
   /**
    * Atualiza os valores dos cards de KPI (Pedidos, Receita, Usuários, Tempo).

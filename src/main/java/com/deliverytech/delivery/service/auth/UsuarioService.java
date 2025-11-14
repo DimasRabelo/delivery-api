@@ -79,4 +79,7 @@ public interface UsuarioService {
      * @return Lista de UserResponse (DTOs) dos entregadores ativos
      */
     List<UserResponse> buscarEntregadoresAtivos();
+
+
+  
 }

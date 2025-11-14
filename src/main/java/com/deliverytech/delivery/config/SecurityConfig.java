@@ -43,7 +43,7 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    /**
+  /**
      * Expõe o AuthenticationManager do Spring Security como um Bean.
      * Necessário para o processo de autenticação manual no AuthController.
      * @param authConfig Configuração de autenticação injetada.
@@ -126,10 +126,12 @@ public class SecurityConfig {
                                 "/api/auth/**", // Login e Registro
                                 "/api/restaurantes/**", // Consulta de restaurantes
                                 "/api/produtos/**" // Consulta de produtos/cardápios
-                        ).permitAll() 
+                                 ).permitAll() 
 
                         // Endpoint de Actuator (exceto /health) restrito ao ADMIN
                         .requestMatchers("/actuator/**").hasRole("ADMIN")
+                       
+                       
                         
                         // Todo o resto exige autenticação
                         .anyRequest().authenticated()
@@ -170,5 +172,7 @@ public class SecurityConfig {
         // Aplica esta configuração a todos os paths da API
         source.registerCorsConfiguration("/**", configuration); 
         return source;
+
+        
     }
 }
