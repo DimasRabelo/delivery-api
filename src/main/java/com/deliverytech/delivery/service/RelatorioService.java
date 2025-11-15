@@ -15,7 +15,7 @@ public interface RelatorioService {
     
     
     // ==========================================================
-    // --- MÉTODOS DE CONTAGEM PARA O DASHBOARD (Adicionados) ---
+    // --- MÉTODOS DE CONTAGEM PARA O DASHBOARD ---
     // ==========================================================
     /**
      * Conta o total de usuários cadastrados na plataforma.

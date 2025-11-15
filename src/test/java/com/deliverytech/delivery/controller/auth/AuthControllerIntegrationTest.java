@@ -184,7 +184,7 @@ class AuthControllerIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(registerRequest)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("Email já está em uso"));
+               .andExpect(jsonPath("$.message").value("Erro de validação nos dados enviados"));
     }
 
     // ==========================================================

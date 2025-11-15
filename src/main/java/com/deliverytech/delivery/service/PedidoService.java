@@ -112,7 +112,7 @@ public interface PedidoService {
     boolean canAccess(Long pedidoId);
 
     // ==========================================================
-    // --- NOVO MÉTODO (Faltava este aqui!) ---
+    // --- MÉTODO CONTAR PEDIDOS ---
     // ==========================================================
     /**
      * Conta quantos pedidos ativos o cliente tem no momento.
@@ -122,6 +122,6 @@ public interface PedidoService {
 
 
 
-    // --- NOVO MÉTODO PARA O ENTREGADOR ---
+    // --- MÉTODO PARA O ENTREGADOR ---
     List<PedidoResponseDTO> buscarPedidosPendentesEntregador();
 }

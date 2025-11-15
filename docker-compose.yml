@@ -1,5 +1,5 @@
 # Define a versão do Docker Compose
-version: '3.8'
+
 
 # Define os contêineres que compõem a aplicação
 services:

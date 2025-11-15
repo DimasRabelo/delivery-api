@@ -1,108 +1,88 @@
 package com.deliverytech.delivery.security.jwt;
 
+//import com.deliverytech.delivery.entity.Restaurante;
 import com.deliverytech.delivery.entity.Usuario;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
+//import org.springframework.security.core.userdetails.UserDetails; 
 
 /**
  * Classe utilitária (Helper) para acessar facilmente os dados do usuário
  * autenticado no sistema.
  */
-public class SecurityUtils {
+public final class SecurityUtils {
 
-    /**
-     * Obtém a entidade Usuario completa do usuário autenticado.
-     */
+    private static final String USUARIO_NAO_AUTENTICADO = "Usuário não autenticado";
+
     public static Usuario getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
-            return (Usuario) authentication.getPrincipal();
+        if (authentication == null || 
+            !authentication.isAuthenticated() || 
+            authentication.getPrincipal() == null) {
+            
+            throw new RuntimeException(USUARIO_NAO_AUTENTICADO); 
         }
+
+        Object principal = authentication.getPrincipal();
         
-        // Retorna null se não estiver logado (evita exceção em alguns casos)
-        // Ou mantenha a exceção se preferir forçar o login
-        return null; 
+        if (!(principal instanceof Usuario)) {
+            throw new RuntimeException(USUARIO_NAO_AUTENTICADO); 
+        }
+
+        return (Usuario) principal;
     }
 
-    /**
-     * Atalho para obter o ID do usuário logado.
-     */
+    // --- MÉTODOS AUXILIARES ---
+
     public static Long getCurrentUserId() {
-        Usuario user = getCurrentUser();
-        return user != null ? user.getId() : null;
+        return getCurrentUser().getId();
     }
 
-    /**
-     * Atalho para obter o Email do usuário logado.
-     */
-    public static String getCurrentUserEmail() {
-        Usuario user = getCurrentUser();
-        return user != null ? user.getEmail() : null;
-    }
-
-    /**
-     * Atalho para obter a Role do usuário logado.
-     */
-    public static String getCurrentUserRole() {
-        Usuario user = getCurrentUser();
-        return user != null ? user.getRole().name() : null;
-    }
-
-    /**
-     * Atalho para obter o ID do restaurante associado ao usuário logado.
-     * --- CORREÇÃO APLICADA AQUI ---
-     */
     public static Long getCurrentRestauranteId() {
         Usuario usuario = getCurrentUser();
         
-        // Verifica se o usuário existe E se ele tem um restaurante vinculado
-        if (usuario != null && usuario.getRestaurante() != null) {
-            // Navega pelo objeto: Usuario -> Restaurante -> ID
+        if (usuario.getRestaurante() != null) {
             return usuario.getRestaurante().getId();
         }
         
         return null;
     }
+    
+    public static String getCurrentUserEmail() {
+        return getCurrentUser().getEmail();
+    }
+
+    public static String getCurrentUserRole() {
+        return getCurrentUser().getRole().name();
+    }
 
     /**
-     * Verifica se o usuário logado possui uma role específica.
+     * Verifica se o usuário logado possui uma Role específica.
      */
     public static boolean hasRole(String role) {
-        Usuario usuario = getCurrentUser();
-        return usuario != null && usuario.getRole().name().equals(role);
-    }
-
-    // -------------------------------------------------------------------------
-    // Atalhos de verificação de Role
-    // -------------------------------------------------------------------------
-
-    public static boolean isAdmin() {
-        return hasRole("ADMIN");
-    }
-
-    public static boolean isCliente() {
-        return hasRole("CLIENTE");
-    }
-
-    public static boolean isRestaurante() {
-        return hasRole("RESTAURANTE");
-    }
-
-    public static boolean isEntregador() {
-        return hasRole("ENTREGADOR");
-    }
-
-    // -------------------------------------------------------------------------
-    // Métodos de Instância (para Injeção de Dependência)
-    // -------------------------------------------------------------------------
-
-    public Usuario getUsuarioLogado() {
-        Usuario user = getCurrentUser();
-        if (user == null) {
-            throw new RuntimeException("Usuário não autenticado");
+        try {
+            Usuario usuario = getCurrentUser();
+            return usuario.getRole().name().equals(role);
+        } catch (RuntimeException e) {
+            return false;
         }
-        return user;
     }
+
+    // -------------------------------------------------------------------------
+    // MÉTODOS DE INSTÂNCIA QUE ESTAVAM FALTANDO NO ARQUIVO DE PRODUÇÃO
+    // -------------------------------------------------------------------------
+
+    // Métodos de Instância (para Injeção de Dependência)
+    public Usuario getUsuarioLogado() {
+        return getCurrentUser(); 
+    }
+    
+    // MÉTODOS ESTÁTICOS DE VERIFICAÇÃO DE ROLE (QUE OS TESTES ESTAVAM CHAMANDO)
+    // ESTES DEVERIAM SER MÉTODOS ESTÁTICOS NO SEU CÓDIGO DE PRODUÇÃO.
+    
+    public static boolean isCliente() { return hasRole("CLIENTE"); }
+    public static boolean isAdmin() { return hasRole("ADMIN"); }
+    public static boolean isRestaurante() { return hasRole("RESTAURANTE"); }
+    public static boolean isEntregador() { return hasRole("ENTREGADOR"); }
 }

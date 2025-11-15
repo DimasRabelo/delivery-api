@@ -28,11 +28,15 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-// IMPORT NECESSÁRIO PARA A LISTA DE STATUS
+
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors; 
 
+/**
+ * Implementação do Serviço de Pedidos, contendo toda a lógica de negócio,
+ * validações e integração com o repositório, auditoria e métricas.
+ */
 @Service("pedidoService")
 public class PedidoServiceImpl implements PedidoService {
 
@@ -49,12 +53,12 @@ public class PedidoServiceImpl implements PedidoService {
 
 
     /**
-     * Processa e salva um novo pedido no sistema.
+     * Processa, valida, calcula e salva um novo pedido no sistema, controlando transação e estoque.
      */
     @Override
-    @Transactional
+    @Transactional // Garante que todas as operações (salvar pedido, atualizar estoque) sejam atômicas.
     public PedidoResponseDTO criarPedido(PedidoDTO dto) {
-        Timer.Sample sample = metricsService.iniciarTimerPedido();
+        Timer.Sample sample = metricsService.iniciarTimerPedido(); // Inicia medição do tempo de execução.
         metricsService.incrementarPedidosProcessados();
 
         Long usuarioId = SecurityUtils.getCurrentUserId();
@@ -63,7 +67,7 @@ public class PedidoServiceImpl implements PedidoService {
         try {
             auditService.logUserAction(usuarioIdLog, "CRIAR_PEDIDO_INICIO", "PedidoDTO", dto);
 
-            // 1. Validação do Usuário e Cliente
+            // 1. Validação do Usuário e Perfil do Cliente
             if (usuarioId == null) {
                 throw new BusinessException("Acesso negado. Usuário não autenticado.");
             }
@@ -87,15 +91,15 @@ public class PedidoServiceImpl implements PedidoService {
             // 3. Validação do Endereço
             Endereco endereco = enderecoRepository.findById(dto.getEnderecoEntregaId())
                     .orElseThrow(() -> new EntityNotFoundException("Endereço não encontrado"));
+            // Garante que o endereço pertence ao usuário logado
             if (!endereco.getUsuario().getId().equals(usuarioId)) {
                 throw new BusinessException("Endereço de entrega inválido. Pertence a outro usuário.");
             }
 
-            // 4. Inicialização do Pedido
+            // 4. Inicialização da Entidade Pedido
             Pedido pedido = new Pedido();
             pedido.setCliente(cliente);
             pedido.setRestaurante(restaurante);
-            // CORREÇÃO DA DATA: Usando dataPedido
             pedido.setDataPedido(LocalDateTime.now());
             pedido.setStatus(StatusPedido.PENDENTE);
             pedido.setObservacoes(dto.getObservacoes());
@@ -108,11 +112,12 @@ public class PedidoServiceImpl implements PedidoService {
 
             BigDecimal subtotal = BigDecimal.ZERO;
 
-            // 5. Processamento dos Itens
+            // 5. Processamento dos Itens (LOOP)
             for (ItemPedidoDTO itemDTO : dto.getItens()) {
                 Produto produto = produtoRepository.findById(itemDTO.getProdutoId())
                         .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado: " + itemDTO.getProdutoId()));
                 
+                // Validações de Produto, Estoque e Pertencimento ao Restaurante
                 if (produto.getDisponivel() == null || !produto.getDisponivel()) {
                     throw new BusinessException("Produto indisponível: " + produto.getNome());
                 }
@@ -132,7 +137,7 @@ public class PedidoServiceImpl implements PedidoService {
 
                 List<Long> opcionaisIdsEnviados = (itemDTO.getOpcionaisIds() != null) ? itemDTO.getOpcionaisIds() : new ArrayList<>();
 
-                // 5a. Processamento de Opcionais
+                // 5a. Processamento e Validação de Opcionais (Lógica Complexa de Mínimo/Máximo)
                 if (!opcionaisIdsEnviados.isEmpty()) {
                     Set<Long> uniqueIds = new HashSet<>(opcionaisIdsEnviados);
                     Map<Long, ItemOpcional> mapaOpcionais = itemOpcionalRepository.findAllById(uniqueIds).stream()
@@ -143,6 +148,7 @@ public class PedidoServiceImpl implements PedidoService {
                         ItemOpcional opcional = mapaOpcionais.get(id);
                         if (opcional == null) throw new EntityNotFoundException("Opcional não encontrado: " + id);
                         
+                        // Valida se o opcional pertence ao produto (através do GrupoOpcional)
                         if (opcional.getGrupoOpcional() == null ||
                             opcional.getGrupoOpcional().getProduto() == null ||
                             !opcional.getGrupoOpcional().getProduto().getId().equals(produto.getId())) {
@@ -151,7 +157,7 @@ public class PedidoServiceImpl implements PedidoService {
                         opcionaisSelecionados.add(opcional);
                     }
 
-                    // Validação de Grupos
+                    // Validação de Grupos (Mínimo e Máximo de Seleção)
                     Map<GrupoOpcional, Long> contagemPorGrupo = opcionaisSelecionados.stream()
                             .collect(Collectors.groupingBy(ItemOpcional::getGrupoOpcional, Collectors.counting()));
                     
@@ -167,12 +173,14 @@ public class PedidoServiceImpl implements PedidoService {
                         }
                     }
 
+                    // Adiciona o custo do opcional e cria o vínculo M-M
                     for (ItemOpcional opcional : opcionaisSelecionados) {
                         precoUnitarioCalculado = precoUnitarioCalculado.add(opcional.getPrecoAdicional());
                         ItemPedidoOpcional linkOpcional = new ItemPedidoOpcional(item, opcional);
                         item.getOpcionaisSelecionados().add(linkOpcional);
                     }
                 } else {
+                     // Verifica se há seleções obrigatórias que foram ignoradas
                      List<GrupoOpcional> gruposDoProduto = grupoOpcionalRepository.findByProdutoId(produto.getId());
                      for (GrupoOpcional grupo : gruposDoProduto) {
                         if (grupo.getMinSelecao() > 0) {
@@ -181,16 +189,18 @@ public class PedidoServiceImpl implements PedidoService {
                      }
                 }
 
+                // Cálculo e Atualização do Estoque
                 item.setPrecoUnitario(precoUnitarioCalculado);
                 item.calcularSubtotal(); 
                 pedido.getItens().add(item);
                 subtotal = subtotal.add(item.getSubtotal());
 
+                // DÁ BAIXA NO ESTOQUE (Deve ser revertido se a transação falhar)
                 produto.setEstoque(produto.getEstoque() - itemDTO.getQuantidade());
                 produtoRepository.save(produto);
             }
 
-            // 6. Cálculo Final
+            // 6. Cálculo Final do Pedido
             BigDecimal taxaEntrega = restaurante.getTaxaEntrega() != null ? restaurante.getTaxaEntrega() : BigDecimal.ZERO;
             BigDecimal valorTotal = subtotal.add(taxaEntrega);
 
@@ -201,7 +211,7 @@ public class PedidoServiceImpl implements PedidoService {
 
             Pedido pedidoSalvo = pedidoRepository.save(pedido);
 
-            // 7. Métricas
+            // 7. Métricas e Auditoria de Sucesso
             metricsService.incrementarPedidosComSucesso();
             metricsService.adicionarReceita(valorTotal.doubleValue());
             auditService.logUserAction(usuarioIdLog, "CRIAR_PEDIDO_SUCESSO", "Pedido", pedidoSalvo);
@@ -209,37 +219,41 @@ public class PedidoServiceImpl implements PedidoService {
             return mapToPedidoResponseDTO(pedidoSalvo);
 
         } catch (Exception e) {
+            // Em caso de exceção, o @Transactional fará o rollback de todas as alterações.
             metricsService.incrementarPedidosComErro();
             auditService.logUserAction(usuarioIdLog, "CRIAR_PEDIDO_FALHA", e.getClass().getSimpleName(), e.getMessage());
-            throw e;
+            throw e; // Relança a exceção
         } finally {
             metricsService.finalizarTimerPedido(sample);
         }
     }
 
-@Override
+    /**
+     * Busca pedidos com status 'SAIU_PARA_ENTREGA' atribuídos ao entregador logado.
+     */
+    @Override
     @Transactional(readOnly = true)
     public List<PedidoResponseDTO> buscarPedidosPendentesEntregador() {
-        // 1. Pega o ID do usuário logado (assumindo que é o entregador)
         Long entregadorId = SecurityUtils.getCurrentUserId();
         
         if (entregadorId == null) {
             throw new BusinessException("Usuário não autenticado.");
         }
 
-        // 2. Busca no banco apenas os pedidos que estão "SAIU_PARA_ENTREGA" para este ID
+        // Busca pedidos em trânsito para o entregador
         List<Pedido> pedidos = pedidoRepository.findByEntregadorIdAndStatus(
             entregadorId, 
             StatusPedido.SAIU_PARA_ENTREGA
         );
 
-        // 3. Converte para DTO
         return pedidos.stream()
                 .map(this::mapToPedidoResponseDTO)
                 .collect(Collectors.toList());
     }
 
-    // --- O MÉTODO (CONTADOR) ---
+    /**
+     * Conta pedidos com status diferentes de ENTREGUE ou CANCELADO para o cliente logado.
+     */
     @Override
     @Transactional(readOnly = true)
     public Long contarPedidosAtivosDoCliente() {
@@ -249,24 +263,25 @@ public class PedidoServiceImpl implements PedidoService {
             return 0L;
         }
 
-        // Define quais status NÃO contam como "ativos"
+        // Status que definem que o pedido NÃO está mais ativo
         List<StatusPedido> statusIgnorados = Arrays.asList(
             StatusPedido.ENTREGUE, 
             StatusPedido.CANCELADO
         );
 
-        // Passa a lista para o repositório
         return pedidoRepository.contarPedidosAtivosPorCliente(usuarioId, statusIgnorados);
     }
 
     /**
-     * Calcula o total (Preview).
+     * Calcula o total do pedido (subtotal + taxa) sem salvar no banco (Preview).
+     * Simula a lógica de cálculo de opcionais e taxa de entrega.
      */
     @Override
     @Transactional(readOnly = true)
     public CalculoPedidoResponseDTO calcularTotalPedido(CalculoPedidoDTO dto) {
         BigDecimal subtotal = BigDecimal.ZERO;
 
+        // Itera sobre os itens para calcular o subtotal
         for (ItemPedidoDTO item : dto.getItens()) {
             Produto produto = produtoRepository.findById(item.getProdutoId())
                     .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado"));
@@ -274,6 +289,7 @@ public class PedidoServiceImpl implements PedidoService {
             BigDecimal precoItem = produto.getPrecoBase();
             List<Long> opcionaisIds = (item.getOpcionaisIds() != null) ? item.getOpcionaisIds() : new ArrayList<>();
 
+            // Adiciona o preço dos opcionais
             if (!opcionaisIds.isEmpty()) {
                  Set<Long> uniqueIds = new HashSet<>(opcionaisIds);
                  Map<Long, ItemOpcional> mapaOpcionais = itemOpcionalRepository.findAllById(uniqueIds).stream()
@@ -284,6 +300,7 @@ public class PedidoServiceImpl implements PedidoService {
                      if(op != null) precoItem = precoItem.add(op.getPrecoAdicional());
                  }
             }
+            // Multiplica o preço unitário (com opcionais) pela quantidade e adiciona ao subtotal
             subtotal = subtotal.add(precoItem.multiply(BigDecimal.valueOf(item.getQuantidade())));
         }
 
@@ -292,6 +309,7 @@ public class PedidoServiceImpl implements PedidoService {
         
         BigDecimal taxa = restaurante.getTaxaEntrega() != null ? restaurante.getTaxaEntrega() : BigDecimal.ZERO;
         
+        // Constrói e retorna a resposta
         CalculoPedidoResponseDTO response = new CalculoPedidoResponseDTO();
         response.setSubtotal(subtotal);
         response.setTaxaEntrega(taxa);
@@ -319,6 +337,9 @@ public class PedidoServiceImpl implements PedidoService {
         return pedidos.stream().map(this::mapToPedidoResponseDTO).collect(Collectors.toList());
     }
 
+    /**
+     * Atualiza o status de um pedido com validação de transição e atribuição de entregador.
+     */
     @Override
     @Transactional
     public PedidoResponseDTO atualizarStatusPedido(Long id, StatusPedidoDTO dto) {
@@ -332,10 +353,12 @@ public class PedidoServiceImpl implements PedidoService {
             throw new BusinessException("Status inválido: " + dto.getStatus());
         }
 
+        // Lógica de Validação da Transição de Status
         if (!isTransicaoValida(pedido.getStatus(), novoStatusEnum)) {
             throw new BusinessException("Transição inválida: " + pedido.getStatus() + " -> " + novoStatusEnum);
         }
 
+        // Regra de Negócio: Se for para ENTREGA, deve ter um Entregador ID válido
         if (novoStatusEnum == StatusPedido.SAIU_PARA_ENTREGA) {
             if (dto.getEntregadorId() == null) {
                 throw new BusinessException("Obrigatório selecionar entregador.");
@@ -360,6 +383,7 @@ public class PedidoServiceImpl implements PedidoService {
         Pedido pedido = pedidoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Pedido não encontrado"));
         
+        // Verifica se o status atual permite o cancelamento
         if (!podeSerCancelado(pedido.getStatus())) {
             throw new BusinessException("Não pode cancelar no status: " + pedido.getStatus());
         }
@@ -373,11 +397,13 @@ public class PedidoServiceImpl implements PedidoService {
         Page<Pedido> pedidos;
         LocalDateTime inicio = null, fim = null;
 
+        // Converte LocalDate para LocalDateTime para filtros de banco de dados
         if (dataInicio != null && dataFim != null) {
             inicio = dataInicio.atStartOfDay();
-            fim = dataFim.plusDays(1).atStartOfDay();
+            fim = dataFim.plusDays(1).atStartOfDay(); // Adiciona um dia para incluir o último dia
         }
 
+        // Lógica de filtragem complexa (Status E/OU Data)
         if (status != null && inicio != null) {
             pedidos = pedidoRepository.findByStatusAndDataPedidoBetween(status, inicio, fim, pageable);
         } else if (status != null) {
@@ -388,6 +414,7 @@ public class PedidoServiceImpl implements PedidoService {
             pedidos = pedidoRepository.findAll(pageable);
         }
         
+        // Mapeia a página de entidades para uma página de DTOs
         return pedidos.map(this::mapToPedidoResponseDTO);
     }
 
@@ -396,12 +423,14 @@ public class PedidoServiceImpl implements PedidoService {
     public Page<PedidoResponseDTO> listarMeusPedidos(Pageable pageable) {
         Long usuarioIdLogado = SecurityUtils.getCurrentUserId();
         if (usuarioIdLogado == null) throw new BusinessException("Usuário não autenticado.");
+        // Busca pedidos pelo ID do cliente logado (que é o mesmo ID do usuário)
         return pedidoRepository.findByClienteId(usuarioIdLogado, pageable).map(this::mapToPedidoResponseDTO);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<PedidoResponseDTO> buscarPedidosPorRestaurante(Long restauranteId, StatusPedido status) {
+        // Busca os pedidos e, otimisticamente, tenta buscar os opcionais para reduzir consultas
         List<Pedido> pedidos = pedidoRepository.findPedidosByRestauranteIdAndStatusComItens(restauranteId, status);
         
         if (!pedidos.isEmpty()) {
@@ -409,12 +438,16 @@ public class PedidoServiceImpl implements PedidoService {
                                                   .flatMap(p -> p.getItens().stream())
                                                   .collect(Collectors.toList());
             if (!todosOsItens.isEmpty()) {
-                pedidoRepository.fetchOpcionaisParaItens(todosOsItens);
+                pedidoRepository.fetchOpcionaisParaItens(todosOsItens); // Otimização de busca
             }
         }
         return pedidos.stream().map(this::mapToPedidoResponseDTO).collect(Collectors.toList());
     }
 
+    /**
+     * Implementação da checagem de acesso para o Spring Security SpEL.
+     * Verifica se o usuário logado possui alguma relação (Cliente/Restaurante/Entregador) com o pedido.
+     */
     @Override
     @Transactional(readOnly = true)
     public boolean canAccess(Long pedidoId) {
@@ -426,10 +459,12 @@ public class PedidoServiceImpl implements PedidoService {
             Long restauranteId = null;
             Long entregadorId = null;
 
+            // Define qual ID buscar no banco dependendo da ROLE
             if (SecurityUtils.isCliente()) clienteId = usuarioId;
             else if (SecurityUtils.isRestaurante()) restauranteId = SecurityUtils.getCurrentRestauranteId();
             else if (SecurityUtils.isEntregador()) entregadorId = usuarioId;
             
+            // Chama o repositório para verificar a propriedade do pedido
             return pedidoRepository.isPedidoOwnedBy(pedidoId, clienteId, restauranteId, entregadorId);
         } catch (Exception e) {
             return false;
@@ -438,24 +473,30 @@ public class PedidoServiceImpl implements PedidoService {
 
     // --- MÉTODOS AUXILIARES ---
 
+    /**
+     * Define as regras de transição de status permitidas.
+     */
     private boolean isTransicaoValida(StatusPedido atual, StatusPedido novo) {
         switch (atual) {
             case PENDENTE: return novo == StatusPedido.CONFIRMADO || novo == StatusPedido.CANCELADO;
             case CONFIRMADO: return novo == StatusPedido.PREPARANDO || novo == StatusPedido.CANCELADO;
             case PREPARANDO: return novo == StatusPedido.SAIU_PARA_ENTREGA;
             case SAIU_PARA_ENTREGA: return novo == StatusPedido.ENTREGUE;
-            default: return false;
+            default: return false; // ENTREGUE e CANCELADO são estados finais
         }
     }
 
+    /**
+     * Define em quais status o pedido ainda pode ser cancelado pelo usuário.
+     */
     private boolean podeSerCancelado(StatusPedido status) {
         return status == StatusPedido.PENDENTE || status == StatusPedido.CONFIRMADO;
     }
 
     /**
-     * Método central de conversão Entity -> DTO.
+     * Método central de conversão Entity (Pedido) -> DTO (PedidoResponseDTO).
      */
-   private PedidoResponseDTO mapToPedidoResponseDTO(Pedido pedido) {
+  private PedidoResponseDTO mapToPedidoResponseDTO(Pedido pedido) {
     PedidoResponseDTO dto = new PedidoResponseDTO();
     
     // Mapeamento Básico de Pedido
@@ -509,6 +550,10 @@ public class PedidoServiceImpl implements PedidoService {
         .map(item -> {
             ItemPedidoResponseDTO iDTO = new ItemPedidoResponseDTO();
             // Dados essenciais para o Front
+            
+            // CORREÇÃO: ADICIONAR O ID DO PRODUTO PARA SATISFAZER O JSON PATH
+            iDTO.setProdutoId(item.getProduto().getId()); 
+            
             iDTO.setNomeProduto(item.getProduto().getNome());
             iDTO.setQuantidade(item.getQuantidade());
             iDTO.setPrecoUnitario(item.getPrecoUnitario());

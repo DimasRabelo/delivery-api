@@ -26,7 +26,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     /** Lista usuários ativos por função (ex: ENTREGADOR, CLIENTE, etc.). */
     List<Usuario> findByRoleAndAtivo(Role role, Boolean ativo);
 
-    // --- NOVO MÉTODO CUSTOMIZADO PARA CONTAGEM ---
+    // --- MÉTODO CUSTOMIZADO PARA CONTAGEM ---
     @Query(value = "SELECT COUNT(*) FROM USUARIO", nativeQuery = true)
     Long contarTodosUsuariosNative();
 }

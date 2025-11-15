@@ -44,8 +44,8 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long>, JpaSpecif
   @Query("SELECT DISTINCT p FROM Pedido p " +
            "LEFT JOIN FETCH p.restaurante r " +
            "LEFT JOIN FETCH p.itens i " +
-           "LEFT JOIN FETCH p.cliente c " +       // CRÍTICO: Traz o Cliente
-           "LEFT JOIN FETCH p.entregador e " +    // CRÍTICO: Traz o Entregador
+           "LEFT JOIN FETCH p.cliente c " +      
+           "LEFT JOIN FETCH p.entregador e " +    
            "WHERE p.restaurante.id = :restauranteId " +
            "AND (:status IS NULL OR p.status = :status) " +
            "ORDER BY p.dataPedido DESC")          
@@ -100,7 +100,7 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long>, JpaSpecif
             @Param("status") StatusPedido status
     );
 
-    // --- [NOVO] MÉTODO PARA O CONTADOR DO HEADER ---
+    // --- MÉTODO PARA O CONTADOR DO HEADER ---
     // Recebe uma lista de status para ignorar (ex: ENTREGUE, CANCELADO)
     @Query("SELECT COUNT(p) FROM Pedido p WHERE p.cliente.id = :clienteId AND p.status NOT IN :statusIgnorados")
     Long contarPedidosAtivosPorCliente(

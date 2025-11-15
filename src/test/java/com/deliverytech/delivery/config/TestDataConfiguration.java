@@ -1,11 +1,11 @@
-package com.deliverytech.delivery.config; // (Mude para o seu pacote, se for diferente)
+package com.deliverytech.delivery.config; 
 
 // Imports das suas entidades
 import com.deliverytech.delivery.entity.*;
 import com.deliverytech.delivery.enums.Role;
 import com.deliverytech.delivery.enums.StatusPedido;
 
-// Imports dos seus repositórios (Note que SÓ temos repositórios das entidades-RAIZ)
+// Imports dos seus repositórios (Apenas os das entidades-RAIZ)
 import com.deliverytech.delivery.repository.*;
 import com.deliverytech.delivery.repository.auth.UsuarioRepository;
 
@@ -21,22 +21,17 @@ import java.util.UUID;
 
 /**
  * Configuração que roda APENAS com o profile "test".
- * Popula o banco de dados em memória (H2) com o cenário exato
- * necessário para recriar o BUG-500.
- *
- * ESTA VERSÃO USA O CASCADE PARA SALVAR OS ITENS E OPCIONAIS.
+ * Popula o banco de dados em memória (H2) com o cenário inicial
+ * e o cenário específico do BUG de opcional duplicado (BUG-500).
  */
 @Configuration
 @Profile("test")
 public class TestDataConfiguration {
 
     // --- REPOSITÓRIOS ---
-    // (Apenas os repositórios das "raízes" dos agregados)
-   
     private final ProdutoRepository produtoRepository;
     private final RestauranteRepository restauranteRepository;
     private final UsuarioRepository usuarioRepository;
-   
     private final PasswordEncoder passwordEncoder;
     private final PedidoRepository pedidoRepository;
     private final GrupoOpcionalRepository grupoOpcionalRepository;
@@ -44,11 +39,11 @@ public class TestDataConfiguration {
 
     // --- CONSTRUTOR ---
     public TestDataConfiguration(
-            ClienteRepository clienteRepository,
+            ClienteRepository clienteRepository, 
             ProdutoRepository produtoRepository,
             RestauranteRepository restauranteRepository,
             UsuarioRepository usuarioRepository,
-            EnderecoRepository enderecoRepository,
+            EnderecoRepository enderecoRepository, 
             PasswordEncoder passwordEncoder,
             PedidoRepository pedidoRepository,
             GrupoOpcionalRepository grupoOpcionalRepository,
@@ -58,7 +53,6 @@ public class TestDataConfiguration {
         this.produtoRepository = produtoRepository;
         this.restauranteRepository = restauranteRepository;
         this.usuarioRepository = usuarioRepository;
-       
         this.passwordEncoder = passwordEncoder;
         this.pedidoRepository = pedidoRepository;
         this.grupoOpcionalRepository = grupoOpcionalRepository;
@@ -67,22 +61,21 @@ public class TestDataConfiguration {
 
     /**
      * Método executado assim que a aplicação (de teste) sobe.
-     * Assumindo que spring.jpa.hibernate.ddl-auto=create-drop
-     * está no application-test.properties, o banco já está limpo.
      */
     @PostConstruct
     public void setupTestData() {
 
-        // --- 1. CRIAÇÃO DO CLIENTE ---
+        // --- 1. CRIAÇÃO DO CLIENTE (Usuário Joao) ---
         Usuario usuarioCliente = new Usuario();
         usuarioCliente.setEmail("joao.teste@email.com");
         usuarioCliente.setSenha(passwordEncoder.encode("123456"));
         usuarioCliente.setRole(Role.CLIENTE);
         usuarioCliente.setAtivo(true);
+        usuarioCliente.setNome("João Cliente"); 
 
         Cliente cliente = new Cliente();
         cliente.setNome("João Cliente");
-        cliente.setCpf("51613751036");
+       cliente.setCpf("39053344705");
         cliente.setTelefone("11999999999");
 
         Endereco enderecoCliente = new Endereco();
@@ -94,6 +87,7 @@ public class TestDataConfiguration {
         enderecoCliente.setCidade("Cidade Teste");
         enderecoCliente.setEstado("SP");
 
+        // Associações
         cliente.setUsuario(usuarioCliente);
         enderecoCliente.setUsuario(usuarioCliente);
         usuarioCliente.setCliente(cliente);
@@ -103,12 +97,13 @@ public class TestDataConfiguration {
         Endereco enderecoClienteSalvo = usuarioClienteSalvo.getEnderecos().get(0);
 
 
-        // --- 2. CRIAÇÃO DO RESTAURANTE ---
+        // --- 2. CRIAÇÃO DO RESTAURANTE (Pizzaria) ---
         Usuario usuarioRestaurante = new Usuario();
         usuarioRestaurante.setEmail("restaurante.dono@email.com");
         usuarioRestaurante.setSenha(passwordEncoder.encode("123456"));
         usuarioRestaurante.setRole(Role.RESTAURANTE);
         usuarioRestaurante.setAtivo(true);
+        usuarioRestaurante.setNome("Dono Restaurante Teste");
         Usuario donoSalvo = usuarioRepository.save(usuarioRestaurante);
 
         Endereco endRestaurante = new Endereco();
@@ -126,11 +121,14 @@ public class TestDataConfiguration {
         restaurante.setAtivo(true);
         restaurante.setTaxaEntrega(BigDecimal.valueOf(10.00));
         restaurante.setTelefone("11888889999");
-
+        
+        // Associações
         endRestaurante.setUsuario(donoSalvo);
         restaurante.setEndereco(endRestaurante);
+        donoSalvo.setRestaurante(restaurante); 
 
         Restaurante restauranteSalvo = restauranteRepository.save(restaurante);
+        usuarioRepository.save(donoSalvo); 
 
         // --- 3. CRIAÇÃO DO PRODUTO ---
         Produto produto = new Produto();
@@ -144,7 +142,7 @@ public class TestDataConfiguration {
 
 
         // ================================================================
-        // 🔥 INÍCIO DO CENÁRIO DO BUG (Opcional Duplicado)
+        // 🔥 INÍCIO DO CENÁRIO DO BUG (Opcional Duplicado - Para Testes de Integração)
         // ================================================================
         System.out.println("Criando cenário do BUG-500 (Opcional Duplicado)...");
 
@@ -165,9 +163,9 @@ public class TestDataConfiguration {
         // --- 5. CRIA OS OBJETOS EM MEMÓRIA (Pedido, Item, Opcionais) ---
 
         // Preços (base + 2x maionese)
-        BigDecimal precoOpcionais = new BigDecimal("5.00"); // 2.50 + 2.50
+        BigDecimal precoOpcionais = new BigDecimal("5.00"); 
         BigDecimal precoBase = produtoSalvo.getPrecoBase();
-        BigDecimal precoUnitarioCalculado = precoBase.add(precoOpcionais);
+        BigDecimal precoUnitarioCalculado = precoBase.add(precoOpcionais); 
 
         // --- Opcional 1 (Maionese)
         ItemPedidoOpcional opcional1 = new ItemPedidoOpcional();
@@ -176,21 +174,21 @@ public class TestDataConfiguration {
 
         // --- 🔥 Opcional 2 (Maionese) - A DUPLICATA
         ItemPedidoOpcional opcional2 = new ItemPedidoOpcional();
-        opcional2.setItemOpcional(itemMaionese); // Mesmo item opcional
+        opcional2.setItemOpcional(itemMaionese); 
         opcional2.setPrecoRegistrado(itemMaionese.getPrecoAdicional());
 
         // --- Item do Pedido (A "Pizza")
         ItemPedido itemPedido = new ItemPedido();
         itemPedido.setProduto(produtoSalvo);
         itemPedido.setQuantidade(1);
-        itemPedido.setPrecoUnitario(precoUnitarioCalculado); // 34.90
-        itemPedido.setSubtotal(precoUnitarioCalculado); // 34.90
+        itemPedido.setPrecoUnitario(precoUnitarioCalculado); 
+        itemPedido.setSubtotal(precoUnitarioCalculado); 
         
         // Conecta os opcionais ao item
         opcional1.setItemPedido(itemPedido);
         opcional2.setItemPedido(itemPedido);
         itemPedido.getOpcionaisSelecionados().add(opcional1);
-        itemPedido.getOpcionaisSelecionados().add(opcional2); // Adiciona a duplicata na List
+        itemPedido.getOpcionaisSelecionados().add(opcional2); 
 
         // --- O Pedido
         Pedido pedido = new Pedido();
@@ -200,17 +198,19 @@ public class TestDataConfiguration {
         pedido.setEnderecoEntrega(enderecoClienteSalvo);
         pedido.setDataPedido(LocalDateTime.now());
         pedido.setStatus(StatusPedido.PENDENTE);
-        pedido.setMetodoPagamento("PIX"); // Corrigido para String
-        pedido.setTaxaEntrega(restauranteSalvo.getTaxaEntrega());
-        pedido.setSubtotal(precoUnitarioCalculado); // 34.90
-        pedido.setValorTotal(precoUnitarioCalculado.add(pedido.getTaxaEntrega())); // 44.90
+        pedido.setMetodoPagamento("PIX"); 
+        pedido.setTaxaEntrega(restauranteSalvo.getTaxaEntrega()); 
+        pedido.setSubtotal(precoUnitarioCalculado); 
+        pedido.setValorTotal(precoUnitarioCalculado.add(pedido.getTaxaEntrega())); 
         
         // Conecta o item ao pedido
         itemPedido.setPedido(pedido);
-        pedido.getItens().add(itemPedido); // Assumindo que Pedido tem getItens().add() e Cascade.ALL
+        pedido.getItens().add(itemPedido); 
 
         // --- 6. SALVA O PEDIDO (e salva TUDO em cascata) ---
         pedidoRepository.save(pedido);
+        donoSalvo.setRestaurante(null); 
+        usuarioRepository.save(donoSalvo);
 
         System.out.println("✅ Dados de teste e Cenário do BUG-500 criados com sucesso!");
     }

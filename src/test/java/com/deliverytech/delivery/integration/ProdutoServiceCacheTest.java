@@ -4,7 +4,7 @@ import com.deliverytech.delivery.dto.request.ProdutoDTO;
 import com.deliverytech.delivery.dto.response.ProdutoResponseDTO;
 import com.deliverytech.delivery.service.ProdutoService;
 
-import org.junit.jupiter.api.Disabled; // IMPORT ADICIONADO
+//import org.junit.jupiter.api.Disabled; // IMPORT ADICIONADO
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @DisplayName("Testes de Integração do Cache de ProdutoService (Refatorado)")
 // Adicionando @Disabled para evitar que testes de longa duração rodem no build
 // Remova @Disabled se você quiser executar estes testes manualmente.
-@Disabled("Testes de cache são lentos (dependem de Thread.sleep) e devem ser executados manualmente.") 
+//@Disabled("Testes de cache são lentos (dependem de Thread.sleep) e devem ser executados manualmente.") 
 class ProdutoServiceCacheTest {
 
     @Autowired

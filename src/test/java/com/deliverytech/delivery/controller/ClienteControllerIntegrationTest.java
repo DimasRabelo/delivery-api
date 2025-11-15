@@ -21,6 +21,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print; 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WithMockUser(username = "admin", roles = {"ADMIN"})
@@ -66,37 +67,45 @@ class ClienteControllerIntegrationTest {
     @Test
     @DisplayName("[GET /api/clientes] - Deve listar clientes ativos (Paginado)")
     void should_ReturnListOfClientes_When_ListarClientesAtivos() throws Exception {
+
         mockMvc.perform(get("/api/clientes")
                 .param("page", "0")
                 .param("size", "5"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(1))) 
+                .andExpect(jsonPath("$.content", hasSize(1)))
                 .andExpect(jsonPath("$.content[0].nome", is("João Cliente")))
                 .andExpect(jsonPath("$.page.totalElements", is(1)));
     }
 
-    // 🔹 MÉTODO CORRIGIDO
+    // 🔹 MÉTODO CORRIGIDO — AGORA ENVIANDO EMAIL E SENHA OBRIGATÓRIOS
     @Test
     @WithUserDetails("joao.teste@email.com")
-    @DisplayName("[PUT /api/clientes/{id}] - Deve atualizar o próprio perfil")
+    @DisplayName("[PUT /api/clientes/{id}] - Deve atualizar o próprio perfil (CORRIGIDO)")
     void should_UpdateCliente_When_ClienteExists() throws Exception {
+
         Usuario usuarioSalvo = usuarioRepository.findByEmail("joao.teste@email.com")
                 .orElseThrow(() -> new IllegalStateException("Usuário não encontrado"));
 
         ClienteDTO dto = new ClienteDTO();
         dto.setNome("Cliente Atualizado");
-        dto.setCpf(usuarioSalvo.getCliente().getCpf());
-        dto.setTelefone("22222222222");
+        dto.setCpf(usuarioSalvo.getCliente().getCpf()); 
+        dto.setTelefone("11987654321"); 
+
+        // CORREÇÃO ESSENCIAL: Adicionar Email e Senha para satisfazer a validação do Usuario
+        dto.setEmail(usuarioSalvo.getEmail()); 
+        dto.setSenha("123456"); 
+        // -----------------------------------------------------------------------------------
 
         mockMvc.perform(put("/api/clientes/{id}", usuarioSalvo.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dto)))
+                .andDo(print()) 
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.data.nome", is("Cliente Atualizado")))
-                .andExpect(jsonPath("$.data.telefone", is("22222222222")));
+                .andExpect(jsonPath("$.data.telefone", is("11987654321"))); 
     }
-
+    
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
     @DisplayName("[DELETE /api/clientes/{id}] - Deve desativar o usuário (exclusão lógica)")

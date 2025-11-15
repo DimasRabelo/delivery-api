@@ -1,4 +1,4 @@
-package com.deliverytech.delivery.controller; // Seu pacote de controller
+package com.deliverytech.delivery.controller; 
 
 import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.stereotype.Controller; 

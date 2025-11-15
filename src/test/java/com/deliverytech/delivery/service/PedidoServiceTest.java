@@ -1,290 +1,305 @@
-// package com.deliverytech.delivery.service;
+package com.deliverytech.delivery.service;
 
-// import com.deliverytech.delivery.dto.request.ItemPedidoDTO;
-// import com.deliverytech.delivery.dto.request.PedidoDTO;
-// import com.deliverytech.delivery.dto.response.CalculoPedidoDTO;
-// import com.deliverytech.delivery.dto.response.CalculoPedidoResponseDTO;
-// import com.deliverytech.delivery.dto.response.PedidoResponseDTO;
-// import com.deliverytech.delivery.entity.*; // Importa todas as entidades
-// import com.deliverytech.delivery.enums.Role;
-// import com.deliverytech.delivery.enums.StatusPedido;
-// import com.deliverytech.delivery.exception.BusinessException;
-// import com.deliverytech.delivery.exception.EntityNotFoundException;
-// import com.deliverytech.delivery.repository.*;
-// import com.deliverytech.delivery.repository.auth.UsuarioRepository;
-// import com.deliverytech.delivery.security.jwt.SecurityUtils;
-// import com.deliverytech.delivery.service.audit.AuditService;
-// import com.deliverytech.delivery.service.impl.PedidoServiceImpl;
-// import com.deliverytech.delivery.service.metrics.MetricsService;
-// import io.micrometer.core.instrument.Timer;
-// import org.junit.jupiter.api.AfterEach;
-// // import org.junit.jupiter.api.BeforeEach;
-// import org.junit.jupiter.api.DisplayName;
-// import org.junit.jupiter.api.Test;
-// import org.junit.jupiter.api.extension.ExtendWith;
-// import org.mockito.*;
-// import org.mockito.junit.jupiter.MockitoExtension;
-// import org.modelmapper.ModelMapper;
+import com.deliverytech.delivery.dto.request.ItemPedidoDTO;
+import com.deliverytech.delivery.dto.request.PedidoDTO;
+import com.deliverytech.delivery.dto.request.StatusPedidoDTO;
+import com.deliverytech.delivery.dto.response.CalculoPedidoDTO;
+import com.deliverytech.delivery.dto.response.CalculoPedidoResponseDTO;
+import com.deliverytech.delivery.dto.response.PedidoResponseDTO;
+import com.deliverytech.delivery.entity.*;
+import com.deliverytech.delivery.enums.Role;
+import com.deliverytech.delivery.enums.StatusPedido;
+import com.deliverytech.delivery.exception.BusinessException;
+import com.deliverytech.delivery.exception.EntityNotFoundException;
+import com.deliverytech.delivery.repository.*;
+import com.deliverytech.delivery.repository.auth.UsuarioRepository;
+import com.deliverytech.delivery.security.jwt.SecurityUtils;
+import com.deliverytech.delivery.service.audit.AuditService;
+import com.deliverytech.delivery.service.impl.PedidoServiceImpl;
+import com.deliverytech.delivery.service.metrics.MetricsService;
 
-// import java.math.BigDecimal;
-// import java.util.ArrayList; 
-// import java.util.List;
-// import java.util.Optional;
+import io.micrometer.core.instrument.Timer;
 
-// import static org.junit.jupiter.api.Assertions.*;
-// import static org.mockito.ArgumentMatchers.any;
-// import static org.mockito.ArgumentMatchers.eq;
-// import static org.mockito.Mockito.*;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.*;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.modelmapper.ModelMapper;
 
-// @ExtendWith(MockitoExtension.class)
-// @DisplayName("Testes do PedidoService (Refatorado)")
-// class PedidoServiceTest {
+import java.math.BigDecimal;
+import java.util.*;
 
-//     // (Mocks, SUT, Captor - OK)
-//     @Mock private PedidoRepository pedidoRepository;
-//     @Mock private RestauranteRepository restauranteRepository;
-//     @Mock private ProdutoRepository produtoRepository;
-//     @Mock private ModelMapper modelMapper;
-//     @Mock private MetricsService metricsService;
-//     @Mock private AuditService auditService;
-//     @Mock private Timer.Sample timerSample;
-//     @Mock private UsuarioRepository usuarioRepository;
-//     @Mock private EnderecoRepository enderecoRepository;
-//     @Mock private ItemOpcionalRepository itemOpcionalRepository;
-//     @Mock private ClienteRepository clienteRepository; 
-//     @InjectMocks
-//     private PedidoServiceImpl pedidoService; 
-//     @Captor
-//     private ArgumentCaptor<Pedido> pedidoCaptor;
-//     private MockedStatic<SecurityUtils> mockedSecurityUtils;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
-//     // (Dados de Teste Padrão - OK)
-//     private Usuario usuarioAtivo;
-//     private Cliente clienteAtivo;
-//     private Endereco enderecoAtivo;
-//     private Restaurante restauranteAberto;
-//     private Produto produto1;
-//     private ItemOpcional opcional1;
-//     private PedidoDTO pedidoDTO;
-//     private CalculoPedidoDTO calculoDTO;
-//     private Pedido pedidoSalvo;
-//     private PedidoResponseDTO pedidoResponseDTO;
-    
-//     // (NOVO: Objeto de GrupoOpcional para o mock)
-//     private GrupoOpcional grupoOpcionalMock;
+/**
+ * Testes completos e revisados do PedidoService.
+ */
+@ExtendWith(MockitoExtension.class)
+@DisplayName("Testes do PedidoService (Refatorado e Ajustado)")
+class PedidoServiceTest {
 
+    // --- Repositórios Mockados ---
+    @Mock private PedidoRepository pedidoRepository;
+    @Mock private RestauranteRepository restauranteRepository;
+    @Mock private ProdutoRepository produtoRepository;
+    @Mock private UsuarioRepository usuarioRepository;
+    @Mock private EnderecoRepository enderecoRepository;
+    @Mock private ItemOpcionalRepository itemOpcionalRepository;
+    @Mock private GrupoOpcionalRepository grupoOpcionalRepository;
+    @Mock private ClienteRepository clienteRepository;
 
-//     @BeforeEach
-//     void setUp() {
-//         // --- Setup Refatorado (Gargalos 1, 2, 4) ---
-        
-//         // 1. Cliente e Usuário
-//         usuarioAtivo = new Usuario();
-//         usuarioAtivo.setId(1L);
-//         usuarioAtivo.setEmail("joao.teste@email.com");
-//         usuarioAtivo.setRole(Role.CLIENTE);
-//         usuarioAtivo.setAtivo(true);
-        
-//         clienteAtivo = new Cliente();
-//         clienteAtivo.setId(1L);
-//         clienteAtivo.setNome("Cliente Teste");
-//         clienteAtivo.setUsuario(usuarioAtivo);
-//         usuarioAtivo.setCliente(clienteAtivo);
+    // --- Serviços Auxiliares ---
+    @Mock private MetricsService metricsService;
+    @Mock private AuditService auditService;
+    @Mock private ModelMapper modelMapper;
+    @Mock private Timer.Sample timerSample;
 
-//         // 2. Endereço
-//         enderecoAtivo = new Endereco();
-//         enderecoAtivo.setId(5L);
-//         enderecoAtivo.setUsuario(usuarioAtivo);
-//         enderecoAtivo.setRua("Rua de Teste");
-        
-//         // 3. Restaurante
-//         restauranteAberto = new Restaurante();
-//         restauranteAberto.setId(10L);
-//         restauranteAberto.setTaxaEntrega(new BigDecimal("5.00"));
-        
-//         // --- CORREÇÃO (Erro 1: Restaurante não está disponível) ---
-//         restauranteAberto.setAtivo(true); // <-- ESTAVA FALTANDO
-        
-//         // 4. Produto
-//         produto1 = new Produto();
-//         produto1.setId(100L);
-//         produto1.setPrecoBase(new BigDecimal("10.00"));
-//         produto1.setRestaurante(restauranteAberto);
-//         produto1.setDisponivel(true); // (Adicionado para o teste 'criarPedido')
-//         produto1.setEstoque(10); // (Adicionado para o teste 'criarPedido')
-        
-//         // --- CORREÇÃO (Erro 2: Opcional Inválido) ---
-//         // 5. Grupo Opcional
-//         grupoOpcionalMock = new GrupoOpcional();
-//         grupoOpcionalMock.setId(50L);
-//         grupoOpcionalMock.setProduto(produto1); // <-- Linka o grupo ao produto
-        
-//         // 6. Opcional
-//         opcional1 = new ItemOpcional();
-//         opcional1.setId(1000L);
-//         opcional1.setPrecoAdicional(new BigDecimal("3.00"));
-//         opcional1.setGrupoOpcional(grupoOpcionalMock); // <-- Linka o opcional ao grupo
-//         // --- FIM DA CORREÇÃO ---
+    // --- Classe testada ---
+    @InjectMocks
+    private PedidoServiceImpl pedidoService;
 
-//         // 7. DTOs
-//         ItemPedidoDTO itemDTO1 = new ItemPedidoDTO();
-//         itemDTO1.setProdutoId(100L);
-//         itemDTO1.setQuantidade(2); 
-//         itemDTO1.setOpcionaisIds(List.of(1000L)); 
+    @Captor
+    private ArgumentCaptor<Pedido> pedidoCaptor;
 
-//         pedidoDTO = new PedidoDTO();
-//         pedidoDTO.setRestauranteId(10L);
-//         pedidoDTO.setItens(List.of(itemDTO1));
-//         pedidoDTO.setEnderecoEntregaId(5L); 
-//         pedidoDTO.setMetodoPagamento("PIX"); 
+    private MockedStatic<SecurityUtils> mockedSecurityUtils;
 
-//         calculoDTO = new CalculoPedidoDTO();
-//         calculoDTO.setRestauranteId(10L);
-//         calculoDTO.setItens(List.of(itemDTO1));
-        
-//         pedidoSalvo = new Pedido();
-//         pedidoSalvo.setId(1L);
-//         pedidoSalvo.setItens(new ArrayList<>()); 
-        
-//         pedidoResponseDTO = new PedidoResponseDTO();
-//         // 8. Mocks
-//         lenient().when(metricsService.iniciarTimerPedido()).thenReturn(timerSample);
-//          lenient().when(metricsService.iniciarTimerBanco()).thenReturn(timerSample);
-            
-//               mockedSecurityUtils = Mockito.mockStatic(SecurityUtils.class); // use tipo explícito
-//               mockedSecurityUtils.when(SecurityUtils::getCurrentUserId).thenReturn(1L); // stub static method via MockedStatic
-//     }
-    
-//     @AfterEach
-//     void tearDown() {
-//         mockedSecurityUtils.close();
-//     }
+    // --- Entidades e DTOs para teste ---
+    private Usuario usuarioAtivo;
+    private Cliente clienteAtivo;
+    private Endereco enderecoAtivo;
+    private Restaurante restauranteAberto;
+    private Produto produto1;
+    private ItemOpcional opcional1;
+    private List<ItemOpcional> opcionalList;
 
+    private PedidoDTO pedidoDTO;
+    private CalculoPedidoDTO calculoDTO;
+    private Pedido pedidoSalvo;
+    private PedidoResponseDTO pedidoResponseDTO;
 
-//     // ==========================================================
-//     // Testes: criarPedido (REFATORADO)
-//     // ==========================================================
-//     @Test
-//     @DisplayName("Deve criar pedido com sucesso e calcular totais corretos (Refatorado)")
-//     void criarPedido_DeveSalvarComTotaisCorretos_QuandoValido() {
-//         // (Given)
-//         // (Usando doReturn() para evitar erro de inferência de tipo T)
-//         doReturn(Optional.of(usuarioAtivo)).when(usuarioRepository).findById(1L);
-//         doReturn(Optional.of(restauranteAberto)).when(restauranteRepository).findById(10L);
-//         doReturn(Optional.of(enderecoAtivo)).when(enderecoRepository).findById(5L);
-//         doReturn(Optional.of(produto1)).when(produtoRepository).findById(100L);
-//         doReturn(Optional.of(opcional1)).when(itemOpcionalRepository).findById(1000L);
-        
-//         when(pedidoRepository.save(any(Pedido.class))).thenReturn(pedidoSalvo);
-        
-//         when(modelMapper.map(any(Pedido.class), eq(PedidoResponseDTO.class)))
-//             .thenReturn(pedidoResponseDTO); 
+    @BeforeEach
+    void setUp() {
 
-//         // (When)
-//         pedidoService.criarPedido(pedidoDTO);
+        // --- Usuário ---
+        usuarioAtivo = new Usuario();
+        usuarioAtivo.setId(1L);
+        usuarioAtivo.setEmail("teste@teste.com");
+        usuarioAtivo.setRole(Role.CLIENTE);
+        usuarioAtivo.setAtivo(true);
 
-//         // (Then)
-//         verify(pedidoRepository).save(pedidoCaptor.capture());
-//         Pedido pedidoCapturado = pedidoCaptor.getValue(); 
-        
-//         // (Asserts... OK)
-//         ItemPedido itemCapturado = pedidoCapturado.getItens().get(0);
-//         assertEquals(0, new BigDecimal("13.00").compareTo(itemCapturado.getPrecoUnitario()));
-//         assertEquals(0, new BigDecimal("26.00").compareTo(itemCapturado.getSubtotal()));
-//         assertEquals(clienteAtivo, pedidoCapturado.getCliente());
-//         assertEquals(enderecoAtivo, pedidoCapturado.getEnderecoEntrega());
-//         assertEquals(0, new BigDecimal("26.00").compareTo(pedidoCapturado.getSubtotal()));
-//         assertEquals(0, new BigDecimal("31.00").compareTo(pedidoCapturado.getValorTotal()));
-//     }
+        clienteAtivo = new Cliente();
+        clienteAtivo.setId(1L);
+        clienteAtivo.setUsuario(usuarioAtivo);
+        usuarioAtivo.setCliente(clienteAtivo);
 
-//     @Test
-//     @DisplayName("Criar Pedido: Deve lançar BusinessException se cliente estiver inativo (Refatorado)")
-//     void criarPedido_DeveLancarExcecao_QuandoClienteInativo() {
-//         // (Given)
-//         usuarioAtivo.setAtivo(false); 
-//         doReturn(Optional.of(usuarioAtivo)).when(usuarioRepository).findById(1L);
-        
-//         // (When & Then)
-//         assertThrows(BusinessException.class,
-//                 () -> pedidoService.criarPedido(pedidoDTO));
-        
-//         verify(pedidoRepository, never()).save(any());
-//     }
-    
-//     @Test
-//     @DisplayName("Deve calcular o total do pedido (Refatorado)")
-//     void calcularTotalPedido_DeveRetornarCalculoCorreto() {
-//         // (Given)
-//         doReturn(Optional.of(produto1)).when(produtoRepository).findById(100L); 
-//         doReturn(Optional.of(opcional1)).when(itemOpcionalRepository).findById(1000L); 
-//         doReturn(Optional.of(restauranteAberto)).when(restauranteRepository).findById(10L); 
-        
-//         // (When)
-//         CalculoPedidoResponseDTO response = pedidoService.calcularTotalPedido(calculoDTO);
-        
-//         // (Then)
-//         assertNotNull(response);
-//         assertEquals(0, new BigDecimal("26.00").compareTo(response.getSubtotal()));
-//         assertEquals(0, new BigDecimal("31.00").compareTo(response.getTotal()));
-//     }
-    
-//     // ==========================================================
-//     // O RESTO DOS MÉTODOS (atualizarStatus, cancelar, etc.)
-//     // ==========================================================
-    
-//     @Test
-//     @DisplayName("Atualizar Status: Deve permitir transição válida (PENDENTE -> CONFIRMADO)")
-//     void atualizarStatusPedido_DeveAtualizarStatus_QuandoTransicaoValida() {
-//         pedidoSalvo.setStatus(StatusPedido.PENDENTE); 
-//         doReturn(Optional.of(pedidoSalvo)).when(pedidoRepository).findById(1L); 
-        
-//         when(pedidoRepository.save(any(Pedido.class))).thenReturn(pedidoSalvo);
-//         when(modelMapper.map(pedidoSalvo, PedidoResponseDTO.class)).thenReturn(pedidoResponseDTO);
-        
-//         pedidoService.atualizarStatusPedido(1L, StatusPedido.CONFIRMADO);
-        
-//         verify(pedidoRepository).save(pedidoCaptor.capture());
-//         assertEquals(StatusPedido.CONFIRMADO, pedidoCaptor.getValue().getStatus());
-//     }
+        // --- Endereço ---
+        enderecoAtivo = new Endereco();
+        enderecoAtivo.setId(5L);
+        enderecoAtivo.setUsuario(usuarioAtivo);
 
-//     @Test
-//     @DisplayName("Atualizar Status: Deve lançar exceção em transição inválida (PENDENTE -> ENTREGUE)")
-//     void atualizarStatusPedido_DeveLancarExcecao_QuandoTransicaoInvalida() {
-//         pedidoSalvo.setStatus(StatusPedido.PENDENTE); 
-//         doReturn(Optional.of(pedidoSalvo)).when(pedidoRepository).findById(1L); 
-        
-//         assertThrows(BusinessException.class,
-//                 () -> pedidoService.atualizarStatusPedido(1L, StatusPedido.ENTREGUE));
-//     }
-    
-//     @Test
-//     @DisplayName("Cancelar Pedido: Deve permitir cancelar pedido PENDENTE")
-//     void cancelarPedido_DeveCancelar_QuandoStatusPendente() {
-//         pedidoSalvo.setStatus(StatusPedido.PENDENTE);
-//         doReturn(Optional.of(pedidoSalvo)).when(pedidoRepository).findById(1L); 
-        
-//         pedidoService.cancelarPedido(1L);
-        
-//         verify(pedidoRepository).save(pedidoCaptor.capture());
-//         assertEquals(StatusPedido.CANCELADO, pedidoCaptor.getValue().getStatus());
-//     }
+        // --- Restaurante ---
+        restauranteAberto = new Restaurante();
+        restauranteAberto.setId(10L);
+        restauranteAberto.setAtivo(true);
+        restauranteAberto.setTaxaEntrega(new BigDecimal("5.00"));
 
-//     @Test
-//     @DisplayName("Cancelar Pedido: Deve lançar exceção se pedido já SAIU_PARA_ENTREGA")
-//     void cancelarPedido_DeveLancarExcecao_QuandoStatusInvalido() {
-//         pedidoSalvo.setStatus(StatusPedido.SAIU_PARA_ENTREGA);
-//         doReturn(Optional.of(pedidoSalvo)).when(pedidoRepository).findById(1L); 
-        
-//         assertThrows(BusinessException.class,
-//                 () -> pedidoService.cancelarPedido(1L));
-//     }
-    
-//     @Test
-//     @DisplayName("Buscar por ID: Deve lançar exceção quando ID não existe")
-//     void buscarPedidoPorId_DeveLancarExcecao_QuandoIdNaoExiste() {
-//         doReturn(Optional.empty()).when(pedidoRepository).findById(99L); 
-        
-//         assertThrows(EntityNotFoundException.class,
-//                 () -> pedidoService.buscarPedidoPorId(99L));
-//     }
-// }
+        // --- Produto ---
+        produto1 = new Produto();
+        produto1.setId(100L);
+        produto1.setPrecoBase(new BigDecimal("10.00"));
+        produto1.setDisponivel(true);
+        produto1.setEstoque(10);
+        produto1.setRestaurante(restauranteAberto);
+
+        // --- Opcional ---
+        GrupoOpcional grupo = new GrupoOpcional();
+        grupo.setId(50L);
+        grupo.setProduto(produto1);
+
+        opcional1 = new ItemOpcional();
+        opcional1.setId(1000L);
+        opcional1.setPrecoAdicional(new BigDecimal("3.00"));
+        opcional1.setGrupoOpcional(grupo);
+
+        opcionalList = List.of(opcional1);
+
+        // --- PedidoDTO ---
+        ItemPedidoDTO itemDTO = new ItemPedidoDTO();
+        itemDTO.setProdutoId(100L);
+        itemDTO.setQuantidade(2);
+        itemDTO.setOpcionaisIds(List.of(1000L));
+
+        pedidoDTO = new PedidoDTO();
+        pedidoDTO.setRestauranteId(10L);
+        pedidoDTO.setItens(List.of(itemDTO));
+        pedidoDTO.setEnderecoEntregaId(5L);
+        pedidoDTO.setMetodoPagamento("PIX");
+
+        // --- DTO cálculo ---
+        calculoDTO = new CalculoPedidoDTO();
+        calculoDTO.setRestauranteId(10L);
+        calculoDTO.setItens(List.of(itemDTO));
+
+        // --- Pedido salvo ---
+        pedidoSalvo = new Pedido();
+        pedidoSalvo.setId(1L);
+        pedidoSalvo.setCliente(clienteAtivo);
+        pedidoSalvo.setRestaurante(restauranteAberto);
+        pedidoSalvo.setStatus(StatusPedido.PENDENTE);
+        pedidoSalvo.setItens(new ArrayList<>());
+
+        pedidoResponseDTO = new PedidoResponseDTO();
+
+        // --- Mocks padrões ---
+        mockedSecurityUtils = Mockito.mockStatic(SecurityUtils.class);
+        mockedSecurityUtils.when(SecurityUtils::getCurrentUserId).thenReturn(1L);
+
+        lenient().when(itemOpcionalRepository.findAllById(any())).thenReturn(opcionalList);
+        lenient().when(grupoOpcionalRepository.findByProdutoId(100L)).thenReturn(new ArrayList<>());
+        lenient().when(pedidoRepository.save(any(Pedido.class))).thenReturn(pedidoSalvo);
+        lenient().when(metricsService.iniciarTimerPedido()).thenReturn(timerSample);
+        lenient().when(metricsService.iniciarTimerBanco()).thenReturn(timerSample);
+
+        // ⚠️ SOLUÇÃO DEFINITIVA — evita TODOS os UnnecessaryStubbingException
+        lenient().when(modelMapper.map(any(), eq(PedidoResponseDTO.class)))
+                .thenReturn(pedidoResponseDTO);
+    }
+
+    @AfterEach
+    void tearDown() {
+        mockedSecurityUtils.close();
+    }
+
+    // =====================================================================
+    // TESTE: CRIAR PEDIDO
+    // =====================================================================
+    @Test
+    @DisplayName("Criar pedido com sucesso e calcular totais corretamente")
+    void criarPedido_DeveCriarComTotaisCorretos() {
+
+        when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuarioAtivo));
+        when(restauranteRepository.findById(10L)).thenReturn(Optional.of(restauranteAberto));
+        when(enderecoRepository.findById(5L)).thenReturn(Optional.of(enderecoAtivo));
+        when(produtoRepository.findById(100L)).thenReturn(Optional.of(produto1));
+
+        // ⚠️ NÃO PRECISA MAIS MOCKAR modelMapper AQUI
+
+        pedidoService.criarPedido(pedidoDTO);
+
+        verify(pedidoRepository).save(pedidoCaptor.capture());
+        Pedido pedido = pedidoCaptor.getValue();
+
+        ItemPedido item = pedido.getItens().get(0);
+
+        assertEquals(0, item.getPrecoUnitario().compareTo(new BigDecimal("13.00")));
+        assertEquals(0, item.getSubtotal().compareTo(new BigDecimal("26.00")));
+        assertEquals(0, pedido.getSubtotal().compareTo(new BigDecimal("26.00")));
+        assertEquals(0, pedido.getValorTotal().compareTo(new BigDecimal("31.00")));
+    }
+
+    @Test
+    @DisplayName("Criar pedido deve falhar se cliente estiver inativo")
+    void criarPedido_DeveFalhar_ClienteInativo() {
+
+        usuarioAtivo.setAtivo(false);
+        when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuarioAtivo));
+
+        assertThrows(BusinessException.class,
+                () -> pedidoService.criarPedido(pedidoDTO));
+
+        verify(pedidoRepository, never()).save(any());
+    }
+
+    // =====================================================================
+    // TESTE: CÁLCULO DO PEDIDO
+    // =====================================================================
+    @Test
+    @DisplayName("Deve calcular subtotal e total corretamente")
+    void calcularTotalPedido_DeveCalcularCorretamente() {
+
+        when(produtoRepository.findById(100L)).thenReturn(Optional.of(produto1));
+        when(restauranteRepository.findById(10L)).thenReturn(Optional.of(restauranteAberto));
+
+        CalculoPedidoResponseDTO r = pedidoService.calcularTotalPedido(calculoDTO);
+
+        assertEquals(0, r.getSubtotal().compareTo(new BigDecimal("26.00")));
+        assertEquals(0, r.getTotal().compareTo(new BigDecimal("31.00")));
+    }
+
+    // =====================================================================
+    // TESTE: ATUALIZAR STATUS
+    // =====================================================================
+    @Test
+    @DisplayName("Atualizar status válido: PENDENTE -> CONFIRMADO")
+    void atualizarStatus_Valido() {
+
+        pedidoSalvo.setStatus(StatusPedido.PENDENTE);
+        when(pedidoRepository.findById(1L)).thenReturn(Optional.of(pedidoSalvo));
+
+        // ⚠️ NÃO MOCKAR modelMapper AQUI
+
+        StatusPedidoDTO dto = new StatusPedidoDTO();
+        dto.setStatus(StatusPedido.CONFIRMADO.name());
+
+        pedidoService.atualizarStatusPedido(1L, dto);
+
+        verify(pedidoRepository).save(pedidoCaptor.capture());
+        assertEquals(StatusPedido.CONFIRMADO, pedidoCaptor.getValue().getStatus());
+    }
+
+    @Test
+    @DisplayName("Atualizar status inválido: PENDENTE -> ENTREGUE deve falhar")
+    void atualizarStatus_Invalido() {
+
+        pedidoSalvo.setStatus(StatusPedido.PENDENTE);
+        when(pedidoRepository.findById(1L)).thenReturn(Optional.of(pedidoSalvo));
+
+        StatusPedidoDTO dto = new StatusPedidoDTO();
+        dto.setStatus(StatusPedido.ENTREGUE.name());
+
+        assertThrows(BusinessException.class,
+                () -> pedidoService.atualizarStatusPedido(1L, dto));
+    }
+
+    // =====================================================================
+    // TESTE: CANCELAR PEDIDO
+    // =====================================================================
+    @Test
+    @DisplayName("Cancelar pedido PENDENTE deve funcionar")
+    void cancelarPedido_Valido() {
+
+        pedidoSalvo.setStatus(StatusPedido.PENDENTE);
+        when(pedidoRepository.findById(1L)).thenReturn(Optional.of(pedidoSalvo));
+
+        pedidoService.cancelarPedido(1L);
+
+        verify(pedidoRepository).save(pedidoCaptor.capture());
+        assertEquals(StatusPedido.CANCELADO, pedidoCaptor.getValue().getStatus());
+    }
+
+    @Test
+    @DisplayName("Cancelar pedido deve falhar se já saiu para entrega")
+    void cancelarPedido_Invalido() {
+
+        pedidoSalvo.setStatus(StatusPedido.SAIU_PARA_ENTREGA);
+        when(pedidoRepository.findById(1L)).thenReturn(Optional.of(pedidoSalvo));
+
+        assertThrows(BusinessException.class,
+                () -> pedidoService.cancelarPedido(1L));
+    }
+
+    // =====================================================================
+    // TESTE: BUSCAR POR ID
+    // =====================================================================
+    @Test
+    @DisplayName("Buscar por ID inexistente deve lançar exceção")
+    void buscarPorId_Inexistente() {
+
+        when(pedidoRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(EntityNotFoundException.class,
+                () -> pedidoService.buscarPedidoPorId(99L));
+    }
+}

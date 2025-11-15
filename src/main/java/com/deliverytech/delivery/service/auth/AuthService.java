@@ -67,8 +67,6 @@ public class AuthService implements UserDetailsService {
     
     /**
      * Registra um novo cliente no sistema.
-     * Salva Usuário, Cliente e Endereço em uma única operação,
-     * usando CascadeType.ALL para persistência automática.
      *
      * @param dto DTO com os dados de registro
      * @return Usuário salvo
@@ -89,24 +87,33 @@ public class AuthService implements UserDetailsService {
         usuario.setRole(Role.CLIENTE);
         usuario.setAtivo(true);
 
-        // 3. Criar a entidade Cliente
+        // 3. LIMPEZA DOS CAMPOS ESTREITOS (CPF e Telefone)
+        String cpfLimpo = dto.getCpf().replaceAll("[^0-9]", ""); 
+        String telefoneLimpo = dto.getTelefone() != null ? dto.getTelefone().replaceAll("[^0-9]", "") : null;
+        
+        // 4. Criar a entidade Cliente
         Cliente cliente = new Cliente();
         cliente.setNome(dto.getNome());
-        cliente.setCpf(dto.getCpf());
-        cliente.setTelefone(dto.getTelefone());
+        cliente.setCpf(cpfLimpo); // <-- CORRIGIDO: Usar o CPF LIMPO
+        cliente.setTelefone(telefoneLimpo); // Usar o telefone limpo
 
-        // 4. Criar a entidade Endereco
+        // 5. Criar a entidade Endereco
         EnderecoDTO enderecoDTO = dto.getEndereco();
         Endereco endereco = modelMapper.map(enderecoDTO, Endereco.class);
 
-        // 5. Conectar tudo (bidirecional)
+        // CORREÇÃO: Limpar o CEP mapeado (se houver hífen, a validação falhará)
+        if (endereco.getCep() != null) {
+            endereco.setCep(endereco.getCep().replaceAll("[^0-9]", ""));
+        }
+        
+        // 6. Conectar tudo (bidirecional)
         cliente.setUsuario(usuario);
         usuario.setCliente(cliente);
 
         endereco.setUsuario(usuario);
         usuario.getEnderecos().add(endereco);
 
-        // 6. Salvar apenas o "pai" (Usuario). Cascade salva Cliente e Endereco.
+        // 7. Salvar apenas o "pai" (Usuario). Cascade salva Cliente e Endereco.
         return usuarioRepository.save(usuario);
     }
 
