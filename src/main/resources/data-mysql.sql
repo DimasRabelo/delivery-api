@@ -1,9 +1,29 @@
 /*
  * =================================================================
- * SCRIPT DE CARGA INICIAL (PÓS-REFATORAÇÃO)
- * (Versão corrigida para H2, com nomes de tabela em minúsculo)
+ * SCRIPT DE CARGA INICIAL (COM LIMPEZA PARA IDEMPOTÊNCIA)
+ * AVISO: Comandos DELETE FROM adicionados para evitar o erro 
+ * 'Duplicate entry' em ambientes com volumes persistentes.
  * =================================================================
  */
+
+-- DESABILITA VERIFICAÇÃO DE CHAVE ESTRANGEIRA PARA PERMITIR LIMPEZA (MYSQL)
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- ==============================
+-- 0. LIMPEZA COMPLETA DOS DADOS FIXOS
+-- (Executado em ordem reversa de dependência)
+-- ==============================
+DELETE FROM item_pedido_opcional;
+DELETE FROM itens_pedido;
+DELETE FROM pedido;
+DELETE FROM item_opcional;
+DELETE FROM grupo_opcional;
+DELETE FROM produto;
+DELETE FROM cliente;
+DELETE FROM restaurante;
+DELETE FROM endereco;
+DELETE FROM usuario;
+
 
 -- ==============================
 -- 1. USUÁRIOS
@@ -15,6 +35,8 @@ INSERT INTO usuario (id, email, senha, role, ativo, data_criacao, restaurante_id
 (4, 'pizza@palace.com', '$2a$10$AkKArXqwoK8Ocri.T5C8B.4qi4FmFwDWI2aV2zTXFH3CQYwzOQULa', 'RESTAURANTE', true, NOW(), null),
 (5, 'burger@king.com', '$2a$10$AkKArXqwoK8Ocri.T5C8B.4qi4FmFwDWI2aV2zTXFH3CQYwzOQULa', 'RESTAURANTE', true, NOW(), null),
 (6, 'carlos@entrega.com', '$2a$10$AkKArXqwoK8Ocri.T5C8B.4qi4FmFwDWI2aV2zTXFH3CQYwzOQULa', 'ENTREGADOR', true, NOW(), null);
+
+-- [ ... RESTANTE DOS SEUS INSERTS ORIGINAIS A PARTIR DO ITEM 2 ... ]
 
 -- ==============================
 -- 2. ENDEREÇOS
@@ -97,7 +119,7 @@ INSERT INTO pedido (id, numero_pedido, cliente_id, restaurante_id, endereco_entr
 (1, 'uuid-joao-001', 2, 1, 3, NOW(), 'PENDENTE', 'PIX', 55.90, 5.00, 60.90);
 
 INSERT INTO itens_pedido (id, pedido_id, produto_id, quantidade, preco_unitario, subtotal) VALUES
-(1, 1, 1, 1, 55.90, 55.90);
+(1, 1, 1, 55.90, 55.90);
 
 INSERT INTO item_pedido_opcional (id, item_pedido_id, item_opcional_id, preco_registrado) VALUES
 (1, 1, 2, 8.00),
@@ -112,13 +134,9 @@ INSERT INTO itens_pedido (id, pedido_id, produto_id, quantidade, preco_unitario,
 INSERT INTO item_pedido_opcional (id, item_pedido_id, item_opcional_id, preco_registrado) VALUES
 (3, 2, 14, 4.00);
 
-
-
-/*
- * ==============================
- * 10. RESETAR AS SEQUÊNCIAS (SINTAXE CORRIGIDA PARA MYSQL)
- * ==============================
- */
+-- ==============================
+-- 10. RESETAR AS SEQUÊNCIAS (SINTAXE CORRIGIDA PARA MYSQL)
+-- ==============================
 ALTER TABLE usuario AUTO_INCREMENT = 7;
 ALTER TABLE endereco AUTO_INCREMENT = 5;
 ALTER TABLE restaurante AUTO_INCREMENT = 3;
@@ -128,3 +146,6 @@ ALTER TABLE item_opcional AUTO_INCREMENT = 18;
 ALTER TABLE pedido AUTO_INCREMENT = 3;
 ALTER TABLE itens_pedido AUTO_INCREMENT = 3;
 ALTER TABLE item_pedido_opcional AUTO_INCREMENT = 6;
+
+-- HABILITA VERIFICAÇÃO DE CHAVE ESTRANGEIRA NOVAMENTE (MYSQL)
+SET FOREIGN_KEY_CHECKS = 1;
