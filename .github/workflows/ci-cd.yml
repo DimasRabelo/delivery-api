@@ -1,0 +1,50 @@
+# .github/workflows/ci-cd.yml
+
+name: Pipeline de CI/CD Completo (Java 21)
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    # VARIÁVEL CRÍTICA: Usa seu novo username do Docker Hub
+    env:
+      DOCKER_IMAGE: dimasrabelo/delivery-api 
+
+    steps:
+      - name: 1. Checkout do código
+        uses: actions/checkout@v4
+
+      - name: 2. Configurar JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: 3. Build com Maven (Empacotamento)
+        run: mvn -B package --file pom.xml -DskipTests
+
+      - name: 4. 🧪 Rodar Testes com Maven (CI)
+        run: mvn test
+        
+      # --- INÍCIO DA ENTREGA CONTÍNUA (CD) ---
+      
+      - name: 5. 🐳 Build da Imagem Docker
+        run: docker build -t ${{ env.DOCKER_IMAGE }}:latest .
+
+      - name: 6. ⬆️ Login e Push para o Docker Hub
+        # Autentica e envia a imagem para dimasrabelo/delivery-api
+        run: |
+          echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+          docker push ${{ env.DOCKER_IMAGE }}:latest
+
+      - name: 7. 🚀 Deploy (Fim do CD)
+        run: |
+          echo "Deploy da imagem ${{ env.DOCKER_IMAGE }}:latest executado!"
+          echo "Este ponto marca o fim do pipeline e o início da automação de implantação real."
