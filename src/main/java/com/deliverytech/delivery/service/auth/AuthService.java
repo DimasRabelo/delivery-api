@@ -12,6 +12,7 @@ import com.deliverytech.delivery.repository.auth.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.lang.NonNull;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -141,4 +142,38 @@ public class AuthService implements UserDetailsService {
         return usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
     }
+
+
+// ... (mantenha o restante das importações)
+
+// ... Dentro da classe AuthService
+
+// ==========================================================
+// --- MÉTODOS DE LOGIN/VERIFICAÇÃO ---
+// ==========================================================
+
+// 🔑 NOVO MÉTODO: GUARDA DE SEGURANÇA NA API
+/**
+ * Verifica se o usuário tem permissão para usar o endpoint de login geral.
+ * Se a Role for RESTAURANTE, lança uma exceção para barrar o acesso.
+ * @param email Email do usuário
+ * @return Usuario se for permitido (ADMIN, CLIENTE, ENTREGADOR).
+ * @throws BadCredentialsException se a Role for RESTAURANTE.
+ */
+public Usuario checkRoleForGeneralLogin(String email) {
+    // 1. Carrega o usuário. O Spring Security já garantiu que a senha está correta
+    // no momento em que seu Controller chama o AuthService.
+    Usuario usuario = (Usuario) loadUserByUsername(email);
+
+    // 2. CORREÇÃO CRÍTICA: BARRAR RESTAURANTE NO LOGIN GERAL
+    if (usuario.getRole() == Role.RESTAURANTE) {
+        // Lançar exceção com a mensagem correta. Isso será traduzido para 401/403.
+        throw new BadCredentialsException("Acesso Negado: Use o Login Administrativo do Restaurante.");
+    }
+
+    // 3. Retorna o usuário, permitindo o prosseguimento do login para as Roles permitidas.
+    return usuario;
+}
+
+// ... (métodos de registro e busca existentes)
 }
