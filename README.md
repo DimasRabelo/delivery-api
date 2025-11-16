@@ -37,6 +37,76 @@ O sistema agora inclui um conjunto completo de ferramentas de Observabilidade, i
 * **Logback (Customizado):** Configurado para gerar logs estruturados (JSON), logs de auditoria separados e incluir CorrelationID e TraceID em todas as saídas.
 * **Thymeleaf:** Motor de template usado para renderizar o Dashboard de monitoramento.
 
+<h2>🛰️ Distributed Tracing com Zipkin</h2>
+
+O sistema agora possui rastreamento distribuído completo utilizando o **Micrometer Tracing** integrado com o **Zipkin**, permitindo visualizar todo o fluxo de requisições entre serviços, identificar gargalos de performance e otimizar o tempo de resposta da aplicação.
+
+<h3>🔧 Como funciona</h3>
+
+A API já está configurada com:
+<ul>
+  <li><strong>Micrometer Tracing</strong> — responsável por capturar eventos (spans e traces)</li>
+  <li><strong>Bridge Brave</strong> — envia esses dados para o servidor Zipkin</li>
+  <li><strong>Logging com TraceID e SpanID</strong> — todos os logs agora incluem identificadores únicos para rastreamento</li>
+</ul>
+
+Cada requisição gera automaticamente:
+<ul>
+  <li><strong>TraceID</strong>: identifica a requisição completa</li>
+  <li><strong>SpanID</strong>: identifica cada etapa dentro dessa requisição</li>
+</ul>
+
+<h2>📡 Serviço Zipkin (Docker Compose)</h2>
+
+O Zipkin está disponível automaticamente quando você sobe o ambiente com Docker Compose.
+
+Acesse pelo navegador:
+```
+http://localhost:9411
+```
+Lá você pode visualizar:
+<ul>
+  <li>Lista de traces recentes</li>
+  <li>Tempo de resposta por requisição</li>
+  <li>Árvore de spans (timeline)</li>
+  <li>Dependências entre serviços</li>
+  <li>Gargalos de latência</li>
+</ul>
+
+<h2>📝 Configurações utilizadas</h2>
+
+No <code>application.properties</code> / <code>.yml</code> dentro do perfil <strong>docker</strong>:
+
+<pre>
+management.tracing.sampling.probability=1.0
+management.zipkin.tracing.endpoint=http://zipkin:9411/api/v2/spans
+</pre>
+
+<h2>📊 Exemplo de logs com TraceID</h2>
+
+<pre>
+INFO  [delivery-api,traceId=bd12f93c1f2a3e77,spanId=5a9c12b1f7d9c1a3] [CorrelationID=8f4e1b2c7d] Pedido criado com sucesso
+</pre>
+
+Agora você consegue identificar exatamente:
+<ul>
+  <li>qual requisição gerou o log</li>
+  <li>qual fluxo ela percorreu</li>
+  <li>onde ocorreu o gargalo</li>
+</ul>
+
+<h2>🚀 Benefícios do Zipkin no projeto</h2>
+
+<ul>
+  <li>Rastreamento ponta-a-ponta de requisições</li>
+  <li>Detecção fácil de problemas de performance</li>
+  <li>Visão clara do tempo gasto em cada camada</li>
+  <li>Integração automática com Micrometer</li>
+  <li>Logs e métricas conectados pelo mesmo TraceID</li>
+</ul>
+
+<p>Com isso, o DeliveryTech agora conta com um ambiente de Observabilidade completo (Logs + Métricas + Traces), alinhado com os padrões modernos usados em sistemas distribuídos.</p>
+
 <h2>✨ Novas Tecnologias (Performance & Cache) ✨</h2>
 
 Para resolver a latência em consultas repetidas ao banco de dados, uma camada de cache distribuído foi implementada:
@@ -93,31 +163,10 @@ Rastreamento (TraceID + CorrelationID): Cada log de requisição no console agor
 
 <h2>🔧 Como Executar (Ambiente de Desenvolvimento)</h2>
 
-Este projeto agora **requer um servidor Redis** para o cache. A forma mais fácil é usando Docker.
-
-### 1. Pré-requisito: Iniciar o Redis (via Docker)
-
-No seu terminal, execute o seguinte comando para iniciar um contêiner Redis em segundo plano:
-
-
-docker run -d -p 6379:6379 --name redis-cache redis
-(Você pode verificar se ele está rodando com docker ps)
-
-2. Clonar o repositório
-Bash
-
-git clone [https://github.com/SEU-USUARIO/delivery-api.git](https://github.com/SEU-USUARIO/delivery-api.git)
-
-cd delivery-api
-
-3. Executar a aplicação (via Maven Wrapper)
-
-Com o Redis já rodando, inicie o Spring Boot:
-
-Bash
-
-./mvnw spring-boot:run
+```
+mvn spring-boot:run
 A API estará disponível em http://localhost:8080.
+```
 
 <h3>Links Úteis (Ambiente Local)</h3>
 
@@ -131,13 +180,193 @@ JDBC URL: jdbc:h2:mem:deliverydb
 
 User: sa
 
-Password: password
-
-Redis (Via Docker): localhost:6379
+Password: 
 
 Dashboard de Métricas: http://localhost:8080/dashboard
 
 Endpoint de Saúde (Actuator): http://localhost:8080/actuator/health
+
+<h2>🐳 Containerização Completa (Docker + Docker Compose)</h2>
+
+Com o objetivo de padronizar ambientes e garantir que a aplicação seja executada de maneira idêntica em desenvolvimento, homologação e produção, este projeto agora inclui um Dockerfile otimizado e um ambiente completo orquestrado via Docker Compose.
+
+É CRÍTICO que o repositório da API e este repositório do Frontend estejam no mesmo diretório de nível superior.
+```
+/seu_diretorio_de_projetos/
+├── delivery-api/        <-- Contém o Docker Compose
+└── delivery-frontend/   <-- ESTE REPOSITÓRIO (Contém o Dockerfile do React)
+2. Clonagem e Inicialização
+
+Siga estes passos para iniciar o ambiente multi-contêiner:
+
+Clone os Repositórios: (Execute na pasta /seu_diretorio_de_projetos/):
+
+
+# Execute na sua pasta raiz de projetos
+git clone https://github.com/DimasRabelo/delivery-api.git
+git clone https://github.com/DimasRabelo/delivery-frontend.git
+```
+
+<h2>📦 Dockerfile (Multi-Stage Build)</h2>
+
+A aplicação foi empacotada utilizando multi-stage build, reduzindo drasticamente o tamanho final da imagem e garantindo melhor performance.
+
+Principais otimizações:
+
+Build isolado usando imagem Maven.
+
+Execução final em imagem leve baseada em Alpine.
+
+Jar otimizado e redução de camadas.
+
+Variáveis de ambiente configuradas para o perfil docker.
+
+Menor tempo de boot e menor uso de memória.
+
+<h2>🧩 Orquestração com Docker Compose</h2>
+
+O projeto inclui um docker-compose.yml que levanta:
+
+API DeliveryTech
+
+Banco de Dados MySQL
+
+Redis (para cache distribuído)
+
+Rede isolada e volumes persistentes
+
+Isso permite replicar o ambiente real com apenas um comando.
+
+<h2>🚀 Como subir o ambiente</h2>
+
+Durante o desenvolvimento, utilizei o comando:
+
+docker-compose up --build
+
+
+Esse comando força o Docker a reconstruir as imagens, o que é útil quando você ainda está configurando o ambiente, alterando Dockerfile, ajustando frontend/backend, etc.
+
+<h2>🧑‍💻 Para terceiros (usuários do projeto)</h2>
+
+Se você está apenas baixando o projeto para utilizar, NÃO precisa usar --build.
+
+Basta executar:
+
+docker-compose up
+```
+E depois acessar: http://localhost
+```
+O Docker Compose irá subir automaticamente todos os serviços já configurados (API, frontend, banco, etc.), usando as imagens existentes ou montando o ambiente sem necessidade de rebuild completo.
+
+<h2>📌 Serviços incluídos</h2>
+
+API: http://localhost
+
+MySQL: porta 3306 + volume persistente
+
+Redis: porta 6379
+
+Rede: delivery-network
+
+<h2>🔑 Dados de Acesso Padrão (Senha: 123456)</h2>
+
+O ambiente Docker é inicializado com os seguintes usuários para testes e desenvolvimento.
+
+Inteligência de Login: Para todos os perfis, exceto Restaurante, a aplicação detecta automaticamente a Role após o login e redireciona o usuário para o painel correto (ADMIN, CLIENTE, ENTREGADOR). A autenticação do Restaurante é tratada em um endpoint/página separado para fins de segregação.
+
+Nota: A senha padrão para todos os usuários listados abaixo é 123456 (armazenada via hash BCrypt).
+```
+| Usuário                        | E-mail                            Role |
+
+| Administrador |             admin@delivery.com                   | ADMIN |
+| Cliente|                     joao@email.com                      | CLIENTE |
+| Cliente Secundário |        maria@email.com                      | CLIENTE |
+| Restaurante Padrão |        pizza@palace.com                    | RESTAURANTE |
+| Restaurante Secundário |     burger@king.com                    | RESTAURANTE |
+| Entregador |                carlos@entrega.com                  | ENTREGADOR  |
+```
+⚠️ Observação: O Painel do Administrador (admin@delivery.com) ainda está em fase de implementação. Você conseguirá logar com sucesso, mas a página correspondente (a view) estará em branco ou incompleta.
+
+<h2>✔️ Testes realizados</h2>
+
+Comunicação API ↔ MySQL funcionando
+
+Redis operando como provedor de cache
+
+Migrações e inicialização OK
+
+Persistência validada via volume
+
+<h2>🔄 CI/CD – Pipeline Automatizado (GitHub Actions)</h2>
+
+A aplicação agora conta com um pipeline CI/CD configurado para automatizar:
+
+✔️ Build
+
+Compila o projeto usando Maven e executa todos os testes.
+
+✔️ Testes Automatizados
+
+Executa testes unitários e de integração em cada push na branch principal.
+
+✔️ Build da Imagem Docker
+
+O pipeline gera automaticamente a imagem Docker da aplicação.
+
+✔️ Deploy Automatizado
+
+Em pushes para uma branch específica (ex: homolog), o pipeline:
+
+Publica a imagem no Docker Hub (ou GitHub Registry)
+
+Executa deploy em servidor de teste/homologação (SSH ou runner específico)
+
+<h2>📝 Arquivo do Pipeline</h2>
+
+O pipeline é configurado em:
+
+.github/workflows/ci-cd.yml
+
+
+Inclui as etapas:
+
+checkout
+
+setup-java
+
+cache do Maven
+
+mvn test
+
+mvn -DskipTests package
+
+docker build
+
+(Opcional) docker push
+
+(Opcional) deploy remoto
+
+<h2>📊 Evidências</h2>
+
+O repositório agora possui:
+
+Prints do pipeline executando com sucesso
+
+Logs completos de build, testes e deploy
+
+Histórico de execuções disponível no GitHub Actions
+
+<h2>🧠 Decisões Técnicas (Docker + CI/CD)</h2>
+
+Multi-stage build reduz em até 70% o tamanho final da imagem.
+
+Compose permite testar todo o ecossistema localmente.
+
+CI/CD automatiza qualidade, reduz erros e acelera entregas.
+
+Deploy automatizado garante versionamento e integridade das builds.
+
+Redis + MySQL no Compose garantem ambiente idêntico ao real.
 
 <h2>🏗️ Estrutura de Pastas (Atualizada)</h2>
 
@@ -199,6 +428,7 @@ A estrutura do projeto foi atualizada com os novos pacotes de observabilidade:
  ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ContagemDTO.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜EnderecoResponseDTO.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ErrorResponse.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ItemPedidoResponseDTO.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜PagedResponseWrapper.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜PedidoResponseDTO.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ProdutoResponseDTO.java
@@ -255,6 +485,7 @@ A estrutura do projeto foi atualizada com os novos pacotes de observabilidade:
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂impl
  ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ClienteServiceImpl.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜EnderecoServiceImpl.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜PaymentServiceImpl.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜PedidoServiceImpl.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ProdutoServiceImpl.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜RelatorioServiceImpl.java
@@ -264,6 +495,7 @@ A estrutura do projeto foi atualizada com os novos pacotes de observabilidade:
  ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜MetricsService.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ClienteService.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜EnderecoService.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜PaymentService.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜PedidoService.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ProdutoService.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜RelatorioService.java
@@ -286,7 +518,8 @@ A estrutura do projeto foi atualizada com os novos pacotes de observabilidade:
  ┃ ┃ ┣ 📜application-docker.properties
  ┃ ┃ ┣ 📜application.properties
  ┃ ┃ ┣ 📜application.yml
- ┃ ┃ ┣ 📜data.sql
+ ┃ ┃ ┣ 📜data-h2.sql
+ ┃ ┃ ┣ 📜data-mysql.sql
  ┃ ┃ ┗ 📜logback-spring.xml
  ┣ 📂postman
  ┃ ┣ 📜DeliveryApi.postman_collection.json
@@ -304,7 +537,7 @@ A estrutura do projeto foi atualizada com os novos pacotes de observabilidade:
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂auth
  ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜AuthControllerIntegrationTest.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ClienteControllerIntegrationTest.java
- ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜PedidoControllerIntegrationTest.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜PedidoControllerIntegration.java
  ┃ ┃ ┃ ┃ ┃ ┣ 📂entity
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ClienteTest.java
  ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜ProdutoTest.java
