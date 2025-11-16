@@ -113,7 +113,7 @@ class AuthControllerIntegrationTest {
         return endereco;
     }
 
-    // ==========================================================
+   
     // Testes de Login
     // ==========================================================
     @Test
