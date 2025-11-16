@@ -70,7 +70,7 @@ management:
 info:
   app:
     # Usei o nome do Bloco 2, que parecia mais completo
-    name: "Sistema de Delivery (Projeto Atividade)" 
+    name: "Sistema de Delivery" 
     description: "API REST para sistema de delivery com observabilidade"
     version: "1.0.0"
     encoding: "UTF-8"

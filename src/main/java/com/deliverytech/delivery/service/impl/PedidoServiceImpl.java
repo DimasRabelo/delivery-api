@@ -18,6 +18,8 @@ import com.deliverytech.delivery.security.jwt.SecurityUtils;
 import com.deliverytech.delivery.service.PedidoService;
 import com.deliverytech.delivery.service.audit.AuditService;
 import com.deliverytech.delivery.service.metrics.MetricsService;
+// IMPORT CORRETO (Assumindo que você o colocou em um subpacote 'payment')
+import com.deliverytech.delivery.service.PaymentService; 
 import io.micrometer.core.instrument.Timer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -35,7 +37,7 @@ import java.util.stream.Collectors;
 
 /**
  * Implementação do Serviço de Pedidos, contendo toda a lógica de negócio,
- * validações e integração com o repositório, auditoria e métricas.
+ * validações e integração com o repositório, auditoria, métricas e pagamento (simulado).
  */
 @Service("pedidoService")
 public class PedidoServiceImpl implements PedidoService {
@@ -50,6 +52,9 @@ public class PedidoServiceImpl implements PedidoService {
     @Autowired private EnderecoRepository enderecoRepository;
     @Autowired private ItemOpcionalRepository itemOpcionalRepository;
     @Autowired private GrupoOpcionalRepository grupoOpcionalRepository;
+    
+    // === NOVO: INJEÇÃO DO MOCK SERVICE DE PAGAMENTO ===
+    @Autowired private PaymentService paymentService;
 
 
     /**
@@ -208,6 +213,21 @@ public class PedidoServiceImpl implements PedidoService {
             pedido.setTaxaEntrega(taxaEntrega);
             pedido.setValorTotal(valorTotal);
             pedido.setNumeroPedido(UUID.randomUUID().toString().substring(0, 18));
+            
+            // 6.5. === IMPLEMENTAÇÃO DO MOCK SERVICE DE PAGAMENTO ===
+            // Simula a tentativa de transação antes de salvar o pedido no banco.
+            boolean paymentSuccess = paymentService.processPayment(
+                pedido.getMetodoPagamento(),
+                pedido.getValorTotal().doubleValue()
+            );
+
+            if (!paymentSuccess) {
+                // Se a simulação falhar (por exemplo, método inválido), lançamos a exceção.
+                // O @Transactional garante o rollback do estoque e das alterações.
+                throw new BusinessException("Transação de pagamento não autorizada. Status: Simulação de Falha.");
+            }
+            // =======================================================
+
 
             Pedido pedidoSalvo = pedidoRepository.save(pedido);
 

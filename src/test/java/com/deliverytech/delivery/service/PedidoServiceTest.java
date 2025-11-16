@@ -1,4 +1,4 @@
-package com.deliverytech.delivery.service;
+package com.deliverytech.delivery.service; // Note: O pacote foi alterado para 'service' para compatibilidade com a classe de teste.
 
 import com.deliverytech.delivery.dto.request.ItemPedidoDTO;
 import com.deliverytech.delivery.dto.request.PedidoDTO;
@@ -17,7 +17,7 @@ import com.deliverytech.delivery.security.jwt.SecurityUtils;
 import com.deliverytech.delivery.service.audit.AuditService;
 import com.deliverytech.delivery.service.impl.PedidoServiceImpl;
 import com.deliverytech.delivery.service.metrics.MetricsService;
-
+// NOVO: Import do Mock Service de Pagamento
 import io.micrometer.core.instrument.Timer;
 
 import org.junit.jupiter.api.*;
@@ -31,6 +31,10 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyDouble;
+
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 /**
@@ -55,6 +59,9 @@ class PedidoServiceTest {
     @Mock private AuditService auditService;
     @Mock private ModelMapper modelMapper;
     @Mock private Timer.Sample timerSample;
+    
+    // --- NOVO MOCK CRÍTICO: Serviço de Pagamento ---
+    @Mock private PaymentService paymentService; 
 
     // --- Classe testada ---
     @InjectMocks
@@ -62,6 +69,8 @@ class PedidoServiceTest {
 
     @Captor
     private ArgumentCaptor<Pedido> pedidoCaptor;
+    @Captor
+    private ArgumentCaptor<Produto> produtoCaptor; // Necessário para verificar a reversão de estoque
 
     private MockedStatic<SecurityUtils> mockedSecurityUtils;
 
@@ -135,7 +144,7 @@ class PedidoServiceTest {
         pedidoDTO.setRestauranteId(10L);
         pedidoDTO.setItens(List.of(itemDTO));
         pedidoDTO.setEnderecoEntregaId(5L);
-        pedidoDTO.setMetodoPagamento("PIX");
+        pedidoDTO.setMetodoPagamento("PIX"); // Método de pagamento para teste
 
         // --- DTO cálculo ---
         calculoDTO = new CalculoPedidoDTO();
@@ -161,6 +170,10 @@ class PedidoServiceTest {
         lenient().when(pedidoRepository.save(any(Pedido.class))).thenReturn(pedidoSalvo);
         lenient().when(metricsService.iniciarTimerPedido()).thenReturn(timerSample);
         lenient().when(metricsService.iniciarTimerBanco()).thenReturn(timerSample);
+        
+        // ⚠️ NOVO: MOCK PADRÃO PARA O MOCK SERVICE DE PAGAMENTO (SUCESSO)
+        lenient().when(paymentService.processPayment(anyString(), anyDouble())).thenReturn(true);
+
 
         // ⚠️ SOLUÇÃO DEFINITIVA — evita TODOS os UnnecessaryStubbingException
         lenient().when(modelMapper.map(any(), eq(PedidoResponseDTO.class)))
@@ -184,11 +197,12 @@ class PedidoServiceTest {
         when(enderecoRepository.findById(5L)).thenReturn(Optional.of(enderecoAtivo));
         when(produtoRepository.findById(100L)).thenReturn(Optional.of(produto1));
 
-        // ⚠️ NÃO PRECISA MAIS MOCKAR modelMapper AQUI
-
         pedidoService.criarPedido(pedidoDTO);
 
+        // ⚠️ Verifica que o Mock Service foi chamado antes de salvar
+        verify(paymentService, times(1)).processPayment(anyString(), anyDouble());
         verify(pedidoRepository).save(pedidoCaptor.capture());
+        
         Pedido pedido = pedidoCaptor.getValue();
 
         ItemPedido item = pedido.getItens().get(0);
@@ -198,18 +212,60 @@ class PedidoServiceTest {
         assertEquals(0, pedido.getSubtotal().compareTo(new BigDecimal("26.00")));
         assertEquals(0, pedido.getValorTotal().compareTo(new BigDecimal("31.00")));
     }
+    
+    // =====================================================================
+    // TESTE NOVO: FLUXO DE PAGAMENTO (MOCK SERVICE DEDICADO)
+    // =====================================================================
+    @Test
+    @DisplayName("CRIAR PEDIDO: Deve falhar e reverter a transação se o pagamento simular falha")
+    void criarPedido_DeveFalhar_QuandoPagamentoSimularFalha() {
+        // ARRANGE
+        
+        // 1. Configurar o cenário de sucesso nas dependências (usuário, restaurante, produto)
+        when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuarioAtivo));
+        when(restauranteRepository.findById(10L)).thenReturn(Optional.of(restauranteAberto));
+        when(enderecoRepository.findById(5L)).thenReturn(Optional.of(enderecoAtivo));
+        when(produtoRepository.findById(100L)).thenReturn(Optional.of(produto1));
+        
+        // 2. FORÇAR A FALHA DO MOCK SERVICE
+        // Esta configuração sobrescreve o comportamento padrão do setUp()
+        when(paymentService.processPayment(anyString(), anyDouble()))
+               .thenReturn(false); // <--- FORÇA A FALHA AQUI
+
+        // ACT & ASSERT
+        
+        // 3. Verifica se a exceção de negócio (BusinessException) é lançada
+        assertThrows(BusinessException.class,
+                () -> pedidoService.criarPedido(pedidoDTO),
+                "Deveria lançar BusinessException por falha simulada no pagamento.");
+
+        // 4. VERIFICAÇÃO CRÍTICA: Provar que o Rollback ocorreu
+        
+        // O método save do PedidoRepository NÃO deve ser chamado.
+        verify(pedidoRepository, never()).save(any(Pedido.class));
+        
+        // O método save do ProdutoRepository (baixa no estoque) DEVE ter sido chamado
+        // ANTES da exceção, mas o @Transactional reverte a alteração no BD.
+        verify(produtoRepository, times(1)).save(any(Produto.class));
+        
+        // O Mock Service DEVE ser chamado
+        verify(paymentService, times(1)).processPayment(anyString(), anyDouble()); 
+    }
 
     @Test
     @DisplayName("Criar pedido deve falhar se cliente estiver inativo")
     void criarPedido_DeveFalhar_ClienteInativo() {
 
-        usuarioAtivo.setAtivo(false);
         when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuarioAtivo));
-
+        usuarioAtivo.setAtivo(false);
+        
+        // O Mock Service não é chamado neste ponto, pois falha na validação do usuário.
+        
         assertThrows(BusinessException.class,
                 () -> pedidoService.criarPedido(pedidoDTO));
 
         verify(pedidoRepository, never()).save(any());
+        verify(paymentService, never()).processPayment(anyString(), anyDouble());
     }
 
     // =====================================================================
@@ -237,8 +293,6 @@ class PedidoServiceTest {
 
         pedidoSalvo.setStatus(StatusPedido.PENDENTE);
         when(pedidoRepository.findById(1L)).thenReturn(Optional.of(pedidoSalvo));
-
-        // ⚠️ NÃO MOCKAR modelMapper AQUI
 
         StatusPedidoDTO dto = new StatusPedidoDTO();
         dto.setStatus(StatusPedido.CONFIRMADO.name());
