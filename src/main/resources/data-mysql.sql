@@ -13,8 +13,8 @@ DELETE FROM item_opcional;
 DELETE FROM grupo_opcional;
 DELETE FROM produto;
 DELETE FROM cliente;
-DELETE FROM restaurante;
-DELETE FROM endereco;
+DELETE FROM restaurante; -- Necessário se for FK de outras tabelas
+DELETE FROM endereco;     -- <<< AQUI ESTÁ O NOVO POSICIONAMENTO CRÍTICO
 DELETE FROM usuario;
 -- >>> FIM DA LÓGICA DE IDEMPOTÊNCIA
 

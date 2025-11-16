@@ -126,7 +126,7 @@ class AuthControllerIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.message").value("Credenciais inválidas"));
+               .andExpect(jsonPath("$.message").value("Bad credentials"));
     }
 
     @Test
