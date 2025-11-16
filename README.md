@@ -37,6 +37,76 @@ O sistema agora inclui um conjunto completo de ferramentas de Observabilidade, i
 * **Logback (Customizado):** Configurado para gerar logs estruturados (JSON), logs de auditoria separados e incluir CorrelationID e TraceID em todas as saídas.
 * **Thymeleaf:** Motor de template usado para renderizar o Dashboard de monitoramento.
 
+<h2>🛰️ Distributed Tracing com Zipkin</h2>
+
+O sistema agora possui rastreamento distribuído completo utilizando o **Micrometer Tracing** integrado com o **Zipkin**, permitindo visualizar todo o fluxo de requisições entre serviços, identificar gargalos de performance e otimizar o tempo de resposta da aplicação.
+
+<h3>🔧 Como funciona</h3>
+
+A API já está configurada com:
+<ul>
+  <li><strong>Micrometer Tracing</strong> — responsável por capturar eventos (spans e traces)</li>
+  <li><strong>Bridge Brave</strong> — envia esses dados para o servidor Zipkin</li>
+  <li><strong>Logging com TraceID e SpanID</strong> — todos os logs agora incluem identificadores únicos para rastreamento</li>
+</ul>
+
+Cada requisição gera automaticamente:
+<ul>
+  <li><strong>TraceID</strong>: identifica a requisição completa</li>
+  <li><strong>SpanID</strong>: identifica cada etapa dentro dessa requisição</li>
+</ul>
+
+<h2>📡 Serviço Zipkin (Docker Compose)</h2>
+
+O Zipkin está disponível automaticamente quando você sobe o ambiente com Docker Compose.
+
+Acesse pelo navegador:
+```
+http://localhost:9411
+```
+Lá você pode visualizar:
+<ul>
+  <li>Lista de traces recentes</li>
+  <li>Tempo de resposta por requisição</li>
+  <li>Árvore de spans (timeline)</li>
+  <li>Dependências entre serviços</li>
+  <li>Gargalos de latência</li>
+</ul>
+
+<h2>📝 Configurações utilizadas</h2>
+
+No <code>application.properties</code> / <code>.yml</code> dentro do perfil <strong>docker</strong>:
+
+<pre>
+management.tracing.sampling.probability=1.0
+management.zipkin.tracing.endpoint=http://zipkin:9411/api/v2/spans
+</pre>
+
+<h2>📊 Exemplo de logs com TraceID</h2>
+
+<pre>
+INFO  [delivery-api,traceId=bd12f93c1f2a3e77,spanId=5a9c12b1f7d9c1a3] [CorrelationID=8f4e1b2c7d] Pedido criado com sucesso
+</pre>
+
+Agora você consegue identificar exatamente:
+<ul>
+  <li>qual requisição gerou o log</li>
+  <li>qual fluxo ela percorreu</li>
+  <li>onde ocorreu o gargalo</li>
+</ul>
+
+<h2>🚀 Benefícios do Zipkin no projeto</h2>
+
+<ul>
+  <li>Rastreamento ponta-a-ponta de requisições</li>
+  <li>Detecção fácil de problemas de performance</li>
+  <li>Visão clara do tempo gasto em cada camada</li>
+  <li>Integração automática com Micrometer</li>
+  <li>Logs e métricas conectados pelo mesmo TraceID</li>
+</ul>
+
+<p>Com isso, o DeliveryTech agora conta com um ambiente de Observabilidade completo (Logs + Métricas + Traces), alinhado com os padrões modernos usados em sistemas distribuídos.</p>
+
 <h2>✨ Novas Tecnologias (Performance & Cache) ✨</h2>
 
 Para resolver a latência em consultas repetidas ao banco de dados, uma camada de cache distribuído foi implementada:
