@@ -73,15 +73,6 @@ Lá você pode visualizar:
   <li>Gargalos de latência</li>
 </ul>
 
-<h2>📝 Configurações utilizadas</h2>
-
-No <code>application.properties</code> / <code>.yml</code> dentro do perfil <strong>docker</strong>:
-
-<pre>
-management.tracing.sampling.probability=1.0
-management.zipkin.tracing.endpoint=http://zipkin:9411/api/v2/spans
-</pre>
-
 <h2>📊 Exemplo de logs com TraceID</h2>
 
 <pre>
