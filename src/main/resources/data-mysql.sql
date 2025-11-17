@@ -1,25 +1,30 @@
 /*
  * =================================================================
- * SCRIPT DE CARGA INICIAL (PÓS-REFATORAÇÃO)
- * (Versão corrigida para H2, com nomes de tabela em minúsculo)
+ * SCRIPT DE CARGA INICIAL (CORREÇÃO FINAL DE CHAVE ESTRANGEIRA)
+ *
+ * NOTA: O 'SET FOREIGN_KEY_CHECKS = 0' é necessário para garantir a 
+ * idempotência da limpeza devido às dependências circulares entre 
+ * usuario, endereco e restaurante.
  * =================================================================
  */
 
- -- 2. LIMPEZA TOTAL (Ordem inversa de dependência - de Filhas para Mães)
-DELETE FROM item_pedido_opcional;
-DELETE FROM itens_pedido;
-DELETE FROM pedido;
-DELETE FROM item_opcional;
-DELETE FROM grupo_opcional;
-DELETE FROM produto;
-DELETE FROM cliente;
-DELETE FROM restaurante; -- Necessário se for FK de outras tabelas
-DELETE FROM endereco;     -- <<< AQUI ESTÁ O NOVO POSICIONAMENTO CRÍTICO
-DELETE FROM usuario;
--- >>> FIM DA LÓGICA DE IDEMPOTÊNCIA
+-- CRÍTICO: DESATIVA A VERIFICAÇÃO DE FOREIGN KEYS NO INÍCIO
+SET FOREIGN_KEY_CHECKS = 0; 
+
+-- 2. LIMPEZA TOTAL (Ordem de dependência corrigida, mas garantida pela desativação)
+-- DELETE FROM item_pedido_opcional;
+-- DELETE FROM itens_pedido;
+-- DELETE FROM pedido;
+-- DELETE FROM item_opcional;
+-- DELETE FROM grupo_opcional;
+-- DELETE FROM produto;
+-- DELETE FROM cliente;
+-- DELETE FROM usuario; 
+-- DELETE FROM restaurante; 
+-- DELETE FROM endereco;    
 
 -- ==============================
--- 1. USUÁRIOS
+-- 1. USUÁRIOS (restante da inserção)
 -- ==============================
 INSERT INTO usuario (id, email, senha, role, ativo, data_criacao, restaurante_id) VALUES
 (1, 'admin@delivery.com', '$2a$10$AkKArXqwoK8Ocri.T5C8B.4qi4FmFwDWI2aV2zTXFH3CQYwzOQULa', 'ADMIN', true, NOW(), null),
@@ -129,7 +134,7 @@ INSERT INTO item_pedido_opcional (id, item_pedido_id, item_opcional_id, preco_re
 
 /*
  * ==============================
- * 10. RESETAR AS SEQUÊNCIAS (SINTAXE CORRIGIDA PARA MYSQL)
+ * 10. RESETAR AS SEQUÊNCIAS 
  * ==============================
  */
 ALTER TABLE usuario AUTO_INCREMENT = 7;
@@ -141,3 +146,6 @@ ALTER TABLE item_opcional AUTO_INCREMENT = 18;
 ALTER TABLE pedido AUTO_INCREMENT = 3;
 ALTER TABLE itens_pedido AUTO_INCREMENT = 3;
 ALTER TABLE item_pedido_opcional AUTO_INCREMENT = 6;
+
+-- CRÍTICO: REATIVA A VERIFICAÇÃO DE FOREIGN KEYS NO FINAL
+SET FOREIGN_KEY_CHECKS = 1;

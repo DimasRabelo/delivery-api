@@ -16,6 +16,8 @@ services:
         condition: service_healthy
       cache:
         condition: service_healthy
+
+    command: ["/bin/sh", "-c", "sleep 45 && java -jar app.jar"] 
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
       interval: 30s
@@ -54,6 +56,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+      start_period: 60s
 
   cache:
     image: redis:7-alpine
