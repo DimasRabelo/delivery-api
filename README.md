@@ -30,7 +30,7 @@ O sistema agora inclui um conjunto completo de ferramentas de Observabilidade, i
 * **JUnit 5 & Mockito:** Para testes unitários e de integração.
 * **JaCoCo:** Para relatórios de cobertura de testes.
 
-<h2>✨ Novas Tecnologias (Atividade de Observabilidade) ✨</h2>
+<h2>✨ Observabilidade ✨</h2>
 
 * **Spring Boot Actuator:** Expõe endpoints de gerenciamento (`/health`, `/info`, `/metrics`, `/prometheus`).
 * **Micrometer (Core, Tracing & Prometheus):** Coleta métricas de performance (JVM, CPU), métricas de negócio customizadas (pedidos, receita) e gera traces (substituto moderno do Sleuth).
@@ -117,7 +117,7 @@ Após iniciar a aplicação, acesse os links:
 * **Interface Gráfica (Swagger UI):** `http://localhost:8080/swagger-ui.html`
 * **Definição JSON (OpenAPI):** `http://localhost:8080/api-docs`
 
-(O seu texto sobre "Como usar a Autenticação no Swagger" estava perfeito e foi mantido)
+
 
 <h2>🔬 Observabilidade e Monitoramento</h2>
 
