@@ -162,6 +162,7 @@ public class ProdutoServiceImpl implements ProdutoService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "produtosPorNome", key = "#nome")
     public List<ProdutoResponseDTO> buscarProdutosPorNome(String nome) {
         List<Produto> produtos = produtoRepository.findByNomeContainingIgnoreCaseAndDisponivelTrue(nome);
         return produtos.stream()
@@ -171,6 +172,7 @@ public class ProdutoServiceImpl implements ProdutoService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "produtosPorRestaurante", key = "{#restauranteId, #disponivel}")
     public List<ProdutoResponseDTO> buscarProdutosPorRestaurante(Long restauranteId, Boolean disponivel) {
         List<Produto> produtos;
         // Se 'disponivel' for nulo ou verdadeiro, busca apenas os disponíveis (comportamento padrão)
@@ -210,6 +212,7 @@ public class ProdutoServiceImpl implements ProdutoService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "produtosPorCategoria", key = "#categoria")
     public List<ProdutoResponseDTO> buscarProdutosPorCategoria(String categoria) {
         List<Produto> produtos = produtoRepository.findByCategoriaAndDisponivelTrue(categoria);
         return produtos.stream()
@@ -238,6 +241,8 @@ public class ProdutoServiceImpl implements ProdutoService {
      */
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "produtos", 
+           key = "{#pageable.pageNumber, #pageable.pageSize, #restauranteId, #categoria, #disponivel}")
     public Page<ProdutoResponseDTO> listarProdutos(Pageable pageable, Long restauranteId, String categoria, Boolean disponivel) {
         // (O código de Specification foi omitido, mas a lógica de busca é aqui)
         Specification<Produto> spec = Specification.not(null); 
