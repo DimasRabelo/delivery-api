@@ -33,17 +33,17 @@ public class ItemPedido {
 
     @NotNull(message = "Quantidade é obrigatória")
     @Min(value = 1, message = "A quantidade deve ser de pelo menos 1")
-    @Schema(description = "Quantidade do produto no pedido", example = "2", required = true, minimum = "1")
+    @Schema(description = "Quantidade do produto no pedido", example = "2", requiredMode = Schema.RequiredMode.REQUIRED, minimum = "1")
     private Integer quantidade;
 
     @NotNull(message = "Preço unitário é obrigatório")
     @PositiveOrZero(message = "Preço unitário não pode ser negativo")
-    @Schema(description = "Preço unitário calculado (produto + opcionais)", example = "63.00", required = true, minimum = "0")
+    @Schema(description = "Preço unitário calculado (produto + opcionais)", example = "63.00", requiredMode = Schema.RequiredMode.REQUIRED, minimum = "0")
     private BigDecimal precoUnitario;
 
     @NotNull(message = "Subtotal é obrigatório")
     @PositiveOrZero(message = "Subtotal não pode ser negativo")
-    @Schema(description = "Subtotal = quantidade * preço unitário", example = "126.00", required = true, minimum = "0")
+    @Schema(description = "Subtotal = quantidade * preço unitário", example = "126.00", requiredMode = Schema.RequiredMode.REQUIRED, minimum = "0")
     private BigDecimal subtotal;
 
     @Schema(description = "Observações específicas deste item", example = "Sem cebola, bem passado")

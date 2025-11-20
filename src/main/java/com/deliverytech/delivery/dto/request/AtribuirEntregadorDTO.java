@@ -13,7 +13,7 @@ import lombok.Data;
 @Schema(description = "DTO para atribuir um entregador a um pedido")
 public class AtribuirEntregadorDTO {
 
-    @Schema(description = "ID do Usuário (com ROLE_ENTREGADOR) a ser atribuído", required = true, example = "5")
+    @Schema(description = "ID do Usuário (com ROLE_ENTREGADOR) a ser atribuído", requiredMode = Schema.RequiredMode.REQUIRED, example = "5")
     @NotNull(message = "O ID do entregador é obrigatório")
     @Positive(message = "O ID do entregador deve ser um número positivo")
     private Long entregadorId;

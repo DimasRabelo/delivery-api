@@ -40,7 +40,7 @@ public class Cliente {
     /** Nome completo do cliente */
     @NotBlank(message = "Nome é obrigatório")
     @Size(min = 2, max = 100, message = "Nome deve ter entre 2 e 100 caracteres")
-    @Schema(description = "Nome completo do cliente", example = "João da Silva", required = true)
+    @Schema(description = "Nome completo do cliente", example = "João da Silva", requiredMode = Schema.RequiredMode.REQUIRED)
     private String nome;
 
     /** CPF do cliente (apenas números) */
@@ -48,7 +48,7 @@ public class Cliente {
     @NotBlank(message = "CPF é obrigatório")
     @Size(min = 11, max = 11, message = "CPF deve ter 11 dígitos")
     @Pattern(regexp = "\\d{11}", message = "CPF deve conter apenas números")
-    @Schema(description = "CPF do cliente", example = "12345678901", required = true)
+    @Schema(description = "CPF do cliente", example = "12345678901", requiredMode = Schema.RequiredMode.REQUIRED)
     private String cpf;
 
     /** Telefone de contato */

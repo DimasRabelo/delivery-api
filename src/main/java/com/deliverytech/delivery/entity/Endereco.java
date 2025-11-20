@@ -38,24 +38,24 @@ public class Endereco {
     /** Apelido do endereço (ex: Casa, Trabalho) */
     @NotBlank(message = "Apelido é obrigatório")
     @Size(max = 50)
-    @Schema(description = "Apelido do endereço", example = "Casa", required = true)
+    @Schema(description = "Apelido do endereço", example = "Casa", requiredMode = Schema.RequiredMode.REQUIRED)
     private String apelido;
 
     /** CEP (apenas números) */
     @NotBlank(message = "CEP é obrigatório")
     @Size(min = 8, max = 8, message = "CEP deve ter 8 dígitos")
-    @Schema(description = "CEP (apenas números)", example = "01001000", required = true)
+    @Schema(description = "CEP (apenas números)", example = "01001000", requiredMode = Schema.RequiredMode.REQUIRED)
     private String cep;
 
     /** Rua ou logradouro */
     @NotBlank(message = "Rua é obrigatória")
-    @Schema(description = "Nome da rua ou logradouro", example = "Praça da Sé", required = true)
+    @Schema(description = "Nome da rua ou logradouro", example = "Praça da Sé", requiredMode = Schema.RequiredMode.REQUIRED)
     private String rua;
 
     /** Número do endereço */
     @NotBlank(message = "Número é obrigatório")
     @Size(max = 20)
-    @Schema(description = "Número do endereço", example = "100", required = true)
+    @Schema(description = "Número do endereço", example = "100", requiredMode = Schema.RequiredMode.REQUIRED)
     private String numero;
 
     /** Complemento (apto, bloco, etc.) */
@@ -64,18 +64,18 @@ public class Endereco {
 
     /** Bairro */
     @NotBlank(message = "Bairro é obrigatório")
-    @Schema(description = "Bairro", example = "Sé", required = true)
+    @Schema(description = "Bairro", example = "Sé", requiredMode = Schema.RequiredMode.REQUIRED)
     private String bairro;
 
     /** Cidade */
     @NotBlank(message = "Cidade é obrigatória")
-    @Schema(description = "Cidade", example = "São Paulo", required = true)
+    @Schema(description = "Cidade", example = "São Paulo", requiredMode = Schema.RequiredMode.REQUIRED)
     private String cidade;
 
     /** Estado (UF) */
     @NotBlank(message = "Estado é obrigatório")
     @Size(min = 2, max = 2, message = "UF deve conter 2 caracteres")
-    @Schema(description = "Sigla do estado (UF)", example = "SP", required = true)
+    @Schema(description = "Sigla do estado (UF)", example = "SP", requiredMode = Schema.RequiredMode.REQUIRED)
     private String estado;
 
     /** Latitude para geolocalização (opcional) */

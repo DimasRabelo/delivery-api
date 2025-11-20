@@ -32,7 +32,7 @@ public class GrupoOpcional {
 
     /** Nome do grupo (ex: 'Escolha o tamanho') */
     @NotBlank
-    @Schema(description = "Nome do grupo de opções", example = "Escolha o Tamanho", required = true)
+    @Schema(description = "Nome do grupo de opções", example = "Escolha o Tamanho", requiredMode = Schema.RequiredMode.REQUIRED)
     private String nome;
 
     /** Número mínimo de seleções obrigatórias */

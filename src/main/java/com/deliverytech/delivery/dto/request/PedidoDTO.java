@@ -18,21 +18,21 @@ import java.util.List;
 @Schema(description = "Dados para criação de um novo pedido")
 public class PedidoDTO {
 
-    @Schema(description = "ID do restaurante onde o pedido será realizado", example = "2", required = true)
+    @Schema(description = "ID do restaurante onde o pedido será realizado", example = "2", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message = "Restaurante ID é obrigatório")
     @Positive(message = "Restaurante ID deve ser positivo")
     private Long restauranteId;
 
-    @Schema(description = "ID do Endereço de entrega (selecionado da lista de endereços do cliente)", example = "10", required = true)
+    @Schema(description = "ID do Endereço de entrega (selecionado da lista de endereços do cliente)", example = "10", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message = "ID do Endereço de entrega é obrigatório")
     @Positive(message = "ID do Endereço deve ser positivo")
     private Long enderecoEntregaId;
 
-    @Schema(description = "Observações adicionais do pedido", example = "Deixar na portaria", required = false)
+    @Schema(description = "Observações adicionais do pedido", example = "Deixar na portaria")
     @Size(max = 500, message = "Observações não podem exceder 500 caracteres")
     private String observacoes;
 
-    @Schema(description = "Método de pagamento", example = "DINHEIRO", required = true)
+    @Schema(description = "Método de pagamento", example = "DINHEIRO", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = "Método de pagamento é obrigatório")
     @Pattern(
             regexp = "^(DINHEIRO|CARTAO_CREDITO|CARTAO_DEBITO|PIX)$",
@@ -40,11 +40,11 @@ public class PedidoDTO {
     )
     private String metodoPagamento;
 
-    @Schema(description = "Valor para troco (obrigatório se metodoPagamento=DINHEIRO)", example = "100.00", required = false)
+    @Schema(description = "Valor para troco (obrigatório se metodoPagamento=DINHEIRO)", example = "100.00")
     @Positive(message = "Valor do troco deve ser positivo")
     private BigDecimal trocoPara;
 
-    @Schema(description = "Lista de itens do pedido (agora com suporte a opcionais)", required = true)
+    @Schema(description = "Lista de itens do pedido (agora com suporte a opcionais)", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotEmpty(message = "Pedido deve ter pelo menos um item")
     @Valid // Valida cada ItemPedidoDTO
     private List<ItemPedidoDTO> itens = new ArrayList<>();

@@ -56,7 +56,7 @@ public class Pedido {
     private StatusPedido status;
 
     @NotBlank(message = "Método de pagamento é obrigatório")
-    @Schema(description = "Método de pagamento escolhido", example = "DINHEIRO", required = true)
+    @Schema(description = "Método de pagamento escolhido", example = "DINHEIRO", requiredMode = Schema.RequiredMode.REQUIRED)
     private String metodoPagamento;
 
     @PositiveOrZero
@@ -86,7 +86,7 @@ public class Pedido {
 
     @Column(unique = true)
     @NotBlank
-    @Schema(description = "Número de identificação único do pedido", example = "PED-20240605-1001", required = true)
+    @Schema(description = "Número de identificação único do pedido", example = "PED-20240605-1001", requiredMode = Schema.RequiredMode.REQUIRED)
     private String numeroPedido;
 
     @Column(columnDefinition = "TEXT")

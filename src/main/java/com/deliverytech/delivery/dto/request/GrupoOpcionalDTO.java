@@ -18,7 +18,7 @@ public class GrupoOpcionalDTO {
     private Long id; // Útil para o método de 'atualizarProduto'
 
     @NotBlank
-    @Schema(description = "Nome do grupo", example = "Escolha o Tamanho", required = true)
+    @Schema(description = "Nome do grupo", example = "Escolha o Tamanho", requiredMode = Schema.RequiredMode.REQUIRED)
     private String nome;
 
     @Min(0)

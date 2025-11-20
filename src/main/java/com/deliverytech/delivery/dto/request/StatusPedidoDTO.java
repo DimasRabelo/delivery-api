@@ -12,7 +12,7 @@ import jakarta.validation.constraints.NotNull;
 @Schema(description = "DTO para atualizar o status de um pedido")
 public class StatusPedidoDTO {
 
-    @Schema(description = "Novo status do pedido", example = "ENTREGUE", required = true)
+    @Schema(description = "Novo status do pedido", example = "ENTREGUE", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message = "Status é obrigatório")
     private String status;
 

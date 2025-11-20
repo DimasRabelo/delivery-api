@@ -18,32 +18,32 @@ import java.util.ArrayList;
 @Schema(description = "Dados para cadastro ou atualização de produto")
 public class ProdutoDTO {
 
-    @Schema(description = "Nome do produto", example = "Pizza Margherita", required = true)
+    @Schema(description = "Nome do produto", example = "Pizza Margherita", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = "Nome é obrigatório")
     @Size(min = 2, max = 50)
     private String nome;
 
-    @Schema(description = "Descrição do produto", example = "Pizza com molho de tomate...", required = true)
+    @Schema(description = "Descrição do produto", example = "Pizza com molho de tomate...", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = "Descrição é obrigatória")
     @Size(min = 10, max = 500)
     private String descricao;
     
-    @Schema(description = "Preço base do produto", example = "25.50", minimum = "0.00", required = true)
+    @Schema(description = "Preço base do produto", example = "25.50", minimum = "0.00", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message = "Preço base é obrigatório")
     @DecimalMin(value = "0.00", message = "Preço base deve ser zero ou positivo") // Pode ser 0.00 se o tamanho definir o preço
     @DecimalMax(value = "500.00")
     private BigDecimal precoBase;
     
-    @Schema(description = "Categoria do produto", example = "Italiana", required = true)
+    @Schema(description = "Categoria do produto", example = "Italiana", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = "Categoria é obrigatória")
     private String categoria;
     
-    @Schema(description = "ID do restaurante", example = "1", required = true)
+    @Schema(description = "ID do restaurante", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message = "Restaurante ID é obrigatório")
     @Positive(message = "Restaurante ID deve ser positivo")
     private Long restauranteId;
     
-    @Schema(description = "Quantidade em estoque", example = "50", required = true)
+    @Schema(description = "Quantidade em estoque", example = "50", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message = "Estoque é obrigatório")
     @Min(value = 0, message = "Estoque não pode ser negativo")
     private int estoque;

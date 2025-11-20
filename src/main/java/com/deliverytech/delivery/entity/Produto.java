@@ -36,7 +36,7 @@ public class Produto {
 
     @NotBlank(message = "Nome é obrigatório")
     @Size(min = 2, max = 100)
-    @Schema(description = "Nome do produto", example = "Pizza Margherita", required = true)
+    @Schema(description = "Nome do produto", example = "Pizza Margherita", requiredMode = Schema.RequiredMode.REQUIRED)
     private String nome;
 
     @Size(max = 255)
@@ -46,7 +46,7 @@ public class Produto {
     @NotNull(message = "Preço base é obrigatório")
     @PositiveOrZero(message = "Preço base deve ser zero ou positivo")
     @Column(name = "preco_base")
-    @Schema(description = "Preço base do produto (opcionais podem somar a este valor)", example = "40.00", required = true)
+    @Schema(description = "Preço base do produto (opcionais podem somar a este valor)", example = "40.00", requiredMode = Schema.RequiredMode.REQUIRED)
     private BigDecimal precoBase;
 
     @Schema(description = "Categoria do produto", example = "Pizzas Tradicionais")

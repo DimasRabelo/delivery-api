@@ -17,11 +17,11 @@ import com.deliverytech.delivery.dto.request.ItemPedidoDTO;
 @Schema(description = "DTO para cálculo do total de um pedido sem persistir no banco")
 public class CalculoPedidoDTO {
 
-    @Schema(description = "ID do restaurante onde o pedido será calculado", example = "2", required = true)
+    @Schema(description = "ID do restaurante onde o pedido será calculado", example = "2", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message = "ID do restaurante é obrigatório")
     private Long restauranteId;
 
-    @Schema(description = "Lista de itens para cálculo do pedido", required = true)
+    @Schema(description = "Lista de itens para cálculo do pedido", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotEmpty(message = "Pedido deve ter pelo menos um item")
     @Valid // Valida os DTOs (ItemPedidoDTO) dentro da lista
     private List<ItemPedidoDTO> itens = new ArrayList<>();

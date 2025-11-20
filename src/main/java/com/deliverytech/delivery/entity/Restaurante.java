@@ -27,7 +27,7 @@ public class Restaurante {
 
     @NotBlank(message = "Nome é obrigatório")
     @Size(min = 2, max = 100)
-    @Schema(description = "Nome do restaurante", example = "Pizza Palace", required = true)
+    @Schema(description = "Nome do restaurante", example = "Pizza Palace", requiredMode = Schema.RequiredMode.REQUIRED)
     private String nome;
 
     @NotBlank(message = "Categoria é obrigatória")

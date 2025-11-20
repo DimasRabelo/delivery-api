@@ -19,34 +19,34 @@ import jakarta.validation.constraints.Size;
 public class RegisterRequest {
 
     // --- Dados do Perfil (vão para a entidade Cliente) ---
-    @Schema(description = "Nome completo do cliente", required = true)
+    @Schema(description = "Nome completo do cliente", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = "Nome é obrigatório")
     @Size(min = 2, max = 100, message = "Nome deve ter entre 2 e 100 caracteres")
     private String nome;
 
-    @Schema(description = "CPF do cliente", required = true)
+    @Schema(description = "CPF do cliente", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = "CPF é obrigatório")
     @CPF(message = "CPF inválido") // Valida o formato e os dígitos do CPF
     private String cpf;
 
-    @Schema(description = "Telefone do cliente", example = "11999999999", required = true)
+    @Schema(description = "Telefone do cliente", example = "11999999999", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = "Telefone é obrigatório")
     @Pattern(regexp = "^(\\(\\d{2}\\)\\s?\\d{4,5}-?\\d{4}|\\d{10,11})$", message = "Telefone inválido")
     private String telefone;
 
     // --- Dados de Autenticação (vão para a entidade Usuario) ---
-    @Schema(description = "Email (será o login)", required = true)
+    @Schema(description = "Email (será o login)", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = "Email é obrigatório")
     @Email(message = "Email deve ter formato válido")
     private String email;
 
-    @Schema(description = "Senha (mínimo 6 caracteres)", required = true)
+    @Schema(description = "Senha (mínimo 6 caracteres)", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = "Senha é obrigatória")
     @Size(min = 6, message = "Senha deve ter pelo menos 6 caracteres")
     private String senha;
 
     // --- Dados de Endereço (vão para a entidade Endereco) ---
-    @Schema(description = "Endereço principal (obrigatório no cadastro)", required = true)
+    @Schema(description = "Endereço principal (obrigatório no cadastro)", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message = "Endereço principal é obrigatório")
     @Valid // Instrui o Spring a validar os campos dentro do EnderecoDTO
     private EnderecoDTO endereco;

@@ -39,7 +39,7 @@ public class Usuario implements UserDetails {
 
     @Column(nullable = false)
     @NotBlank(message = "Senha é obrigatória")
-    @Schema(description = "Senha criptografada do usuário", readOnly = true)
+    @Schema(description = "Senha criptografada do usuário", accessMode = Schema.AccessMode.READ_ONLY)
     private String senha;
 
     @Enumerated(EnumType.STRING)

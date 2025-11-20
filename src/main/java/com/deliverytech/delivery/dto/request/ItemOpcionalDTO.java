@@ -17,12 +17,12 @@ public class ItemOpcionalDTO {
     private Long id; // Útil para o método de 'atualizarProduto'
 
     @NotBlank
-    @Schema(description = "Nome do item", example = "Média", required = true)
+    @Schema(description = "Nome do item", example = "Média", requiredMode = Schema.RequiredMode.REQUIRED)
     private String nome;
 
     @NotNull
     @PositiveOrZero
-    @Schema(description = "Preço adicional deste item", example = "5.00", required = true)
+    @Schema(description = "Preço adicional deste item", example = "5.00", requiredMode = Schema.RequiredMode.REQUIRED)
     private BigDecimal precoAdicional;
 
     public Long getId() { return id; }

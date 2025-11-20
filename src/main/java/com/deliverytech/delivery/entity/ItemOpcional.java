@@ -32,13 +32,13 @@ public class ItemOpcional {
 
     /** Nome do item de opção */
     @NotBlank
-    @Schema(description = "Nome do item opcional", example = "Grande", required = true)
+    @Schema(description = "Nome do item opcional", example = "Grande", requiredMode = Schema.RequiredMode.REQUIRED)
     private String nome;
 
     /** Preço adicional cobrado pelo item (pode ser zero) */
     @NotNull
     @PositiveOrZero
-    @Schema(description = "Preço adicional deste item", example = "15.00", required = true, minimum = "0")
+    @Schema(description = "Preço adicional deste item", example = "15.00", requiredMode = Schema.RequiredMode.REQUIRED, minimum = "0")
     private BigDecimal precoAdicional;
 
     /** Grupo de opções ao qual o item pertence */

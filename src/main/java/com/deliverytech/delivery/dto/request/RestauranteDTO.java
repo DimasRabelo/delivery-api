@@ -19,7 +19,7 @@ import java.math.BigDecimal;
 @Schema(description = "Dados para cadastro ou atualização de um Restaurante")
 public class RestauranteDTO {
 
-    @Schema(description = "Nome do restaurante", example = "Pizza Frango", required = true)
+    @Schema(description = "Nome do restaurante", example = "Pizza Frango", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = "Nome é obrigatório")
     @Size(min = 2, max = 100)
     private String nome;
@@ -29,7 +29,7 @@ public class RestauranteDTO {
     @ValidCategoria
     private String categoria;
 
-    @Schema(description = "Endereço estruturado do restaurante", required = true)
+    @Schema(description = "Endereço estruturado do restaurante", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message = "Endereço é obrigatório")
     @Valid // <-- Adicionado: Valida o EnderecoDTO aninhado
     private EnderecoDTO endereco;

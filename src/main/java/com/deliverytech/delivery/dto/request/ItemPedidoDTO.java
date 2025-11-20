@@ -15,22 +15,22 @@ import java.util.List;
 @Schema(description = "Item do pedido, contendo o produto, quantidade, observações e opcionais selecionados")
 public class ItemPedidoDTO {
 
-    @Schema(description = "ID do produto base", example = "5", required = true)
+    @Schema(description = "ID do produto base", example = "5", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message = "Produto ID é obrigatório")
     @Positive(message = "Produto ID deve ser positivo")
     private Long produtoId;
 
-    @Schema(description = "Quantidade do produto", example = "2", required = true, minimum = "1", maximum = "50")
+    @Schema(description = "Quantidade do produto", example = "2", requiredMode = Schema.RequiredMode.REQUIRED, minimum = "1", maximum = "50")
     @NotNull(message = "Quantidade é obrigatória")
     @Min(value = 1, message = "Quantidade deve ser pelo menos 1")
     @Max(value = 50, message = "Quantidade não pode exceder 50 unidades")
     private Integer quantidade;
 
-    @Schema(description = "Observações sobre o item", example = "Sem cebola", required = false)
+    @Schema(description = "Observações sobre o item", example = "Sem cebola")
     @Size(max = 200, message = "Observações não podem exceder 200 caracteres")
     private String observacoes;
 
-    @Schema(description = "Lista de IDs dos Itens Opcionais selecionados (ex: [5, 10])", required = false)
+    @Schema(description = "Lista de IDs dos Itens Opcionais selecionados (ex: [5, 10])")
     private List<Long> opcionaisIds;
 
     public Long getProdutoId() {
